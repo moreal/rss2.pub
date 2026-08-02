@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:botkit.fedify.dev)",
+      "WebFetch(domain:www.rfc-editor.org)",
+      "WebFetch(domain:www.effect.website)",
+      "WebFetch(domain:nixos.org)",
+      "WebFetch(domain:effect.website)",
+      "WebFetch(domain:fedify.dev)",
+      "WebFetch(domain:git.pleroma.social)",
+      "WebFetch(domain:www.langchain.com)",
+      "WebFetch(domain:fed.brid.gy)",
+      "WebFetch(domain:akkoma.dev)",
+      "WebFetch(domain:blog.joinmastodon.org)",
+      "WebFetch(domain:www.cockroachlabs.com)",
+      "WebFetch(domain:orm.drizzle.team)",
+      "Bash(nix --version)",
+      "Bash(mise --version)",
+      "Bash(npm view *)",
+      "Bash(/opt/homebrew/bin/mise use *)",
+      "Bash(/opt/homebrew/bin/mise x *)",
+      "Bash(yarn typecheck *)",
+      "Bash(yarn test:unit)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(export COREPACK_ENABLE_DOWNLOAD_PROMPT=0)",
+      "Bash(echo \"EXIT $?\")",
+      "Bash(echo \"exit: $?\")"
+    ]
+  }
+}

@@ -1,0 +1,124 @@
+import {
+  type Bot,
+  type BotGroup,
+  createInstance,
+  type CreateInstanceOptions,
+  type InstanceWithVoidContextData,
+  link,
+  type Repository,
+  text,
+} from "@fedify/botkit";
+import { PostgresRepository } from "@fedify/botkit-postgres";
+import { PostgresKvStore, PostgresMessageQueue } from "@fedify/postgres";
+import { getLogger } from "@logtape/logtape";
+import type postgres from "postgres";
+import type { CommandHandler } from "../../application/handle-command.js";
+import type { FollowerTracker } from "../../application/follower-tracker.js";
+import { Feed } from "../../domain/feed/feed.js";
+import { Handle } from "../../domain/feed/handle.js";
+import type { FeedRepository } from "../../domain/ports/feed-repository.js";
+import { isErr } from "../../shared/result.js";
+import { RawHtmlText } from "./raw-html-text.js";
+import { renderFeedProfileHtml } from "./render.js";
+
+const logger = getLogger(["rss2pub", "federation"]);
+
+/** Handle of the static main actor (PLAN.md 확정 사항). */
+export const MAIN_ACTOR_HANDLE = "rss2pub";
+
+export type FederationStack = {
+  readonly instance: InstanceWithVoidContextData;
+  readonly repository: Repository;
+  readonly mainBot: Bot<void>;
+  readonly feedBots: BotGroup<void>;
+};
+
+/**
+ * Assembles the BotKit instance: one static main bot handling commands and
+ * one dynamic bot group resolving feed handles from the FeedRepository, so
+ * every registered feed is an actor without per-feed setup.
+ */
+export function createFederationStack(deps: {
+  readonly sql: postgres.Sql;
+  readonly behindProxy: boolean;
+  readonly softwareVersion: string;
+  readonly feeds: FeedRepository;
+  readonly followerTracker: FollowerTracker;
+  readonly commandHandler: CommandHandler;
+  /** TEST ONLY: lets the document loader fetch loopback/private hosts. */
+  readonly allowPrivateAddress?: boolean;
+}): FederationStack {
+  const repository = new PostgresRepository({ sql: deps.sql });
+  // `federationOptions` is added by our .yarn/patches patch of BotKit 0.5.1
+  // (spread into Fedify's createFederation) — hence the widened type.
+  const options: CreateInstanceOptions & {
+    federationOptions?: { allowPrivateAddress: boolean };
+  } = {
+    kv: new PostgresKvStore(deps.sql),
+    queue: new PostgresMessageQueue(deps.sql),
+    repository,
+    software: {
+      name: "rss2pub",
+      version: deps.softwareVersion,
+      homepage: new URL("https://github.com/moreal/rss2.pub"),
+    },
+    behindProxy: deps.behindProxy,
+    ...(deps.allowPrivateAddress === true
+      ? { federationOptions: { allowPrivateAddress: true } }
+      : {}),
+  };
+  const instance = createInstance(options);
+
+  const mainBot = instance.createBot(MAIN_ACTOR_HANDLE, {
+    username: MAIN_ACTOR_HANDLE,
+    name: "rss2.pub",
+    summary: text`I turn RSS/Atom feeds into followable accounts. Mention me with "register <feed-url>" to bridge a feed, or "search <keyword>" to find one.`,
+  });
+
+  mainBot.onMention = async (_session, message) => {
+    const reply = await deps.commandHandler.handle(message.text);
+    await message.reply(text`${reply}`, {
+      visibility: message.visibility === "direct" ? "direct" : "unlisted",
+    });
+  };
+
+  const feedBots = instance.createBot(async (_ctx, identifier) => {
+    if (identifier === MAIN_ACTOR_HANDLE) return null;
+    const handle = Handle.create(identifier);
+    if (isErr(handle)) return null;
+    const feed = await deps.feeds.findByHandle(handle.value);
+    if (feed === null) return null;
+    return {
+      username: feed.handle,
+      name: Feed.displayName(feed),
+      summary: new RawHtmlText<void>(renderFeedProfileHtml(feed)),
+      properties: { Feed: link(feed.url) },
+    };
+  });
+
+  feedBots.onFollow = async (session) => {
+    const result = await deps.followerTracker.recordFollow(
+      session.bot.identifier,
+    );
+    if (isErr(result)) {
+      logger.warn("untracked follow for {identifier}: {error}", {
+        identifier: session.bot.identifier,
+        error: result.error,
+      });
+    }
+  };
+
+  feedBots.onUnfollow = async (session) => {
+    const result = await deps.followerTracker.recordUnfollow(
+      session.bot.identifier,
+    );
+    if (isErr(result)) {
+      logger.warn("untracked unfollow for {identifier}: {error}", {
+        identifier: session.bot.identifier,
+        error: result.error,
+      });
+    }
+  };
+
+  return { instance, repository, mainBot, feedBots };
+}

@@ -1,0 +1,200 @@
+import { describe, expect, it } from "vitest";
+import {
+  createPollDueFeeds,
+  createPollFeed,
+} from "../../../src/application/poll-feed.js";
+import { ContentPolicy } from "../../../src/domain/content/content-policy.js";
+import { Feed, FeedId } from "../../../src/domain/feed/feed.js";
+import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
+import { Handle } from "../../../src/domain/feed/handle.js";
+import { PollPolicy } from "../../../src/domain/feed/poll-policy.js";
+import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
+import { createInMemoryItemRepository } from "../../../src/infrastructure/persistence/in-memory-item-repository.js";
+import { err, ok } from "../../../src/shared/result.js";
+import {
+  capturingFederation,
+  fakeFetcher,
+  fetchedFeed,
+  mutableClock,
+  rawItem,
+} from "../../helpers/fakes.js";
+import { unwrap, unwrapErr } from "../../helpers/result.js";
+
+const now = new Date("2026-07-26T12:00:00Z");
+const pollPolicy = unwrap(
+  PollPolicy.create({ intervalSeconds: 100, maxBackoffSeconds: 400 }),
+);
+
+function setup(feedUrl = "https://a.co/f") {
+  const url = unwrap(FeedUrl.create(feedUrl));
+  const feed = Feed.register({
+    url,
+    handle: Handle.fromFeedUrl(url),
+    title: null,
+    description: null,
+    now,
+  });
+  const feeds = createInMemoryFeedRepository();
+  const items = createInMemoryItemRepository();
+  const fetcher = fakeFetcher();
+  const federation = capturingFederation();
+  const clock = mutableClock(now);
+  const pollFeed = createPollFeed({
+    feeds,
+    items,
+    fetcher,
+    federation,
+    clock,
+    pollPolicy,
+    contentPolicy: ContentPolicy.DEFAULT,
+  });
+  return { url, feed, feeds, items, fetcher, federation, clock, pollFeed };
+}
+
+describe("PollFeed", () => {
+  it("fails on unknown feeds", async () => {
+    const { pollFeed } = setup();
+    const missing = "0".repeat(64);
+    const error = unwrapErr(await pollFeed.execute(unwrap(FeedId.create(missing))));
+    expect(error).toMatchObject({ type: "FeedNotFound" });
+  });
+
+  it("backs off after a fetch failure", async () => {
+    const { feed, feeds, fetcher, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      err({ type: "RequestFailed", url: feed.url, message: "timeout" }),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report).toMatchObject({ status: "fetch-failed", fetchError: "timeout" });
+
+    const saved = await feeds.findById(feed.id);
+    expect(saved?.consecutiveFailures).toBe(1);
+    expect(saved?.nextPollAt).toEqual(new Date(now.getTime() + 200_000));
+  });
+
+  it("publishes only new items, oldest first, and remembers them", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    const response = ok(
+      fetchedFeed({
+        title: "Titled Feed",
+        description: "desc",
+        validators: { etag: 'W/"v1"', lastModified: null },
+        items: [
+          rawItem({
+            guid: "b",
+            title: "newest",
+            publishedAt: new Date("2026-07-02T00:00:00Z"),
+          }),
+          rawItem({
+            guid: "a",
+            title: "oldest",
+            publishedAt: new Date("2026-07-01T00:00:00Z"),
+          }),
+        ],
+      }),
+    );
+    fetcher.respondWith(feed.url, response);
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report).toMatchObject({ status: "polled", published: 2 });
+    expect(
+      federation.published.map(({ content }) =>
+        content.kind === "note" ? content.title : content.name,
+      ),
+    ).toEqual(["oldest", "newest"]);
+
+    const saved = await feeds.findById(feed.id);
+    expect(saved?.title).toBe("Titled Feed");
+    expect(saved?.description).toBe("desc");
+    expect(saved?.validators).toEqual({ etag: 'W/"v1"', lastModified: null });
+    expect(saved?.nextPollAt).toEqual(new Date(now.getTime() + 100_000));
+
+    const second = unwrap(await pollFeed.execute(feed.id));
+    expect(second.published).toBe(0);
+    expect(federation.published).toHaveLength(2);
+  });
+
+  it("passes stored validators and honors not-modified", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    const validators = { etag: 'W/"v1"', lastModified: null };
+    await feeds.save({ ...feed, validators });
+    fetcher.respondWith(feed.url, ok({ status: "not-modified" }));
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report).toMatchObject({ status: "not-modified", published: 0 });
+    expect(fetcher.calls[0]?.validators).toEqual(validators);
+    expect(federation.published).toHaveLength(0);
+
+    const saved = await feeds.findById(feed.id);
+    expect(saved?.validators).toEqual(validators);
+    expect(saved?.nextPollAt).toEqual(new Date(now.getTime() + 100_000));
+  });
+
+  it("retries items whose publish failed, without duplicating successes", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "x", title: "post" })] })),
+    );
+
+    federation.failNextPublishesWith("inbox unreachable");
+    const failed = unwrap(await pollFeed.execute(feed.id));
+    expect(failed).toMatchObject({ status: "polled", published: 0 });
+    expect(failed.publishErrors).toEqual(["inbox unreachable"]);
+
+    federation.failNextPublishesWith(null);
+    const retried = unwrap(await pollFeed.execute(feed.id));
+    expect(retried.published).toBe(1);
+    expect(federation.published).toHaveLength(1);
+  });
+
+  it("collapses duplicate keys within one fetch and skips unidentifiable items", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(
+        fetchedFeed({
+          items: [
+            rawItem({ guid: "dup", title: "first copy" }),
+            rawItem({ guid: "dup", title: "second copy" }),
+            rawItem({}), // nothing to identify it by
+          ],
+        }),
+      ),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report.published).toBe(1);
+    expect(federation.published).toHaveLength(1);
+  });
+});
+
+describe("PollDueFeeds", () => {
+  it("polls due feeds only", async () => {
+    const { feed, feeds, fetcher, clock, pollFeed } = setup();
+    await feeds.save(feed);
+
+    const otherUrl = unwrap(FeedUrl.create("https://b.co/f"));
+    const other = Feed.register({
+      url: otherUrl,
+      handle: Handle.fromFeedUrl(otherUrl),
+      title: null,
+      description: null,
+      now,
+    });
+    await feeds.save({ ...other, nextPollAt: new Date(now.getTime() + 60_000) });
+
+    fetcher.respondWith(feed.url, ok(fetchedFeed({})));
+
+    const pollDueFeeds = createPollDueFeeds({ feeds, pollFeed, clock });
+    const reports = await pollDueFeeds.execute();
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.feedId).toBe(feed.id);
+  });
+});

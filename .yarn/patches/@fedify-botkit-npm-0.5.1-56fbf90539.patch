@@ -1,0 +1,14 @@
+diff --git a/dist/instance-impl.js b/dist/instance-impl.js
+index aee034369e08df575d0449ac14abf4a976260c54..f16803c26be014febebb91a9f253390b07851ec4 100644
+--- a/dist/instance-impl.js
++++ b/dist/instance-impl.js
+@@ -83,7 +83,8 @@ var InstanceImpl = class {
+ 		this.federation = createFederation({
+ 			kv: options.kv,
+ 			queue: options.queue,
+-			userAgent: { software: `BotKit/${deno_default.version}` }
++			userAgent: { software: `BotKit/${deno_default.version}` },
++			...options.federationOptions ?? {}
+ 		});
+ 		this.#initialize();
+ 	}

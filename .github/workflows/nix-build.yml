@@ -1,0 +1,18 @@
+name: Nix package
+
+# Manual for now: `yarnOfflineCache.hash` in flake.nix must be filled first
+# (see the comment there). Once it is, add `push`/`pull_request` triggers so
+# every lockfile change that forgets to refresh the hash fails loudly here.
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - name: Build package
+        run: nix build .# --print-build-logs
+      - name: Smoke-check the wrapper
+        run: ./result/bin/rss2pub 2>&1 | head -5 || true

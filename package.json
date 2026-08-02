@@ -1,0 +1,48 @@
+{
+  "name": "rss2pub",
+  "version": "0.0.0",
+  "private": true,
+  "description": "RSS/Atom to ActivityPub bridge — each feed becomes a followable fediverse actor",
+  "type": "module",
+  "packageManager": "yarn@4.17.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:e2e": "vitest run --project e2e",
+    "test:watch": "vitest --project unit"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "^12.0.4",
+    "@types/node": "^24",
+    "@types/sanitize-html": "^2.16.1",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  },
+  "dependencies": {
+    "@fedify/botkit": "patch:@fedify/botkit@npm%3A0.5.1#~/.yarn/patches/@fedify-botkit-npm-0.5.1-56fbf90539.patch",
+    "@fedify/botkit-postgres": "^0.5.1",
+    "@fedify/fedify": "~2.3.3",
+    "@fedify/postgres": "^2.3.3",
+    "@fedify/vocab": "~2.3.3",
+    "@hono/node-server": "^2.0.11",
+    "@logtape/logtape": "^2.2.4",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.221.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
+    "@opentelemetry/sdk-metrics": "^2.10.0",
+    "@opentelemetry/sdk-node": "^0.221.0",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.12.32",
+    "postgres": "^3.4.9",
+    "rss-parser": "^3.13.0",
+    "sanitize-html": "^2.17.6"
+  }
+}

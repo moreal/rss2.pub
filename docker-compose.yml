@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rss2pub
+      POSTGRES_PASSWORD: rss2pub
+      POSTGRES_DB: rss2pub
+    ports:
+      # 5433 on the host: avoids clashing with a natively installed PostgreSQL.
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rss2pub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
