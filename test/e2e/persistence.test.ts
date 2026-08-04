@@ -1,25 +1,11 @@
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
-import { Feed, FeedTitle } from "../../src/domain/feed/feed.js";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
-import { Handle } from "../../src/domain/feed/handle.js";
 import type { ItemKey } from "../../src/domain/feed/feed-item.js";
 import { createDrizzleFeedRepository } from "../../src/infrastructure/persistence/drizzle-feed-repository.js";
 import { createDrizzleItemRepository } from "../../src/infrastructure/persistence/drizzle-item-repository.js";
+import { makeFeed, T0 as now } from "../helpers/fakes.js";
 import { unwrap } from "../helpers/result.js";
 import { createTestDatabase, type TestDatabase } from "./helpers/database.js";
-
-const now = new Date("2026-07-26T12:00:00.000Z");
-
-function makeFeed(rawUrl: string, title: string | null = null) {
-  const url = unwrap(FeedUrl.create(rawUrl));
-  return Feed.register({
-    url,
-    handle: Handle.fromFeedUrl(url),
-    title: title === null ? null : unwrap(FeedTitle.create(title)),
-    description: null,
-    now,
-  });
-}
 
 let database: TestDatabase;
 
@@ -34,7 +20,7 @@ afterAll(async () => {
 describe("DrizzleFeedRepository", () => {
   it("saves, upserts, and finds by id, url, and handle", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
-    const feed = makeFeed("https://one.example/rss", "One");
+    const feed = makeFeed({ url: "https://one.example/rss", title: "One" });
     await feeds.save(feed);
 
     expect(await feeds.findById(feed.id)).toEqual(feed);
@@ -55,9 +41,9 @@ describe("DrizzleFeedRepository", () => {
 
   it("lists due feeds ordered by nextPollAt", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
-    const early = makeFeed("https://due-early.example/rss");
-    const late = makeFeed("https://due-late.example/rss");
-    const future = makeFeed("https://future.example/rss");
+    const early = makeFeed({ url: "https://due-early.example/rss" });
+    const late = makeFeed({ url: "https://due-late.example/rss" });
+    const future = makeFeed({ url: "https://future.example/rss" });
     await feeds.save({ ...early, nextPollAt: new Date(now.getTime() - 120_000) });
     await feeds.save({ ...late, nextPollAt: new Date(now.getTime() - 60_000) });
     await feeds.save({ ...future, nextPollAt: new Date(now.getTime() + 60_000) });
@@ -72,8 +58,8 @@ describe("DrizzleFeedRepository", () => {
 
   it("searches case-insensitively and escapes LIKE wildcards", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
-    const rust = makeFeed("https://rust-search.example/rss", "Rust Weekly");
-    const percent = makeFeed("https://percent.example/rss", "100% legit");
+    const rust = makeFeed({ url: "https://rust-search.example/rss", title: "Rust Weekly" });
+    const percent = makeFeed({ url: "https://percent.example/rss", title: "100% legit" });
     await feeds.save(rust);
     await feeds.save(percent);
 
@@ -92,8 +78,8 @@ describe("DrizzleFeedRepository", () => {
 
   it("ranks popularity with a floor of zero followers", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
-    const a = makeFeed("https://pop-a.example/rss");
-    const b = makeFeed("https://pop-b.example/rss");
+    const a = makeFeed({ url: "https://pop-a.example/rss" });
+    const b = makeFeed({ url: "https://pop-b.example/rss" });
     await feeds.save(a);
     await feeds.save(b);
 
@@ -110,7 +96,7 @@ describe("DrizzleFeedRepository", () => {
   it("removes feeds and cascades their published items", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
     const items = createDrizzleItemRepository(database.db);
-    const doomed = makeFeed("https://doomed.example/rss");
+    const doomed = makeFeed({ url: "https://doomed.example/rss" });
     await feeds.save(doomed);
     await items.markPublished(doomed.id, [
       { key: "guid:1" as ItemKey, publishedAt: now },
@@ -128,7 +114,7 @@ describe("DrizzleItemRepository", () => {
   it("filters new keys preserving order and collapsing batch duplicates", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
     const items = createDrizzleItemRepository(database.db);
-    const feed = makeFeed("https://items.example/rss");
+    const feed = makeFeed({ url: "https://items.example/rss" });
     await feeds.save(feed);
 
     const keys = ["guid:a", "guid:b", "guid:a", "guid:c"] as ItemKey[];
@@ -148,7 +134,7 @@ describe("DrizzleItemRepository", () => {
   it("marks idempotently and forgets a feed on removeAllOf", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
     const items = createDrizzleItemRepository(database.db);
-    const feed = makeFeed("https://items2.example/rss");
+    const feed = makeFeed({ url: "https://items2.example/rss" });
     await feeds.save(feed);
 
     const record = { key: "guid:x" as ItemKey, publishedAt: now };

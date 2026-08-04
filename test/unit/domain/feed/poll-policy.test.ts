@@ -1,24 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { Feed } from "../../../../src/domain/feed/feed.js";
-import { FeedUrl } from "../../../../src/domain/feed/feed-url.js";
-import { Handle } from "../../../../src/domain/feed/handle.js";
 import {
   afterFailedPoll,
   afterSuccessfulPoll,
   isDue,
   PollPolicy,
 } from "../../../../src/domain/feed/poll-policy.js";
+import { makeFeed, T0 } from "../../../helpers/fakes.js";
 import { unwrap, unwrapErr } from "../../../helpers/result.js";
 
-const url = unwrap(FeedUrl.create("https://a.co/f"));
-const now = new Date("2026-07-26T12:00:00Z");
-const feed = Feed.register({
-  url,
-  handle: Handle.fromFeedUrl(url),
-  title: null,
-  description: null,
-  now,
-});
+// The fixture is registered at T0, so scheduling assertions measure from it.
+const now = T0;
+const feed = makeFeed();
 
 describe("PollPolicy.create", () => {
   it("rejects non-positive or fractional intervals", () => {

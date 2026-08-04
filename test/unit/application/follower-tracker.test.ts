@@ -1,23 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createFollowerTracker } from "../../../src/application/follower-tracker.js";
-import { Feed } from "../../../src/domain/feed/feed.js";
-import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
-import { Handle } from "../../../src/domain/feed/handle.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
+import { makeFeed } from "../../helpers/fakes.js";
 import { unwrap, unwrapErr } from "../../helpers/result.js";
-
-const now = new Date("2026-07-26T12:00:00Z");
 
 async function setup() {
   const feeds = createInMemoryFeedRepository();
-  const url = unwrap(FeedUrl.create("https://a.co/f"));
-  const feed = Feed.register({
-    url,
-    handle: Handle.fromFeedUrl(url),
-    title: null,
-    description: null,
-    now,
-  });
+  const feed = makeFeed();
   await feeds.save(feed);
   return { feeds, feed, tracker: createFollowerTracker({ feeds }) };
 }

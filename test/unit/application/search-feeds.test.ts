@@ -3,30 +3,23 @@ import {
   createListPopularFeeds,
   createSearchFeeds,
 } from "../../../src/application/search-feeds.js";
-import { Feed, FeedTitle } from "../../../src/domain/feed/feed.js";
-import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
-import { Handle } from "../../../src/domain/feed/handle.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
+import { makeFeed } from "../../helpers/fakes.js";
 import { unwrap, unwrapErr } from "../../helpers/result.js";
-
-const now = new Date("2026-07-26T12:00:00Z");
-
-function makeFeed(rawUrl: string, title: string | null, description: string | null) {
-  const url = unwrap(FeedUrl.create(rawUrl));
-  return Feed.register({
-    url,
-    handle: Handle.fromFeedUrl(url),
-    title: title === null ? null : unwrap(FeedTitle.create(title)),
-    description,
-    now,
-  });
-}
 
 async function seed() {
   const feeds = createInMemoryFeedRepository();
-  const rust = makeFeed("https://rust.blog/rss", "Rust Blog", "systems programming");
-  const cooking = makeFeed("https://cook.example/rss", "Daily Cooking", "recipes and food");
-  const untitled = makeFeed("https://misc.example/rss", null, null);
+  const rust = makeFeed({
+    url: "https://rust.blog/rss",
+    title: "Rust Blog",
+    description: "systems programming",
+  });
+  const cooking = makeFeed({
+    url: "https://cook.example/rss",
+    title: "Daily Cooking",
+    description: "recipes and food",
+  });
+  const untitled = makeFeed({ url: "https://misc.example/rss" });
   await feeds.save(rust);
   await feeds.save(cooking);
   await feeds.save(untitled);

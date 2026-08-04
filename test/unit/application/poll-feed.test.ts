@@ -4,9 +4,7 @@ import {
   createPollFeed,
 } from "../../../src/application/poll-feed.js";
 import { ContentPolicy } from "../../../src/domain/content/content-policy.js";
-import { Feed, FeedId } from "../../../src/domain/feed/feed.js";
-import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
-import { Handle } from "../../../src/domain/feed/handle.js";
+import { FeedId } from "../../../src/domain/feed/feed.js";
 import { PollPolicy } from "../../../src/domain/feed/poll-policy.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
 import { createInMemoryItemRepository } from "../../../src/infrastructure/persistence/in-memory-item-repository.js";
@@ -15,25 +13,21 @@ import {
   capturingFederation,
   fakeFetcher,
   fetchedFeed,
+  makeFeed,
   mutableClock,
   rawItem,
+  T0,
 } from "../../helpers/fakes.js";
 import { unwrap, unwrapErr } from "../../helpers/result.js";
 
-const now = new Date("2026-07-26T12:00:00Z");
+// The fixtures are registered at T0, and the clock starts there.
+const now = T0;
 const pollPolicy = unwrap(
   PollPolicy.create({ intervalSeconds: 100, maxBackoffSeconds: 400 }),
 );
 
 function setup(feedUrl = "https://a.co/f") {
-  const url = unwrap(FeedUrl.create(feedUrl));
-  const feed = Feed.register({
-    url,
-    handle: Handle.fromFeedUrl(url),
-    title: null,
-    description: null,
-    now,
-  });
+  const feed = makeFeed({ url: feedUrl });
   const feeds = createInMemoryFeedRepository();
   const items = createInMemoryItemRepository();
   const fetcher = fakeFetcher();
@@ -48,7 +42,7 @@ function setup(feedUrl = "https://a.co/f") {
     pollPolicy,
     contentPolicy: ContentPolicy.DEFAULT,
   });
-  return { url, feed, feeds, items, fetcher, federation, clock, pollFeed };
+  return { url: feed.url, feed, feeds, items, fetcher, federation, clock, pollFeed };
 }
 
 describe("PollFeed", () => {
@@ -180,14 +174,7 @@ describe("PollDueFeeds", () => {
     const { feed, feeds, fetcher, clock, pollFeed } = setup();
     await feeds.save(feed);
 
-    const otherUrl = unwrap(FeedUrl.create("https://b.co/f"));
-    const other = Feed.register({
-      url: otherUrl,
-      handle: Handle.fromFeedUrl(otherUrl),
-      title: null,
-      description: null,
-      now,
-    });
+    const other = makeFeed({ url: "https://b.co/f" });
     await feeds.save({ ...other, nextPollAt: new Date(now.getTime() + 60_000) });
 
     fetcher.respondWith(feed.url, ok(fetchedFeed({})));

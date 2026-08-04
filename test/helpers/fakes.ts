@@ -1,6 +1,12 @@
 import type { PostContent } from "../../src/domain/content/content-policy.js";
-import type { CacheValidators, Feed } from "../../src/domain/feed/feed.js";
+import {
+  type CacheValidators,
+  Feed,
+  FeedTitle,
+} from "../../src/domain/feed/feed.js";
+import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import type { RawFeedItem } from "../../src/domain/feed/feed-item.js";
+import { Handle } from "../../src/domain/feed/handle.js";
 import type { Clock } from "../../src/domain/ports/clock.js";
 import type {
   FeedFetcher,
@@ -12,6 +18,44 @@ import type {
   FederationGateway,
 } from "../../src/domain/ports/federation-gateway.js";
 import { err, ok, type Result } from "../../src/shared/result.js";
+import { unwrap } from "./result.js";
+
+/**
+ * The instant every fixture is registered at. Tests that assert on scheduling
+ * (nextPollAt, backoff) must import this rather than declare their own, so the
+ * fixture and the clock cannot drift apart.
+ */
+export const T0 = new Date("2026-07-26T12:00:00.000Z");
+
+/**
+ * A registered feed with everything optional. Tests that assert on a field
+ * still pass it explicitly; the rest stop restating the constructor.
+ *
+ * Not used by `test/unit/domain/feed/feed.test.ts` on purpose — `Feed.register`
+ * is the subject there, so it must stay visible at the call site.
+ */
+export function makeFeed(
+  params: {
+    url?: string;
+    handle?: string;
+    title?: string | null;
+    description?: string | null;
+    now?: Date;
+  } = {},
+): Feed {
+  const url = unwrap(FeedUrl.create(params.url ?? "https://a.co/f"));
+  const rawTitle = params.title ?? null;
+  return Feed.register({
+    url,
+    handle:
+      params.handle === undefined
+        ? Handle.fromFeedUrl(url)
+        : unwrap(Handle.create(params.handle)),
+    title: rawTitle === null ? null : unwrap(FeedTitle.create(rawTitle)),
+    description: params.description ?? null,
+    now: params.now ?? T0,
+  });
+}
 
 export function fixedClock(date: Date): Clock {
   return { now: () => date };

@@ -1,33 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { createUnregisterFeed } from "../../../src/application/unregister-feed.js";
-import { Feed } from "../../../src/domain/feed/feed.js";
-import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
-import { Handle } from "../../../src/domain/feed/handle.js";
 import type { ItemKey } from "../../../src/domain/feed/feed-item.js";
 import type { FederationGateway } from "../../../src/domain/ports/federation-gateway.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
 import { createInMemoryItemRepository } from "../../../src/infrastructure/persistence/in-memory-item-repository.js";
 import { err } from "../../../src/shared/result.js";
-import { capturingFederation } from "../../helpers/fakes.js";
+import { capturingFederation, makeFeed, T0 } from "../../helpers/fakes.js";
 import { unwrap, unwrapErr } from "../../helpers/result.js";
-
-const now = new Date("2026-07-26T12:00:00Z");
 
 async function setup() {
   const feeds = createInMemoryFeedRepository();
   const items = createInMemoryItemRepository();
   const federation = capturingFederation();
-  const url = unwrap(FeedUrl.create("https://a.co/f"));
-  const feed = Feed.register({
-    url,
-    handle: Handle.fromFeedUrl(url),
-    title: null,
-    description: null,
-    now,
-  });
+  const feed = makeFeed();
   await feeds.save(feed);
   await items.markPublished(feed.id, [
-    { key: "guid:1" as ItemKey, publishedAt: now },
+    { key: "guid:1" as ItemKey, publishedAt: T0 },
   ]);
   const unregister = createUnregisterFeed({ feeds, items, federation });
   return { feeds, items, federation, feed, unregister };
