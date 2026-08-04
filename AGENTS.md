@@ -20,9 +20,15 @@ yarn test                          # everything
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
 
-After ANY yarn.lock change, `yarnOfflineCache.hash` in flake.nix must be
-refreshed (`nix run nixpkgs#yarn-berry-fetcher -- prefetch yarn.lock`), or
-`nix build` fails with a hash mismatch.
+After ANY yarn.lock change, both `nix/missing-hashes.json` and
+`yarnOfflineCache.hash` in flake.nix must be refreshed, or `nix build` fails:
+
+```sh
+nix run nixpkgs#yarn-berry_4-fetcher.yarn-berry-fetcher -- \
+  missing-hashes yarn.lock > nix/missing-hashes.json
+nix run nixpkgs#yarn-berry_4-fetcher.yarn-berry-fetcher -- \
+  prefetch yarn.lock nix/missing-hashes.json   # → new hash value
+```
 
 **Quality gate**: `yarn typecheck && yarn test` must pass before any task is
 considered done. The `/checks` skill runs this loop.

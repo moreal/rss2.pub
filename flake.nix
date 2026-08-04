@@ -44,17 +44,24 @@
               ];
             };
 
-            # First build: leave hash = "" and copy the "got: sha256-…" value
-            # from the error, or run:
-            #   nix run nixpkgs#yarn-berry-fetcher -- prefetch yarn.lock
-            # Every yarn.lock change requires refreshing this hash.
-            # If the fetcher complains about missing hashes, generate them with
-            #   nix run nixpkgs#yarn-berry-fetcher -- missing-hashes yarn.lock \
-            #     > nix/missing-hashes.json
-            # and pass `missingHashes = ./nix/missing-hashes.json;` here.
+            # Every yarn.lock change requires refreshing both files:
+            #   nix run nixpkgs#yarn-berry_4-fetcher.yarn-berry-fetcher -- \
+            #     missing-hashes yarn.lock > nix/missing-hashes.json
+            #   nix run nixpkgs#yarn-berry_4-fetcher.yarn-berry-fetcher -- \
+            #     prefetch yarn.lock nix/missing-hashes.json
+            # (missing-hashes covers platform-conditional packages — e.g.
+            # esbuild binaries — whose checksums yarn.lock omits.)
+            #
+            # Known gap: nixpkgs ships yarn-berry_4 4.14.1 while the repo pins
+            # 4.17.1 (packageManager). Yarn's builtin typescript compat patch
+            # differs between those versions (lockfile hash=3bafbf vs 5786d5),
+            # so the offline install inside the sandbox currently fails at the
+            # typescript patch step. Fix by bumping nixpkgs once yarn-berry_4
+            # reaches 4.17.x, or by overriding the yarn-berry scope.
+            missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
-              inherit (finalAttrs) src;
-              hash = "";
+              inherit (finalAttrs) src missingHashes;
+              hash = "sha256-b8oN4jUz2PntCeKZDVb4QHSCcYzQXACOhLmIcX9hiOI=";
             };
 
             nativeBuildInputs = [
