@@ -190,7 +190,7 @@ describe("signed federation round trip", () => {
     );
 
     const home = await fetch(base).then((r) => r.text());
-    expect(home).toContain("1 followers");
+    expect(home).toContain("1 follower");
   });
 
   it("delivers new items to the follower's inbox as signed Create activities", async () => {

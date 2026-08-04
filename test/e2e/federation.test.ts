@@ -217,6 +217,23 @@ describe("federation e2e", () => {
     expect((await fetch(`${base}/readyz`)).status).toBe(200);
   });
 
+  it("keeps the language cookie off non-page responses", async () => {
+    // Language detection is attached per HTML route precisely so that it does
+    // not reach BotKit's routes through the "/" mount (see routes.tsx).
+    for (const path of [
+      "/healthz",
+      "/readyz",
+      `/.well-known/webfinger?resource=acct:${feedHandle}@${host}`,
+      `/ap/actor/${feedHandle}`,
+    ]) {
+      const response = await fetch(`${base}${path}`);
+      expect(response.headers.get("set-cookie"), path).toBeNull();
+    }
+
+    const page = await fetch(`${base}/?lang=ko`);
+    expect(page.headers.get("set-cookie")).toContain("lang=ko");
+  });
+
   it("bridges Atom feeds the same way", async () => {
     fixtures.setFixture(
       "/atom.xml",

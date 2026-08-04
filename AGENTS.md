@@ -17,6 +17,8 @@ yarn typecheck                     # tsc --noEmit over src + test
 yarn test:unit                     # fast, no I/O
 yarn test:e2e                      # real server + containers (M3+)
 yarn test                          # everything
+yarn i18n:extract                  # update src/web/locales/*.po from source
+yarn i18n:compile                  # compile .po → checked-in .ts catalogs
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
 
@@ -102,6 +104,7 @@ adapter.
 | Handle normalization: `[a-z0-9_]`, hash suffix past 22 chars, max 30 | ADR-0004 |
 | Note ≤ 2,000 chars, Article beyond; teaser = first paragraph | ADR-0005 |
 | Single PostgreSQL for domain + Fedify KV/MQ + BotKit state | ADR-0006 |
+| Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
 
 ## Gotchas
 
@@ -125,3 +128,21 @@ adapter.
 - `@fedify/vocab` / `@fedify/fedify` must stay version-locked to BotKit's own
   dependency (~2.3.3): all copies must dedupe to ONE store entry or
   `instanceof` checks across the boundary break.
+- **Web UI strings are localized** (en/ko — ADR-0008). Never hardcode
+  user-facing copy in pages/routes: add a `/*i18n*/`-annotated descriptor to
+  `src/web/ui/messages.ts` (exported as `copy`, not `msg` — that name belongs
+  to the Lingui macro we don't use), then `yarn i18n:extract`, translate
+  `src/web/locales/ko.po`, `yarn i18n:compile`, and commit the `.po` **and**
+  generated `.ts` catalogs. The extractor runs without macros: it only sees
+  receivers literally named `i18n` and silently skips spread descriptors, so
+  keep definitions in messages.ts annotated. `src/web/locale.ts` is the single
+  locale list (shared with `lingui.config.ts`) — keep it catalog-free so the
+  config can import it before any catalog exists.
+- **The compiled catalog, not `messages.ts`, is what users read.** A descriptor's
+  `message` is only a fallback for an id missing from the catalog, so editing
+  copy without recompiling silently ships the old text. Three guards, each
+  covering a different mistake: the unit tests fail if a placeholder-free
+  English string drifts from its catalog entry, or if a Korean message is left
+  equal to English (`fallbackLocales` would otherwise hide it); CI re-runs
+  extract+compile and fails on any diff (both are idempotent, so a clean tree
+  stays clean).

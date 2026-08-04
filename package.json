@@ -15,9 +15,12 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:e2e": "vitest run --project e2e",
-    "test:watch": "vitest --project unit"
+    "test:watch": "vitest --project unit",
+    "i18n:extract": "lingui extract",
+    "i18n:compile": "lingui compile"
   },
   "devDependencies": {
+    "@lingui/cli": "^6.6.0",
     "@testcontainers/postgresql": "^12.0.4",
     "@types/node": "^24",
     "@types/sanitize-html": "^2.16.1",
@@ -33,6 +36,7 @@
     "@fedify/postgres": "^2.3.3",
     "@fedify/vocab": "~2.3.3",
     "@hono/node-server": "^2.0.11",
+    "@lingui/core": "^6.6.0",
     "@logtape/logtape": "^2.2.4",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/exporter-metrics-otlp-http": "^0.221.0",

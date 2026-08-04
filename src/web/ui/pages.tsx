@@ -1,6 +1,16 @@
+import type { I18n, MessageDescriptor } from "@lingui/core";
 import type { FC, PropsWithChildren } from "hono/jsx";
 import { Feed } from "../../domain/feed/feed.js";
 import type { PopularFeed } from "../../domain/ports/feed-repository.js";
+import { translate, translateWithSlots } from "../i18n.js";
+import {
+  LOCALE_LABELS,
+  type Locale,
+  neutralLocalePath,
+  SUPPORTED_LOCALES,
+  switchLocalePath,
+} from "../locale.js";
+import { copy } from "./messages.js";
 
 const RSS_ICON_PATH =
   "M6.18 15.64a2.18 2.18 0 1 1 0 4.36 2.18 2.18 0 0 1 0-4.36zM4 10.1v3.12c3.74 0 6.78 3.04 6.78 6.78h3.12c0-5.47-4.43-9.9-9.9-9.9zM4 4.44v3.12c6.86 0 12.44 5.58 12.44 12.44H19.56C19.56 11.4 12.6 4.44 4 4.44z";
@@ -66,6 +76,12 @@ const STYLE = `
     border-radius: 0.375rem; padding: 0.05rem 0.35rem;
     overflow-wrap: anywhere;
   }
+  nav.lang {
+    margin-top: 0.85rem; display: flex; gap: 0.9rem;
+    font-size: 0.875rem;
+  }
+  nav.lang a { color: var(--muted); }
+  nav.lang [aria-current] { color: var(--text); font-weight: 500; }
   h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.65rem; }
   main > section + section { margin-top: 2.25rem; }
   form.row { display: flex; gap: 0.5rem; }
@@ -129,18 +145,82 @@ const STYLE = `
   }
 `;
 
-export const Layout: FC<PropsWithChildren<{ host: string; title?: string }>> = (
-  props,
-) => (
-  <html lang="en">
+/** Everything a page needs that isn't its own data. Passed as one `ctx` prop. */
+export type PageContext = {
+  /** Origin of this deployment, e.g. `https://rss2.pub` — for absolute links. */
+  readonly origin: string;
+  /** Host part of the origin (may include a port) — renders as @handle@host. */
+  readonly host: string;
+  readonly i18n: I18n;
+  readonly locale: Locale;
+  /**
+   * GET-addressable path the locale links point at. Deliberately NOT "where
+   * the user is": on a POST result page it is `/`, because the current URL
+   * cannot be re-entered with a different language. Don't reuse it for
+   * og:url or active-nav highlighting.
+   */
+  readonly switcherPath: string;
+};
+
+const SITE_NAME = "rss2.pub";
+
+const localeUrl = (ctx: PageContext, locale: Locale): string =>
+  `${ctx.origin}${switchLocalePath(ctx.switcherPath, locale)}`;
+
+const LocaleNav: FC<{ ctx: PageContext }> = (props) => (
+  <nav
+    class="lang"
+    aria-label={translate(props.ctx.i18n, copy.layoutLanguageLabel)}
+  >
+    {SUPPORTED_LOCALES.map((locale) =>
+      locale === props.ctx.locale ? (
+        <span aria-current="true" lang={locale}>
+          {LOCALE_LABELS[locale]}
+        </span>
+      ) : (
+        <a
+          href={switchLocalePath(props.ctx.switcherPath, locale)}
+          lang={locale}
+          hreflang={locale}
+        >
+          {LOCALE_LABELS[locale]}
+        </a>
+      ),
+    )}
+  </nav>
+);
+
+const Layout: FC<
+  PropsWithChildren<{ ctx: PageContext; title?: MessageDescriptor }>
+> = (props) => (
+  <html lang={props.ctx.locale}>
     <head>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta
         name="description"
-        content="Follow RSS and Atom feeds from the fediverse."
+        content={translate(props.ctx.i18n, copy.layoutMetaDescription)}
       />
-      <title>{props.title ?? "rss2.pub"}</title>
+      <title>
+        {props.title === undefined
+          ? SITE_NAME
+          : `${translate(props.ctx.i18n, props.title)} · ${SITE_NAME}`}
+      </title>
+      {/* Crawlers ignore hreflang on ordinary links, so the translations are
+          only discoverable through these. x-default is the negotiating URL. */}
+      <link rel="canonical" href={localeUrl(props.ctx, props.ctx.locale)} />
+      {SUPPORTED_LOCALES.map((locale) => (
+        <link
+          rel="alternate"
+          hreflang={locale}
+          href={localeUrl(props.ctx, locale)}
+        />
+      ))}
+      <link
+        rel="alternate"
+        hreflang="x-default"
+        href={`${props.ctx.origin}${neutralLocalePath(props.ctx.switcherPath)}`}
+      />
       <link rel="icon" href={FAVICON} />
       <style>{STYLE}</style>
     </head>
@@ -151,42 +231,44 @@ export const Layout: FC<PropsWithChildren<{ host: string; title?: string }>> = (
             <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="currentColor" d={RSS_ICON_PATH} />
             </svg>
-            rss2.pub
+            {SITE_NAME}
           </a>
         </h1>
         <p>
-          Follow RSS/Atom feeds from the fediverse. Mention{" "}
-          <span class="chip">@rss2pub@{props.host}</span> with{" "}
-          <code class="chip">register &lt;url&gt;</code> or use the form below.
+          {translateWithSlots(props.ctx.i18n, copy.layoutTagline, {
+            handle: <span class="chip">@rss2pub@{props.ctx.host}</span>,
+            command: <code class="chip">register &lt;url&gt;</code>,
+          })}
         </p>
+        <LocaleNav ctx={props.ctx} />
       </header>
       <main>{props.children}</main>
     </body>
   </html>
 );
 
-const SearchForm: FC<{ query?: string }> = (props) => (
+const SearchForm: FC<{ ctx: PageContext; query?: string }> = (props) => (
   <form class="row" method="get" action="/search">
     <label class="sr-only" for="search-q">
-      Search registered feeds
+      {translate(props.ctx.i18n, copy.searchLabel)}
     </label>
     <input
       id="search-q"
       type="search"
       name="q"
-      placeholder="Search registered feeds…"
+      placeholder={translate(props.ctx.i18n, copy.searchPlaceholder)}
       value={props.query ?? ""}
       spellcheck={false}
       autocomplete="off"
     />
-    <button type="submit">Search</button>
+    <button type="submit">{translate(props.ctx.i18n, copy.searchButton)}</button>
   </form>
 );
 
-const RegisterForm: FC = () => (
+const RegisterForm: FC<{ ctx: PageContext }> = (props) => (
   <form class="row" method="post" action="/register">
     <label class="sr-only" for="register-url">
-      Feed URL
+      {translate(props.ctx.i18n, copy.registerUrlLabel)}
     </label>
     <input
       id="register-url"
@@ -198,20 +280,28 @@ const RegisterForm: FC = () => (
       autocomplete="off"
       autocapitalize="off"
     />
-    <button type="submit">Register feed</button>
+    <button type="submit">
+      {translate(props.ctx.i18n, copy.registerButton)}
+    </button>
   </form>
 );
 
-const FeedLine: FC<{ feed: Feed; host: string; followers?: number }> = (
-  props,
-) => (
+const FeedLine: FC<{
+  ctx: PageContext;
+  feed: Feed;
+  followers?: number;
+}> = (props) => (
   <li>
     <div class="feed-top">
       <span class="handle">
-        @{props.feed.handle}@{props.host}
+        @{props.feed.handle}@{props.ctx.host}
       </span>
       {props.followers !== undefined && (
-        <span class="badge">{props.followers} followers</span>
+        <span class="badge">
+          {translate(props.ctx.i18n, copy.feedFollowers, {
+            count: props.followers,
+          })}
+        </span>
       )}
     </div>
     <div class="feed-title">{Feed.displayName(props.feed)}</div>
@@ -222,28 +312,28 @@ const FeedLine: FC<{ feed: Feed; host: string; followers?: number }> = (
   </li>
 );
 
-export const HomePage: FC<{ host: string; popular: PopularFeed[] }> = (
+export const HomePage: FC<{ ctx: PageContext; popular: PopularFeed[] }> = (
   props,
 ) => (
-  <Layout host={props.host}>
+  <Layout ctx={props.ctx}>
     <section>
-      <h2>Register a feed</h2>
-      <RegisterForm />
+      <h2>{translate(props.ctx.i18n, copy.registerHeading)}</h2>
+      <RegisterForm ctx={props.ctx} />
     </section>
     <section>
-      <h2>Search</h2>
-      <SearchForm />
+      <h2>{translate(props.ctx.i18n, copy.searchHeading)}</h2>
+      <SearchForm ctx={props.ctx} />
     </section>
     <section>
-      <h2>Most followed feeds</h2>
+      <h2>{translate(props.ctx.i18n, copy.homePopularHeading)}</h2>
       {props.popular.length === 0 ? (
-        <p class="empty">No feeds yet — register the first one!</p>
+        <p class="empty">{translate(props.ctx.i18n, copy.homePopularEmpty)}</p>
       ) : (
         <ul class="feeds">
           {props.popular.map((entry) => (
             <FeedLine
+              ctx={props.ctx}
               feed={entry.feed}
-              host={props.host}
               followers={entry.followerCount}
             />
           ))}
@@ -254,24 +344,24 @@ export const HomePage: FC<{ host: string; popular: PopularFeed[] }> = (
 );
 
 export const SearchPage: FC<{
-  host: string;
+  ctx: PageContext;
   query: string;
   results: Feed[];
 }> = (props) => (
-  <Layout host={props.host} title="Search · rss2.pub">
+  <Layout ctx={props.ctx} title={copy.searchHeading}>
     <section>
-      <h2>Search</h2>
-      <SearchForm query={props.query} />
+      <h2>{translate(props.ctx.i18n, copy.searchHeading)}</h2>
+      <SearchForm ctx={props.ctx} query={props.query} />
     </section>
     <section>
       {props.results.length === 0 ? (
         <p class="notice">
-          No feeds matched “{props.query}”. Register one above or via the bot.
+          {translate(props.ctx.i18n, copy.searchEmpty, { query: props.query })}
         </p>
       ) : (
         <ul class="feeds">
           {props.results.map((feed) => (
-            <FeedLine feed={feed} host={props.host} />
+            <FeedLine ctx={props.ctx} feed={feed} />
           ))}
         </ul>
       )}
@@ -280,35 +370,41 @@ export const SearchPage: FC<{
 );
 
 export const RegisterResultPage: FC<{
-  host: string;
+  ctx: PageContext;
   outcome:
     | { kind: "created" | "exists"; feed: Feed }
     | { kind: "error"; message: string };
 }> = (props) => (
-  <Layout host={props.host} title="Feed registration · rss2.pub">
+  <Layout ctx={props.ctx} title={copy.registerResultHeading}>
     <section>
-      <h2>Feed registration</h2>
+      <h2>{translate(props.ctx.i18n, copy.registerResultHeading)}</h2>
       {props.outcome.kind === "error" ? (
         <p class="notice error">{props.outcome.message}</p>
       ) : (
         <>
           <p class="notice">
-            {props.outcome.kind === "created"
-              ? "Registered! Follow "
-              : "Already registered — follow "}
-            <span class="chip">
-              @{props.outcome.feed.handle}@{props.host}
-            </span>{" "}
-            from your fediverse account to get new posts.
+            {translateWithSlots(
+              props.ctx.i18n,
+              props.outcome.kind === "created"
+                ? copy.registerResultCreated
+                : copy.registerResultExists,
+              {
+                handle: (
+                  <span class="chip">
+                    @{props.outcome.feed.handle}@{props.ctx.host}
+                  </span>
+                ),
+              },
+            )}
           </p>
           <ul class="feeds">
-            <FeedLine feed={props.outcome.feed} host={props.host} />
+            <FeedLine ctx={props.ctx} feed={props.outcome.feed} />
           </ul>
         </>
       )}
     </section>
     <p>
-      <a href="/">← Back to home</a>
+      <a href="/">{translate(props.ctx.i18n, copy.registerBackHome)}</a>
     </p>
   </Layout>
 );

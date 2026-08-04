@@ -26,6 +26,15 @@ jobs:
       - name: Typecheck
         run: nix develop --command yarn typecheck
 
+      # The unit tests catch a stale *compiled* catalog, but only re-running
+      # extraction proves the .po files still match the descriptor table.
+      - name: Message catalogs are up to date
+        run: |
+          nix develop --command yarn i18n:extract
+          nix develop --command yarn i18n:compile
+          git diff --exit-code -- src/web/locales \
+            || { echo "::error::Run 'yarn i18n:extract && yarn i18n:compile' and commit src/web/locales."; exit 1; }
+
       - name: Unit tests
         run: nix develop --command yarn test:unit
 

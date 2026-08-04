@@ -126,6 +126,7 @@ export async function createApp(config: AppConfig): Promise<App> {
   const unregisterFeed = createUnregisterFeed({ feeds, items, federation });
 
   const web = createWebRoutes({
+    origin: config.origin,
     host: config.host,
     registerFeed,
     searchFeeds,
