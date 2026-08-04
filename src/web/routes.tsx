@@ -15,13 +15,9 @@ import {
   SUPPORTED_LOCALES,
   resolveLocale,
 } from "./locale.js";
+import type { PageContext } from "./ui/layout.js";
 import { registerErrorMessage } from "./ui/register-error.js";
-import {
-  HomePage,
-  type PageContext,
-  RegisterResultPage,
-  SearchPage,
-} from "./ui/pages.js";
+import { HomePage, RegisterResultPage, SearchPage } from "./ui/pages.js";
 
 export type WebDeps = {
   /** Public origin, e.g. `https://rss2.pub` — absolute links are built on it. */
