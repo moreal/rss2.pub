@@ -15,6 +15,14 @@ hono/jsx 서버 렌더링이다.
 
 **매크로 없이 `@lingui/core` 런타임만 사용한다** (Lingui 6.x).
 
+0. **ICU 인자 강제**: `messages.ts`는 `as const satisfies`로 닫아 메시지
+   텍스트의 리터럴 타입을 보존한다. `translate()`는 그 텍스트에 `{`가
+   있는지를 조건부 타입으로 보고 `values` 인자를 필수/선택으로 가른다 —
+   `translate(i18n, copy.feedFollowers)`처럼 개수를 빠뜨리면 ICU가 조용히
+   `NaN`을 렌더하던 것이 이제 컴파일 에러다. `as const`가 빠지면 가드가
+   조용히 꺼지므로 단위 테스트가 리터럴 보존을 컴파일 타임에 단언한다.
+   (플레이스홀더 *이름*까지 타입으로 검사하는 것은 ICU 복수형 문법 파싱이
+   필요해 과하다고 보고 렌더링 테스트로 덮는다.)
 1. **메시지 정의**: 모든 UI 문자열은 `src/web/ui/messages.ts` 한 파일에
    explicit ID를 가진 디스크립터(`{ id, message }`)로 모은다. 각 디스크립터에
    `/*i18n*/` 주석을 달면 `lingui extract`가 매크로 없이도 추출한다

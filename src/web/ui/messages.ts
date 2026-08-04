@@ -114,4 +114,8 @@ export const copy = {
     id: "register.back-home",
     message: "← Back to home",
   },
-} satisfies Record<string, MessageDescriptor>;
+  // `as const` is load-bearing, not decoration: `translate()` reads each
+  // message's literal text to decide whether ICU values are mandatory, and
+  // plain `satisfies` would widen it to `string` and silently disable that
+  // check. A unit test asserts the literals survive.
+} as const satisfies Record<string, MessageDescriptor>;

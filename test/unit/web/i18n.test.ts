@@ -5,6 +5,18 @@ import { copy } from "../../../src/web/ui/messages.js";
 
 const DESCRIPTORS = Object.values(copy);
 
+/**
+ * Compile-time guard. `translate()` decides whether ICU values are mandatory
+ * by reading each message's literal text, so dropping `as const` in
+ * messages.ts would turn that check off without failing anything at runtime.
+ * If the literals widen to `string`, the annotation below becomes `never` and
+ * this file stops compiling.
+ */
+export const MESSAGE_LITERALS_SURVIVE: string extends
+  typeof copy.feedFollowers.message
+  ? never
+  : true = true;
+
 describe("translate", () => {
   it.each([
     { locale: "en", expected: "Register a feed" },

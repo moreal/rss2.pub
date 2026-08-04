@@ -15,12 +15,28 @@ export function i18nFor(locale: Locale): I18n {
   return INSTANCES[locale];
 }
 
-export function translate(
+/** A message carries ICU placeholders iff its text contains a `{`. */
+type HasPlaceholders<M> = M extends `${string}{${string}` ? true : false;
+
+/**
+ * Values are required exactly when the message has placeholders. Without
+ * this, `translate(i18n, copy.feedFollowers)` compiles and renders
+ * "NaN followers" — ICU substitutes `undefined` silently.
+ *
+ * A descriptor whose text is not statically known (a `MessageDescriptor`
+ * passed through a prop, say) falls back to optional rather than failing.
+ */
+type ValuesArg<D extends MessageDescriptor> =
+  HasPlaceholders<D["message"]> extends true
+    ? [values: Record<string, unknown>]
+    : [values?: Record<string, unknown>];
+
+export function translate<D extends MessageDescriptor>(
   i18n: I18n,
-  message: MessageDescriptor,
-  values: Record<string, unknown> = {},
+  message: D,
+  ...values: ValuesArg<D>
 ): string {
-  return i18n._({ ...message, values });
+  return i18n._({ ...message, values: values[0] ?? {} });
 }
 
 // NUL never occurs in real copy, so splitting on it is unambiguous.
