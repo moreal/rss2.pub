@@ -69,7 +69,8 @@ raw Fedify로 회귀한다 — 헥사고날 포트 뒤에 숨겨 회귀 비용�
 
 ### 3. Nix 도입 전략 (단계적)
 
-Nix는 적용 가능하며, **1단계(devShell)만 우선 도입**한다. Nix 초심자에게도 쉽고 가치가 크다.
+Nix는 devShell부터 도입했고, M5에서 앱 패키징까지 확장했다. 컨테이너 이미지는 아직 일반
+Dockerfile로 빌드한다.
 
 - `flake.nix` devShell: `nodejs_24` + `yarn-berry` + `postgresql_17`
   (nixpkgs의 `yarn` attr은 classic이므로 Berry는 `yarn-berry` 사용).
@@ -78,9 +79,10 @@ Nix는 적용 가능하며, **1단계(devShell)만 우선 도입**한다. Nix �
   corepack이 `packageManager` 필드(yarn@4.x)를 읽어 동일한 yarn 버전을 제공.
 - CI(GitHub Actions)도 `nix develop --command yarn ...`으로 로컬과 동일 툴체인 보장.
 - **주의**: `mkYarnPackage`/`yarn2nix`/`node2nix`는 nixpkgs 26.05에서 **제거됨** —
-  2025년 이전 튜토리얼은 전부 낡았다. 앱 자체를 Nix로 패키징하려면 Berry용
-  `yarn-berry_4.fetchYarnBerryDeps` + `yarnBerryConfigHook`이 현재 경로지만, lockfile
-  변경마다 해시 갱신이 필요해 초기에는 하지 않는다(M5 이후 선택).
+  2025년 이전 튜토리얼은 전부 낡았다. 앱 패키징은 Berry용 `fetchYarnBerryDeps` +
+  `yarnBerryConfigHook`을 사용하며, lockfile 변경마다 오프라인 캐시 해시를 갱신한다.
+  nixpkgs의 Yarn이 `packageManager` 버전보다 늦으면 해당 Yarn 소스만 고정 오버라이드해
+  devShell과 패키징이 같은 CLI와 config hook을 쓰도록 한다(ADR-0003).
 - Docker는 일반 Dockerfile로 시작. `dockerTools`는 macOS에서 Linux 빌더가 필요해
   초심자 비용이 큼 — 필요해지면 Linux CI에서만.
 

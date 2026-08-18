@@ -9,13 +9,30 @@
       systems = [ "aarch64-darwin" "x86_64-darwin" "x86_64-linux" "aarch64-linux" ];
       forAllSystems = f: lib.genAttrs systems
         (system: f nixpkgs.legacyPackages.${system});
+      packageJson = builtins.fromJSON (builtins.readFile ./package.json);
+      yarnVersion = lib.removePrefix "yarn@" packageJson.packageManager;
+      # nixpkgs may lag behind the Yarn release pinned by packageManager. Keep
+      # the CLI, offline fetcher, and config hook on that exact version. After
+      # changing packageManager, refresh this source hash with:
+      #   nix shell nixpkgs#nix-prefetch-github --command \
+      #     nix-prefetch-github yarnpkg berry --rev '@yarnpkg/cli/<version>'
+      yarnFor = pkgs:
+        pkgs.yarn-berry_4.overrideAttrs (finalAttrs: _previousAttrs: {
+          version = yarnVersion;
+          src = pkgs.fetchFromGitHub {
+            owner = "yarnpkg";
+            repo = "berry";
+            tag = "@yarnpkg/cli/${finalAttrs.version}";
+            hash = "sha256-S15z3OXurZATj+eQxHo7zziV5NdcLfjFDBhCemhqOG8=";
+          };
+        });
     in
     {
       devShells = forAllSystems (pkgs: {
         default = pkgs.mkShell {
           packages = [
             pkgs.nodejs_24
-            pkgs.yarn-berry
+            (yarnFor pkgs)
             pkgs.postgresql_17
           ];
         };
@@ -23,7 +40,7 @@
 
       packages = forAllSystems (pkgs:
         let
-          yarn = pkgs.yarn-berry_4;
+          yarn = yarnFor pkgs;
         in
         {
           default = pkgs.stdenv.mkDerivation (finalAttrs: {
@@ -52,12 +69,6 @@
             # (missing-hashes covers platform-conditional packages — e.g.
             # esbuild binaries — whose checksums yarn.lock omits.)
             #
-            # Known gap: nixpkgs ships yarn-berry_4 4.14.1 while the repo pins
-            # 4.17.1 (packageManager). Yarn's builtin typescript compat patch
-            # differs between those versions (lockfile hash=3bafbf vs 5786d5),
-            # so the offline install inside the sandbox currently fails at the
-            # typescript patch step. Fix by bumping nixpkgs once yarn-berry_4
-            # reaches 4.17.x, or by overriding the yarn-berry scope.
             missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
               inherit (finalAttrs) src missingHashes;
