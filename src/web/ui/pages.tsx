@@ -161,7 +161,7 @@ export const RegisterResultPage: FC<{
         </>
       )}
     </section>
-    <p>
+    <p class="back-link">
       <a href="/">{translate(props.ctx.i18n, copy.registerBackHome)}</a>
     </p>
   </Layout>

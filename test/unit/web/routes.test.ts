@@ -176,6 +176,13 @@ describe("localized page chrome", () => {
       '<meta name="description" content="페디버스에서 RSS/Atom 피드를 팔로우하세요."/>',
     );
   });
+
+  it("ships usable motion selectors and a reduced-motion alternative", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    expect(html).toContain("main section, .back-link");
+    expect(html).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(html).not.toContain("main &gt; section");
+  });
 });
 
 describe("localized content", () => {
