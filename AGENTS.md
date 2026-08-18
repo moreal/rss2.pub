@@ -19,6 +19,8 @@ yarn test:e2e                      # real server + containers (M3+)
 yarn test                          # everything
 yarn i18n:extract                  # update src/web/locales/*.po from source
 yarn i18n:compile                  # compile .po → checked-in .ts catalogs
+yarn db:reset                      # wipe the local dev database (asks first;
+                                   #   `mise run db:reset` is the same script)
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
 

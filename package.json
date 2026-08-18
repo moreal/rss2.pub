@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
+    "db:reset": "./scripts/db-reset.sh",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",

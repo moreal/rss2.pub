@@ -1,2 +1,9 @@
 [tools]
 node = "24"
+
+# A thin alias. The script owns the confirmation prompt so that `yarn db:reset`
+# — the entry point for nix devShell users, who have no mise — is guarded too;
+# mise's own `confirm =` would only cover this one caller.
+[tasks."db:reset"]
+description = "Destroy the local database and start an empty one"
+run = "./scripts/db-reset.sh"
