@@ -1,0 +1,14 @@
+.git
+.github
+.direnv
+.env
+.env.*
+node_modules
+dist
+coverage
+result
+*.log
+
+.yarn/*
+!.yarn/patches
+!.yarn/patches/**

@@ -24,6 +24,24 @@ nix build .#
 ./result/bin/rss2pub
 ```
 
+## 컨테이너 배포
+
+이미지는 애플리케이션만 포함하며 PostgreSQL은 별도로 필요합니다. 컨테이너 시작 시
+Drizzle 마이그레이션이 자동 적용됩니다.
+
+```sh
+docker build -f Containerfile -t rss2pub:local .
+docker run --rm -p 8000:8000 \
+  -e ORIGIN=https://rss.example \
+  -e DATABASE_URL=postgres://user:password@postgres:5432/rss2pub \
+  -e BEHIND_PROXY=true \
+  rss2pub:local
+```
+
+`ORIGIN`은 페디버스에서 접근 가능한 공개 URL이어야 합니다. 리버스 프록시 뒤에서
+운영할 때만 `BEHIND_PROXY=true`를 설정합니다. 플랫폼의 liveness probe에는
+`/healthz`, readiness probe에는 `/readyz`를 사용합니다.
+
 ## 문서
 
 - [프로젝트 계획](docs/PLAN.md) — 아키텍처, 기술 선택, 조사 결과, 마일스톤

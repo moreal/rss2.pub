@@ -69,8 +69,8 @@ raw Fedify로 회귀한다 — 헥사고날 포트 뒤에 숨겨 회귀 비용�
 
 ### 3. Nix 도입 전략 (단계적)
 
-Nix는 devShell부터 도입했고, M5에서 앱 패키징까지 확장했다. 컨테이너 이미지는 아직 일반
-Dockerfile로 빌드한다.
+Nix는 devShell부터 도입했고, M5에서 앱 패키징까지 확장했다. 컨테이너 이미지는
+Containerfile로 빌드한다.
 
 - `flake.nix` devShell: `nodejs_24` + `yarn-berry` + `postgresql_17`
   (nixpkgs의 `yarn` attr은 classic이므로 Berry는 `yarn-berry` 사용).
@@ -83,7 +83,7 @@ Dockerfile로 빌드한다.
   `yarnBerryConfigHook`을 사용하며, lockfile 변경마다 오프라인 캐시 해시를 갱신한다.
   nixpkgs의 Yarn이 `packageManager` 버전보다 늦으면 해당 Yarn 소스만 고정 오버라이드해
   devShell과 패키징이 같은 CLI와 config hook을 쓰도록 한다(ADR-0003).
-- Docker는 일반 Dockerfile로 시작. `dockerTools`는 macOS에서 Linux 빌더가 필요해
+- 컨테이너는 일반 Containerfile로 빌드한다. `dockerTools`는 macOS에서 Linux 빌더가 필요해
   초심자 비용이 큼 — 필요해지면 Linux CI에서만.
 
 ### 4. 핸들 정책 (조사 기반 확정안)
@@ -262,7 +262,7 @@ src/
   poll 스팬/메트릭), /healthz·/readyz, RSS+Atom E2E.
 - ✅ **M5 — 운영 준비**: 조건부 GET(ETag/Last-Modified)·백오프, **서명 포함 E2E**
   (raw Fedify 원격 액터와 Follow→Accept→Create 배달→Delete 전파 왕복,
-  `remote-federation.test.ts`), Dockerfile + docker-compose, 피드 삭제(Delete 전파),
+  `remote-federation.test.ts`), Containerfile + docker-compose, 피드 삭제(Delete 전파),
   Nix 패키징(`packages.default` — `fetchYarnBerryDeps` + `yarnBerryConfigHook`,
   ADR-0003 개정. 최초 1회 `yarnOfflineCache.hash` TOFU 채우기 필요).
 
