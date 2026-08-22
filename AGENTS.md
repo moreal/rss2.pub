@@ -103,7 +103,7 @@ adapter.
 | BotKit over raw Fedify (multi-actor via dynamic bot group) | ADR-0001 |
 | Hand-rolled `Result`, no Effect-TS (revisit at Effect v4 LTS) | ADR-0002 |
 | Nix devShell only; no app packaging with Nix yet | ADR-0003 |
-| Handle normalization: `[a-z0-9_]`, hash suffix past 22 chars, max 30 | ADR-0004 |
+| Handle normalization: `[a-z0-9_]`, mandatory hash suffix, max 30 | ADR-0004 |
 | Note ≤ 2,000 chars, Article beyond; teaser = first paragraph | ADR-0005 |
 | Single PostgreSQL for domain + Fedify KV/MQ + BotKit state | ADR-0006 |
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |

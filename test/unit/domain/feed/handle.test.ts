@@ -8,18 +8,20 @@ function feedUrl(raw: string) {
 }
 
 describe("Handle.fromFeedUrl", () => {
-  it("normalizes host and path into a lowercase [a-z0-9_] stem", () => {
-    expect(Handle.fromFeedUrl(feedUrl("https://a.co/f"))).toBe("a_co_f");
-    expect(Handle.fromFeedUrl(feedUrl("https://Blog.Example.com/rss"))).toBe(
-      "blog_example_com_rss",
+  it("normalizes host and path into a lowercase [a-z0-9_] stem, always hash-suffixed", () => {
+    expect(Handle.fromFeedUrl(feedUrl("https://a.co/f"))).toMatch(
+      /^a_co_f_[a-z0-9]{7}$/,
     );
+    expect(
+      Handle.fromFeedUrl(feedUrl("https://Blog.Example.com/rss")),
+    ).toMatch(/^blog_example_com_rss_[a-z0-9]{7}$/);
   });
 
-  it("keeps stems of exactly 22 chars without a hash suffix", () => {
+  it("hash-suffixes stems of exactly 22 chars too", () => {
     // host+path normalizes to exactly 22 chars: "abcdef_example_com_rss"
     const handle = Handle.fromFeedUrl(feedUrl("https://abcdef.example.com/rss"));
-    expect(handle).toBe("abcdef_example_com_rss");
-    expect(handle).toHaveLength(22);
+    expect(handle).toMatch(/^abcdef_example_com_rss_[a-z0-9]{7}$/);
+    expect(handle).toHaveLength(30);
   });
 
   it("truncates past 22 chars and appends a 7-char base36 hash", () => {
@@ -38,8 +40,8 @@ describe("Handle.fromFeedUrl", () => {
   it("distinguishes feeds that differ only in query", () => {
     const one = Handle.fromFeedUrl(feedUrl("https://a.co/f?id=1"));
     const two = Handle.fromFeedUrl(feedUrl("https://a.co/f?id=2"));
-    expect(one).toBe("a_co_f_id_1");
-    expect(two).toBe("a_co_f_id_2");
+    expect(one).toMatch(/^a_co_f_id_1_[a-z0-9]{7}$/);
+    expect(two).toMatch(/^a_co_f_id_2_[a-z0-9]{7}$/);
     expect(one).not.toBe(two);
   });
 
@@ -51,21 +53,19 @@ describe("Handle.fromFeedUrl", () => {
     );
     expect(handle).toMatch(/^[a-z0-9_]{1,30}$/);
   });
-});
 
-describe("Handle.disambiguated", () => {
-  it("resolves normalization collisions deterministically", () => {
-    // Normalization is lossy: both stems are "a_b_com_rss".
+  it("never lets two different URLs collide on the same handle, even when their stems match", () => {
+    // Normalization is lossy: both stems are "a_b_com_rss", but each URL's
+    // own hash keeps the derived handles apart (ADR-0004).
     const dashed = feedUrl("https://a-b.com/rss");
     const dotted = feedUrl("https://a.b.com/rss");
-    expect(Handle.fromFeedUrl(dashed)).toBe(Handle.fromFeedUrl(dotted));
 
-    const one = Handle.disambiguated(dashed);
-    const two = Handle.disambiguated(dotted);
+    const one = Handle.fromFeedUrl(dashed);
+    const two = Handle.fromFeedUrl(dotted);
     expect(one).toMatch(/^a_b_com_rss_[a-z0-9]{7}$/);
     expect(two).toMatch(/^a_b_com_rss_[a-z0-9]{7}$/);
     expect(one).not.toBe(two);
-    expect(Handle.disambiguated(dashed)).toBe(one);
+    expect(Handle.fromFeedUrl(dashed)).toBe(one);
   });
 });
 
