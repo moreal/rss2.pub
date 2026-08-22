@@ -41,8 +41,9 @@ function titleFrom(raw: string | null): FeedTitle | null {
 /**
  * Registers a feed as a new actor. The URL is canonicalized, fetched once to
  * prove it is a working RSS/Atom document (and to seed title/description),
- * and the handle is disambiguated if another feed already normalized to it.
- * Item backlog is left to the first poll — one publishing code path.
+ * and the handle is derived deterministically from the canonical URL
+ * (ADR-0004 — always hash-suffixed, so different URLs never collide). Item
+ * backlog is left to the first poll — one publishing code path.
  */
 export function createRegisterFeed(deps: {
   readonly feeds: FeedRepository;
@@ -71,10 +72,7 @@ export function createRegisterFeed(deps: {
           ? fetched.value.feed
           : { title: null, description: null };
 
-      let handle = Handle.fromFeedUrl(url);
-      if ((await deps.feeds.findByHandle(handle)) !== null) {
-        handle = Handle.disambiguated(url);
-      }
+      const handle = Handle.fromFeedUrl(url);
 
       const feed = Feed.register({
         url,

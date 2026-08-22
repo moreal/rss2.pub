@@ -6,9 +6,9 @@ import type { FeedUrl } from "./feed-url.js";
 /**
  * Fediverse username of a feed actor (ADR-0004). Charset `[a-z0-9_]`, max 30
  * chars — the portable intersection across Mastodon/Misskey/Pleroma/Lemmy.
- * Derived deterministically from the canonical feed URL: when the normalized
- * stem exceeds 22 chars (or is degenerate), it is truncated and suffixed with
- * 7 base36 chars of the URL's SHA-256, keeping the total within 22 + 1 + 7 = 30.
+ * Derived deterministically from the canonical feed URL: the normalized stem
+ * is truncated to 22 chars and always suffixed with `_` + 7 base36 chars of
+ * the URL's SHA-256, keeping the total within 22 + 1 + 7 = 30.
  */
 export type Handle = Brand<string, "Handle">;
 
@@ -41,22 +41,13 @@ function stemOf(url: FeedUrl): string {
 }
 
 export const Handle = {
-  /** Primary deterministic handle for a feed URL. */
-  fromFeedUrl(url: FeedUrl): Handle {
-    const stem = stemOf(url);
-    if (stem.length === 0 || stem.length > STEM_MAX) {
-      return Handle.disambiguated(url);
-    }
-    return stem as Handle;
-  },
-
   /**
-   * Hash-suffixed form. Used when the stem overflows or is empty, and as the
-   * fallback when the primary handle is already taken by a different URL —
-   * normalization is lossy (`a-b.com` and `a.b.com` share a stem), so
-   * registration must be able to disambiguate deterministically.
+   * Deterministic handle for a feed URL: the normalized stem, truncated to
+   * 22 chars, always suffixed with a 7-char hash of the URL — normalization
+   * is lossy (`a-b.com` and `a.b.com` share a stem), so the hash keeps
+   * different URLs from ever landing on the same handle.
    */
-  disambiguated(url: FeedUrl): Handle {
+  fromFeedUrl(url: FeedUrl): Handle {
     const cut = stemOf(url).slice(0, STEM_MAX).replace(/_+$/, "");
     const prefix = cut.length === 0 ? "feed" : cut;
     return `${prefix}_${hashSuffix(url)}` as Handle;

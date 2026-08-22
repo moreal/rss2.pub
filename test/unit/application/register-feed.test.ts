@@ -54,7 +54,7 @@ describe("RegisterFeed", () => {
     );
     const { feed, created } = unwrap(await registerFeed.execute("https://a.co/f"));
     expect(created).toBe(true);
-    expect(feed.handle).toBe("a_co_f");
+    expect(feed.handle).toMatch(/^a_co_f_[a-z0-9]{7}$/);
     expect(feed.title).toBe("My Blog");
     expect(feed.description).toBe("about things");
     expect(feed.registeredAt).toEqual(now);
@@ -80,7 +80,7 @@ describe("RegisterFeed", () => {
     expect(second.created).toBe(false);
   });
 
-  it("disambiguates the handle when another feed normalized to it", async () => {
+  it("never collides the handle for feeds that normalize to the same stem", async () => {
     const { registerFeed, fetcher } = setup();
     fetcher.respondWith("https://a-b.com/rss", ok(fetchedFeed({})));
     fetcher.respondWith("https://a.b.com/rss", ok(fetchedFeed({})));
@@ -88,8 +88,9 @@ describe("RegisterFeed", () => {
     const dashed = unwrap(await registerFeed.execute("https://a-b.com/rss"));
     const dotted = unwrap(await registerFeed.execute("https://a.b.com/rss"));
 
-    expect(dashed.feed.handle).toBe("a_b_com_rss");
+    expect(dashed.feed.handle).toMatch(/^a_b_com_rss_[a-z0-9]{7}$/);
     expect(dotted.feed.handle).toMatch(/^a_b_com_rss_[a-z0-9]{7}$/);
+    expect(dotted.feed.handle).not.toBe(dashed.feed.handle);
     expect(dotted.created).toBe(true);
   });
 

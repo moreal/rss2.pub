@@ -68,7 +68,7 @@ describe("CommandHandler", () => {
     );
     const reply = await handler.handle("@rss2pub register https://a.co/f");
     expect(reply).toContain("Registered My Blog!");
-    expect(reply).toContain("@a_co_f@rss2.test");
+    expect(reply).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
   });
 
   it("tells the user when the feed already exists", async () => {
@@ -77,7 +77,7 @@ describe("CommandHandler", () => {
     await handler.handle("register https://a.co/f");
     const reply = await handler.handle("register https://a.co/f");
     expect(reply).toContain("Already registered");
-    expect(reply).toContain("@a_co_f@rss2.test");
+    expect(reply).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
   });
 
   it("explains registration failures", async () => {
@@ -111,7 +111,7 @@ describe("CommandHandler", () => {
 
     const reply = await handler.handle("search rust");
     expect(reply).toContain("Found:");
-    expect(reply).toContain("@rust_blog_rss@rss2.test — Rust Blog");
+    expect(reply).toMatch(/@rust_blog_rss_[a-z0-9]{7}@rss2\.test — Rust Blog/);
   });
 
   it("suggests registering when a search finds nothing", async () => {
