@@ -14,28 +14,28 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:77
+#: src/web/ui/messages.ts:83
 msgid "feed.followers"
 msgstr "{count, plural, one {# follower} other {# followers}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:113
+#: src/web/ui/messages.ts:124
 msgid "register.back-home"
 msgstr "← Back to home"
 
 #. {handle} renders as the @feed@host chip.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:91
+#: src/web/ui/messages.ts:102
 msgid "register.result-exists"
 msgstr "Already registered — follow {handle} from your fediverse account to get new posts."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:109
+#: src/web/ui/messages.ts:120
 msgid "register.error-feed-unreachable"
 msgstr "Couldn’t read a feed there: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:81
+#: src/web/ui/messages.ts:92
 msgid "register.result-heading"
 msgstr "Feed registration"
 
@@ -43,6 +43,12 @@ msgstr "Feed registration"
 #: src/web/ui/messages.ts:38
 msgid "register.url-label"
 msgstr "Feed URL"
+
+#. Checkbox label on the registration form (ADR-0009).
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:46
+msgid "register.full-content-label"
+msgstr "Fetch full articles instead of summaries (creates a separate account)"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:18
@@ -55,6 +61,12 @@ msgstr "Follow RSS and Atom feeds from the fediverse."
 msgid "layout.tagline"
 msgstr "Follow RSS and Atom feeds from the fediverse. Mention {handle} with {command} or use the form below."
 
+#. Badge on a feed card whose account posts full articles (ADR-0009).
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:87
+msgid "feed.full-content-badge"
+msgstr "Full content"
+
 #. Accessible label of the language switcher.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:29
@@ -62,28 +74,28 @@ msgid "layout.language-label"
 msgstr "Language"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:97
+#: src/web/ui/messages.ts:108
 msgid "register.error-missing-url"
 msgstr "Missing feed URL."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:69
+#: src/web/ui/messages.ts:75
 msgid "home.popular-heading"
 msgstr "Most followed feeds"
 
 #. Shown on the search page, which has no registration form of its own.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:62
+#: src/web/ui/messages.ts:68
 msgid "search.empty"
 msgstr "No feeds matched “{query}”. Register it from the home page or via the bot."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:73
+#: src/web/ui/messages.ts:79
 msgid "home.popular-empty"
 msgstr "No feeds yet — register the first one!"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:105
+#: src/web/ui/messages.ts:116
 msgid "register.error-unsupported-protocol"
 msgstr "Only http(s) feeds are supported (got {protocol})."
 
@@ -99,31 +111,31 @@ msgstr "Register feed"
 
 #. {handle} renders as the @feed@host chip.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:85
+#: src/web/ui/messages.ts:96
 msgid "register.result-created"
 msgstr "Registered! Follow {handle} from your fediverse account to get new posts."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:46
+#: src/web/ui/messages.ts:52
 msgid "search.heading"
 msgstr "Search"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:58
+#: src/web/ui/messages.ts:64
 msgid "search.button"
 msgstr "Search"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:50
+#: src/web/ui/messages.ts:56
 msgid "search.label"
 msgstr "Search registered feeds"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:54
+#: src/web/ui/messages.ts:60
 msgid "search.placeholder"
 msgstr "Search registered feeds…"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:101
+#: src/web/ui/messages.ts:112
 msgid "register.error-not-a-url"
 msgstr "That doesn’t look like a URL: {url}"

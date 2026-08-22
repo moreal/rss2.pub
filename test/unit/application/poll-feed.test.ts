@@ -11,6 +11,7 @@ import { createInMemoryItemRepository } from "../../../src/infrastructure/persis
 import { err, ok } from "../../../src/shared/result.js";
 import {
   capturingFederation,
+  fakeContentExtractor,
   fakeFetcher,
   fetchedFeed,
   makeFeed,
@@ -26,23 +27,38 @@ const pollPolicy = unwrap(
   PollPolicy.create({ intervalSeconds: 100, maxBackoffSeconds: 400 }),
 );
 
-function setup(feedUrl = "https://a.co/f") {
-  const feed = makeFeed({ url: feedUrl });
+function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) {
+  const feed = makeFeed({
+    url: params.feedUrl ?? "https://a.co/f",
+    fullContentEnabled: params.fullContentEnabled ?? false,
+  });
   const feeds = createInMemoryFeedRepository();
   const items = createInMemoryItemRepository();
   const fetcher = fakeFetcher();
   const federation = capturingFederation();
+  const contentExtractor = fakeContentExtractor();
   const clock = mutableClock(now);
   const pollFeed = createPollFeed({
     feeds,
     items,
     fetcher,
     federation,
+    contentExtractor,
     clock,
     pollPolicy,
     contentPolicy: ContentPolicy.DEFAULT,
   });
-  return { url: feed.url, feed, feeds, items, fetcher, federation, clock, pollFeed };
+  return {
+    url: feed.url,
+    feed,
+    feeds,
+    items,
+    fetcher,
+    federation,
+    contentExtractor,
+    clock,
+    pollFeed,
+  };
 }
 
 describe("PollFeed", () => {
@@ -166,6 +182,99 @@ describe("PollFeed", () => {
     const report = unwrap(await pollFeed.execute(feed.id));
     expect(report.published).toBe(1);
     expect(federation.published).toHaveLength(1);
+  });
+
+  it("leaves content untouched for feeds without full-content mode", async () => {
+    const { feed, feeds, fetcher, federation, contentExtractor, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(
+        fetchedFeed({
+          items: [
+            rawItem({
+              guid: "x",
+              title: "post",
+              link: "https://a.co/x",
+              contentHtml: "<p>teaser</p>",
+            }),
+          ],
+        }),
+      ),
+    );
+
+    await pollFeed.execute(feed.id);
+    expect(contentExtractor.calls).toHaveLength(0);
+    const [published] = federation.published;
+    expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
+      "<p>teaser</p>",
+    );
+  });
+
+  it("replaces the teaser with extracted content for full-content feeds (ADR-0009)", async () => {
+    const { feed, feeds, fetcher, federation, contentExtractor, pollFeed } = setup({
+      fullContentEnabled: true,
+    });
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(
+        fetchedFeed({
+          items: [
+            rawItem({
+              guid: "x",
+              title: "post",
+              link: "https://a.co/x",
+              contentHtml: "<p>teaser</p>",
+            }),
+          ],
+        }),
+      ),
+    );
+    contentExtractor.respondWith(
+      "https://a.co/x",
+      ok({ contentHtml: "<p>the full article</p>" }),
+    );
+
+    await pollFeed.execute(feed.id);
+    expect(contentExtractor.calls).toEqual(["https://a.co/x"]);
+    const [published] = federation.published;
+    expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
+      "<p>the full article</p>",
+    );
+  });
+
+  it("falls back to the teaser when extraction fails for a full-content feed", async () => {
+    const { feed, feeds, fetcher, federation, contentExtractor, pollFeed } = setup({
+      fullContentEnabled: true,
+    });
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(
+        fetchedFeed({
+          items: [
+            rawItem({
+              guid: "x",
+              title: "post",
+              link: "https://a.co/x",
+              contentHtml: "<p>teaser</p>",
+            }),
+          ],
+        }),
+      ),
+    );
+    contentExtractor.respondWith(
+      "https://a.co/x",
+      err({ type: "RequestFailed", url: "https://a.co/x", message: "timeout" }),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report.published).toBe(1);
+    const [published] = federation.published;
+    expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
+      "<p>teaser</p>",
+    );
   });
 });
 

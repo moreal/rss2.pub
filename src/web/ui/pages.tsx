@@ -24,7 +24,7 @@ const SearchForm: FC<{ ctx: PageContext; query?: string }> = (props) => (
 );
 
 const RegisterForm: FC<{ ctx: PageContext }> = (props) => (
-  <form class="row" method="post" action="/register">
+  <form class="row register-form" method="post" action="/register">
     <label class="sr-only" for="register-url">
       {translate(props.ctx.i18n, copy.registerUrlLabel)}
     </label>
@@ -41,6 +41,10 @@ const RegisterForm: FC<{ ctx: PageContext }> = (props) => (
     <button type="submit">
       {translate(props.ctx.i18n, copy.registerButton)}
     </button>
+    <label class="checkbox-row">
+      <input id="register-full" type="checkbox" name="full" value="1" />
+      {translate(props.ctx.i18n, copy.registerFullContentLabel)}
+    </label>
   </form>
 );
 
@@ -55,13 +59,20 @@ const FeedLine: FC<{
         <span class="handle">
           @{props.feed.handle}@{props.ctx.host}
         </span>
-        {props.followers !== undefined && (
-          <span class="badge">
-            {translate(props.ctx.i18n, copy.feedFollowers, {
-              count: props.followers,
-            })}
-          </span>
-        )}
+        <span class="badges">
+          {props.feed.fullContentEnabled && (
+            <span class="badge badge-full-content">
+              {translate(props.ctx.i18n, copy.feedFullContentBadge)}
+            </span>
+          )}
+          {props.followers !== undefined && (
+            <span class="badge">
+              {translate(props.ctx.i18n, copy.feedFollowers, {
+                count: props.followers,
+              })}
+            </span>
+          )}
+        </span>
       </div>
       <div class="feed-title">{Feed.displayName(props.feed)}</div>
       {props.feed.description !== null && (

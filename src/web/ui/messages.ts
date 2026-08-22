@@ -43,6 +43,12 @@ export const copy = {
     id: "register.button",
     message: "Register feed",
   },
+  registerFullContentLabel: /*i18n*/ {
+    id: "register.full-content-label",
+    message:
+      "Fetch full articles instead of summaries (creates a separate account)",
+    comment: "Checkbox label on the registration form (ADR-0009).",
+  },
   searchHeading: /*i18n*/ {
     id: "search.heading",
     message: "Search",
@@ -77,6 +83,11 @@ export const copy = {
   feedFollowers: /*i18n*/ {
     id: "feed.followers",
     message: "{count, plural, one {# follower} other {# followers}}",
+  },
+  feedFullContentBadge: /*i18n*/ {
+    id: "feed.full-content-badge",
+    message: "Full content",
+    comment: "Badge on a feed card whose account posts full articles (ADR-0009).",
   },
   registerResultHeading: /*i18n*/ {
     id: "register.result-heading",

@@ -14,28 +14,28 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:77
+#: src/web/ui/messages.ts:83
 msgid "feed.followers"
 msgstr "{count, plural, other {팔로워 #명}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:113
+#: src/web/ui/messages.ts:124
 msgid "register.back-home"
 msgstr "← 홈으로 돌아가기"
 
 #. {handle} renders as the @feed@host chip.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:91
+#: src/web/ui/messages.ts:102
 msgid "register.result-exists"
 msgstr "이미 등록된 피드입니다. 페디버스에서 {handle} 계정을 팔로우하면 새 글을 받아볼 수 있습니다."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:109
+#: src/web/ui/messages.ts:120
 msgid "register.error-feed-unreachable"
 msgstr "해당 주소에서 피드를 읽지 못했습니다: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:81
+#: src/web/ui/messages.ts:92
 msgid "register.result-heading"
 msgstr "피드 등록"
 
@@ -43,6 +43,12 @@ msgstr "피드 등록"
 #: src/web/ui/messages.ts:38
 msgid "register.url-label"
 msgstr "피드 URL"
+
+#. Checkbox label on the registration form (ADR-0009).
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:46
+msgid "register.full-content-label"
+msgstr "요약 대신 전문을 가져오기 (별도 계정으로 생성됩니다)"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:18
@@ -55,6 +61,12 @@ msgstr "페디버스에서 RSS/Atom 피드를 팔로우하세요."
 msgid "layout.tagline"
 msgstr "페디버스에서 RSS/Atom 피드를 팔로우하세요. {handle} 계정에 {command} 명령을 멘션하거나 아래 양식을 이용하세요."
 
+#. Badge on a feed card whose account posts full articles (ADR-0009).
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:87
+msgid "feed.full-content-badge"
+msgstr "전문 제공"
+
 #. Accessible label of the language switcher.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:29
@@ -62,28 +74,28 @@ msgid "layout.language-label"
 msgstr "언어"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:97
+#: src/web/ui/messages.ts:108
 msgid "register.error-missing-url"
 msgstr "피드 URL이 없습니다."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:69
+#: src/web/ui/messages.ts:75
 msgid "home.popular-heading"
 msgstr "팔로워가 가장 많은 피드"
 
 #. Shown on the search page, which has no registration form of its own.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:62
+#: src/web/ui/messages.ts:68
 msgid "search.empty"
 msgstr "“{query}”에 해당하는 피드가 없습니다. 홈이나 봇에서 등록해 보세요."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:73
+#: src/web/ui/messages.ts:79
 msgid "home.popular-empty"
 msgstr "아직 등록된 피드가 없습니다. 첫 피드를 등록해 보세요!"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:105
+#: src/web/ui/messages.ts:116
 msgid "register.error-unsupported-protocol"
 msgstr "http(s) 피드만 지원합니다 (받은 값: {protocol})."
 
@@ -99,31 +111,31 @@ msgstr "등록하기"
 
 #. {handle} renders as the @feed@host chip.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:85
+#: src/web/ui/messages.ts:96
 msgid "register.result-created"
 msgstr "등록되었습니다! 페디버스에서 {handle} 계정을 팔로우하면 새 글을 받아볼 수 있습니다."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:46
+#: src/web/ui/messages.ts:52
 msgid "search.heading"
 msgstr "검색"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:58
+#: src/web/ui/messages.ts:64
 msgid "search.button"
 msgstr "검색"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:50
+#: src/web/ui/messages.ts:56
 msgid "search.label"
 msgstr "등록된 피드 검색"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:54
+#: src/web/ui/messages.ts:60
 msgid "search.placeholder"
 msgstr "등록된 피드 검색…"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:101
+#: src/web/ui/messages.ts:112
 msgid "register.error-not-a-url"
 msgstr "URL 형식이 아닌 것 같습니다: {url}"

@@ -8,7 +8,12 @@ import type { FeedUrl } from "./feed-url.js";
  * chars — the portable intersection across Mastodon/Misskey/Pleroma/Lemmy.
  * Derived deterministically from the canonical feed URL: the normalized stem
  * is truncated to 22 chars and always suffixed with `_` + 7 base36 chars of
- * the URL's SHA-256, keeping the total within 22 + 1 + 7 = 30.
+ * a hash, keeping the total within 22 + 1 + 7 = 30.
+ *
+ * The hash also folds in whether this is the full-content variant
+ * (ADR-0009): a URL registered both as teaser and as full-content gets two
+ * distinct handles, one per actor. `fullContentEnabled` defaults to `false`
+ * so every pre-ADR-0009 call site keeps deriving today's handle unchanged.
  */
 export type Handle = Brand<string, "Handle">;
 
@@ -21,8 +26,9 @@ const STEM_MAX = 22;
 const HASH_LENGTH = 7;
 const HANDLE_PATTERN = /^[a-z0-9_]{1,30}$/;
 
-function hashSuffix(url: FeedUrl): string {
-  const base36 = BigInt(`0x${sha256Hex(url)}`).toString(36);
+function hashSuffix(url: FeedUrl, fullContentEnabled: boolean): string {
+  const material = fullContentEnabled ? `${url}\nfull` : url;
+  const base36 = BigInt(`0x${sha256Hex(material)}`).toString(36);
   return base36.slice(0, HASH_LENGTH).padEnd(HASH_LENGTH, "0");
 }
 
@@ -43,14 +49,15 @@ function stemOf(url: FeedUrl): string {
 export const Handle = {
   /**
    * Deterministic handle for a feed URL: the normalized stem, truncated to
-   * 22 chars, always suffixed with a 7-char hash of the URL — normalization
-   * is lossy (`a-b.com` and `a.b.com` share a stem), so the hash keeps
-   * different URLs from ever landing on the same handle.
+   * 22 chars, always suffixed with a 7-char hash of the URL and content mode
+   * — normalization is lossy (`a-b.com` and `a.b.com` share a stem), so the
+   * hash keeps different URLs (and different modes of the same URL) from
+   * ever landing on the same handle.
    */
-  fromFeedUrl(url: FeedUrl): Handle {
+  fromFeedUrl(url: FeedUrl, fullContentEnabled = false): Handle {
     const cut = stemOf(url).slice(0, STEM_MAX).replace(/_+$/, "");
     const prefix = cut.length === 0 ? "feed" : cut;
-    return `${prefix}_${hashSuffix(url)}` as Handle;
+    return `${prefix}_${hashSuffix(url, fullContentEnabled)}` as Handle;
   },
 
   /** Parses an externally supplied handle (WebFinger identifier, URL path). */

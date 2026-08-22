@@ -4,7 +4,12 @@ import { sha256Hex } from "../../shared/sha256.js";
 import type { FeedUrl } from "./feed-url.js";
 import type { Handle } from "./handle.js";
 
-/** Deterministic feed identity: SHA-256 hex of the canonical feed URL. */
+/**
+ * Deterministic feed identity: SHA-256 hex of the canonical feed URL and
+ * content mode. A URL registered both as teaser and as full-content
+ * (ADR-0009) yields two distinct ids — `fullContentEnabled` defaults to
+ * `false` so existing callers keep deriving today's id unchanged.
+ */
 export type FeedId = Brand<string, "FeedId">;
 
 export type InvalidFeedId = {
@@ -15,8 +20,8 @@ export type InvalidFeedId = {
 const FEED_ID_PATTERN = /^[0-9a-f]{64}$/;
 
 export const FeedId = {
-  fromUrl(url: FeedUrl): FeedId {
-    return sha256Hex(url) as FeedId;
+  fromUrl(url: FeedUrl, fullContentEnabled = false): FeedId {
+    return sha256Hex(fullContentEnabled ? `${url}\nfull` : url) as FeedId;
   },
   create(raw: string): Result<FeedId, InvalidFeedId> {
     return FEED_ID_PATTERN.test(raw)
@@ -58,6 +63,9 @@ export type Feed = {
   readonly handle: Handle;
   readonly title: FeedTitle | null;
   readonly description: string | null;
+  /** Opt-in per ADR-0009: fetch each item's original page and extract its
+   * main content instead of publishing the feed-provided teaser. */
+  readonly fullContentEnabled: boolean;
   readonly registeredAt: Date;
   readonly validators: CacheValidators;
   readonly consecutiveFailures: number;
@@ -70,14 +78,17 @@ export const Feed = {
     readonly handle: Handle;
     readonly title: FeedTitle | null;
     readonly description: string | null;
+    readonly fullContentEnabled?: boolean;
     readonly now: Date;
   }): Feed {
+    const fullContentEnabled = params.fullContentEnabled ?? false;
     return {
-      id: FeedId.fromUrl(params.url),
+      id: FeedId.fromUrl(params.url, fullContentEnabled),
       url: params.url,
       handle: params.handle,
       title: params.title,
       description: params.description,
+      fullContentEnabled,
       registeredAt: params.now,
       validators: NO_VALIDATORS,
       consecutiveFailures: 0,

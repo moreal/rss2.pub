@@ -9,6 +9,11 @@ import type { RawFeedItem } from "../../src/domain/feed/feed-item.js";
 import { Handle } from "../../src/domain/feed/handle.js";
 import type { Clock } from "../../src/domain/ports/clock.js";
 import type {
+  ContentExtractor,
+  ExtractContentError,
+  ExtractedContent,
+} from "../../src/domain/ports/content-extractor.js";
+import type {
   FeedFetcher,
   FetchFeedError,
   FetchFeedSuccess,
@@ -40,19 +45,22 @@ export function makeFeed(
     handle?: string;
     title?: string | null;
     description?: string | null;
+    fullContentEnabled?: boolean;
     now?: Date;
   } = {},
 ): Feed {
   const url = unwrap(FeedUrl.create(params.url ?? "https://a.co/f"));
   const rawTitle = params.title ?? null;
+  const fullContentEnabled = params.fullContentEnabled ?? false;
   return Feed.register({
     url,
     handle:
       params.handle === undefined
-        ? Handle.fromFeedUrl(url)
+        ? Handle.fromFeedUrl(url, fullContentEnabled)
         : unwrap(Handle.create(params.handle)),
     title: rawTitle === null ? null : unwrap(FeedTitle.create(rawTitle)),
     description: params.description ?? null,
+    fullContentEnabled,
     now: params.now ?? T0,
   });
 }
@@ -157,6 +165,33 @@ export function capturingFederation(): CapturingFederation {
     async deleteActor(feed): Promise<Result<void, FederationError>> {
       deletedActors.push(feed);
       return ok(undefined);
+    },
+  };
+}
+
+export type FakeContentExtractor = ContentExtractor & {
+  respondWith(
+    url: string,
+    result: Result<ExtractedContent, ExtractContentError>,
+  ): void;
+  readonly calls: string[];
+};
+
+/** Fails extraction for any URL with no configured response. */
+export function fakeContentExtractor(): FakeContentExtractor {
+  const responses = new Map<string, Result<ExtractedContent, ExtractContentError>>();
+  const calls: string[] = [];
+  return {
+    calls,
+    respondWith(url, result) {
+      responses.set(url, result);
+    },
+    async extract(url) {
+      calls.push(url);
+      return (
+        responses.get(url) ??
+        err({ type: "ExtractionFailed", url, message: "no fake response" })
+      );
     },
   };
 }

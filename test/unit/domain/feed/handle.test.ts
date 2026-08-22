@@ -54,6 +54,20 @@ describe("Handle.fromFeedUrl", () => {
     expect(handle).toMatch(/^[a-z0-9_]{1,30}$/);
   });
 
+  it("derives a different handle for the full-content variant of the same URL (ADR-0009)", () => {
+    const url = feedUrl("https://blog.example.com/feed.xml");
+    const teaser = Handle.fromFeedUrl(url);
+    const full = Handle.fromFeedUrl(url, true);
+    expect(full).toMatch(/^blog_example_com_feed_[a-z0-9]{7}$/);
+    expect(full).not.toBe(teaser);
+    expect(Handle.fromFeedUrl(url, true)).toBe(full);
+  });
+
+  it("defaults to the teaser (non-full) handle when the mode is omitted", () => {
+    const url = feedUrl("https://blog.example.com/feed.xml");
+    expect(Handle.fromFeedUrl(url)).toBe(Handle.fromFeedUrl(url, false));
+  });
+
   it("never lets two different URLs collide on the same handle, even when their stems match", () => {
     // Normalization is lossy: both stems are "a_b_com_rss", but each URL's
     // own hash keeps the derived handles apart (ADR-0004).

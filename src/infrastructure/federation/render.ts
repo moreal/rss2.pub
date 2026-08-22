@@ -73,5 +73,14 @@ export function renderFeedProfileHtml(feed: Feed): string {
   parts.push(
     `<p>Mirror of <a href="${escapeHtml(feed.url)}" rel="nofollow noopener noreferrer">${escapeHtml(feed.url)}</a>, bridged by rss2.pub.</p>`,
   );
+  // ADR-0009: the same URL may also exist under a plain handle that posts
+  // only the feed's own summary — say so on the full-content variant so
+  // followers can tell the two accounts apart. The plain variant needs no
+  // such note: posting the feed's summary is the ordinary default.
+  if (feed.fullContentEnabled) {
+    parts.push(
+      "<p>Posts the full article content fetched from the original page, not just the feed's summary.</p>",
+    );
+  }
   return parts.join("\n");
 }

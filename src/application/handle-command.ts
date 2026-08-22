@@ -7,7 +7,12 @@ import type { SearchFeeds } from "./search-feeds.js";
  * `unregister` is intentionally absent (PLAN.md 확정 사항).
  */
 export type Command =
-  | { readonly type: "register"; readonly url: string }
+  | {
+      readonly type: "register";
+      readonly url: string;
+      /** `register <url> full` opts into ADR-0009 full-content extraction. */
+      readonly fullContentEnabled: boolean;
+    }
   | { readonly type: "search"; readonly keyword: string }
   | { readonly type: "help" };
 
@@ -19,7 +24,9 @@ export function parseCommand(text: string): Command {
   switch (word.toLowerCase()) {
     case "register": {
       const url = rest[0];
-      return url === undefined ? { type: "help" } : { type: "register", url };
+      if (url === undefined) return { type: "help" };
+      const fullContentEnabled = rest[1]?.toLowerCase() === "full";
+      return { type: "register", url, fullContentEnabled };
     }
     case "search": {
       const keyword = rest.join(" ");
@@ -40,6 +47,8 @@ export type CommandHandler = {
 const HELP_TEXT = [
   "I turn RSS/Atom feeds into followable fediverse accounts. Commands:",
   "register <feed-url> — register a feed and get its account handle",
+  "register <feed-url> full — same, but fetch each item's full article " +
+    "instead of the feed's summary (a separate account from the plain one)",
   "search <keyword> — find registered feeds",
 ].join("\n");
 
@@ -56,7 +65,10 @@ export function createCommandHandler(deps: {
       const command = parseCommand(text);
       switch (command.type) {
         case "register": {
-          const result = await deps.registerFeed.execute(command.url);
+          const result = await deps.registerFeed.execute(
+            command.url,
+            command.fullContentEnabled,
+          );
           if (!result.ok) {
             switch (result.error.type) {
               case "NotAUrl":

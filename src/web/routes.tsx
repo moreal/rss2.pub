@@ -114,7 +114,8 @@ export function createWebRoutes(deps: WebDeps): Hono {
         400,
       );
     }
-    const result = await deps.registerFeed.execute(rawUrl);
+    const fullContentEnabled = form.get("full") !== null;
+    const result = await deps.registerFeed.execute(rawUrl, fullContentEnabled);
     if (!result.ok) {
       return c.html(
         <RegisterResultPage

@@ -240,6 +240,23 @@ describe("feed cards", () => {
     const html = await bodyOf(webApp().request("/"));
     expect(html).toContain('<a class="feed-card" href="/@example">');
   });
+
+  it("badges full-content feeds and leaves plain feeds unbadged (ADR-0009)", async () => {
+    const fullFeed = makeFeed({
+      url: "https://full.example/feed.xml",
+      handle: "fullexample",
+      title: "Full Example",
+      fullContentEnabled: true,
+    });
+    const searchFeeds: SearchFeeds = { execute: async () => ok([fullFeed, FEED]) };
+    const html = await bodyOf(webApp({ searchFeeds }).request("/search?q=example"));
+    expect(html).toContain('<span class="badge badge-full-content">Full content</span>');
+    // FEED (not full-content) still renders, but without the badge markup.
+    const feedCardStart = html.indexOf('href="/@example"');
+    expect(html.slice(feedCardStart, feedCardStart + 300)).not.toContain(
+      "badge-full-content",
+    );
+  });
 });
 
 describe("registration outcomes", () => {
@@ -248,6 +265,45 @@ describe("registration outcomes", () => {
     form.set("url", "https://example.com/feed.xml");
     return app.request(`/register${query}`, { method: "POST", body: form });
   }
+
+  it("registers without full-content mode when the checkbox is unset", async () => {
+    const calls: { url: string; fullContentEnabled: boolean | undefined }[] = [];
+    const registerFeed: RegisterFeed = {
+      execute: async (url, fullContentEnabled) => {
+        calls.push({ url, fullContentEnabled });
+        return ok({ feed: FEED, created: true });
+      },
+    };
+    const form = new FormData();
+    form.set("url", "https://example.com/feed.xml");
+    await webApp({ registerFeed }).request("/register", {
+      method: "POST",
+      body: form,
+    });
+    expect(calls).toEqual([
+      { url: "https://example.com/feed.xml", fullContentEnabled: false },
+    ]);
+  });
+
+  it("opts into full-content mode when the checkbox is checked (ADR-0009)", async () => {
+    const calls: { url: string; fullContentEnabled: boolean | undefined }[] = [];
+    const registerFeed: RegisterFeed = {
+      execute: async (url, fullContentEnabled) => {
+        calls.push({ url, fullContentEnabled });
+        return ok({ feed: FEED, created: true });
+      },
+    };
+    const form = new FormData();
+    form.set("url", "https://example.com/feed.xml");
+    form.set("full", "1");
+    await webApp({ registerFeed }).request("/register", {
+      method: "POST",
+      body: form,
+    });
+    expect(calls).toEqual([
+      { url: "https://example.com/feed.xml", fullContentEnabled: true },
+    ]);
+  });
 
   it.each([
     { created: true, expected: "등록되었습니다!" },

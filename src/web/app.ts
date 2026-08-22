@@ -21,6 +21,7 @@ import {
 import { ContentPolicy } from "../domain/content/content-policy.js";
 import { PollPolicy } from "../domain/feed/poll-policy.js";
 import type { Clock } from "../domain/ports/clock.js";
+import { createReadabilityContentExtractor } from "../infrastructure/content/readability-extractor.js";
 import { createRssParserFetcher } from "../infrastructure/feedfetch/rss-parser-fetcher.js";
 import { createBotKitFederationGateway } from "../infrastructure/federation/botkit-gateway.js";
 import { createFederationStack } from "../infrastructure/federation/botkit-stack.js";
@@ -73,6 +74,7 @@ export async function createApp(config: AppConfig): Promise<App> {
   const feeds = createDrizzleFeedRepository(db);
   const items = createDrizzleItemRepository(db);
   const fetcher = createRssParserFetcher();
+  const contentExtractor = createReadabilityContentExtractor();
   const clock: Clock = { now: () => new Date() };
 
   const registerFeed = createRegisterFeed({ feeds, fetcher, clock });
@@ -113,6 +115,7 @@ export async function createApp(config: AppConfig): Promise<App> {
       items,
       fetcher,
       federation,
+      contentExtractor,
       clock,
       pollPolicy: pollPolicyResult.value,
       contentPolicy: contentPolicyResult.value,

@@ -107,6 +107,7 @@ adapter.
 | Note ≤ 2,000 chars, Article beyond; teaser = first paragraph | ADR-0005 |
 | Single PostgreSQL for domain + Fedify KV/MQ + BotKit state | ADR-0006 |
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
+| Full-content extraction is opt-in per registration (`register <url> full`); teaser and full-content are separate actors, one handle/id per (url, mode) | ADR-0009 (handle/id derivation: ADR-0004) |
 
 ## Gotchas
 

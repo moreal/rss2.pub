@@ -1,10 +1,12 @@
 import {
+  boolean,
   index,
   integer,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -15,8 +17,11 @@ export const feeds = pgTable(
   "feeds",
   {
     id: text("id").primaryKey(),
-    url: text("url").notNull().unique(),
+    // Not globally unique on its own — a URL may be registered once per
+    // content mode (ADR-0009); see feeds_url_full_content_enabled_idx.
+    url: text("url").notNull(),
     handle: text("handle").notNull().unique(),
+    fullContentEnabled: boolean("full_content_enabled").notNull().default(false),
     title: text("title"),
     description: text("description"),
     registeredAt: timestamp("registered_at", { withTimezone: true }).notNull(),
@@ -29,6 +34,10 @@ export const feeds = pgTable(
   (table) => [
     index("feeds_next_poll_at_idx").on(table.nextPollAt),
     index("feeds_follower_count_idx").on(table.followerCount),
+    uniqueIndex("feeds_url_full_content_enabled_idx").on(
+      table.url,
+      table.fullContentEnabled,
+    ),
   ],
 );
 

@@ -15,13 +15,28 @@ describe("parseCommand", () => {
   it("parses register with a URL, ignoring the leading mention", () => {
     expect(
       parseCommand("@rss2pub@rss2.test register https://a.co/f"),
-    ).toEqual({ type: "register", url: "https://a.co/f" });
+    ).toEqual({ type: "register", url: "https://a.co/f", fullContentEnabled: false });
   });
 
   it("is case-insensitive on the verb", () => {
     expect(parseCommand("REGISTER https://a.co/f")).toEqual({
       type: "register",
       url: "https://a.co/f",
+      fullContentEnabled: false,
+    });
+  });
+
+  it("parses a trailing 'full' as opting into full-content extraction (ADR-0009)", () => {
+    expect(parseCommand("register https://a.co/f full")).toEqual({
+      type: "register",
+      url: "https://a.co/f",
+      fullContentEnabled: true,
+    });
+    expect(parseCommand("register https://a.co/f FULL")).toMatchObject({
+      fullContentEnabled: true,
+    });
+    expect(parseCommand("register https://a.co/f other")).toMatchObject({
+      fullContentEnabled: false,
     });
   });
 
@@ -69,6 +84,20 @@ describe("CommandHandler", () => {
     const reply = await handler.handle("@rss2pub register https://a.co/f");
     expect(reply).toContain("Registered My Blog!");
     expect(reply).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
+  });
+
+  it("registers the full-content variant as a distinct, separately followable account", async () => {
+    const { fetcher, handler } = setup();
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({ title: "My Blog" })));
+    const teaser = await handler.handle("register https://a.co/f");
+    const full = await handler.handle("register https://a.co/f full");
+    expect(teaser).toContain("Registered My Blog!");
+    expect(full).toContain("Registered My Blog!");
+    const teaserHandle = /@(a_co_f_[a-z0-9]{7})@rss2\.test/.exec(teaser)?.[1];
+    const fullHandle = /@(a_co_f_[a-z0-9]{7})@rss2\.test/.exec(full)?.[1];
+    expect(teaserHandle).toBeDefined();
+    expect(fullHandle).toBeDefined();
+    expect(fullHandle).not.toBe(teaserHandle);
   });
 
   it("tells the user when the feed already exists", async () => {

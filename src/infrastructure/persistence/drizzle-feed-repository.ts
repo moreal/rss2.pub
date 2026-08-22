@@ -42,6 +42,7 @@ function rowToFeed(row: FeedRow): Feed {
         ? null
         : parseOrCorrupt(FeedTitle.create(row.title), "title"),
     description: row.description,
+    fullContentEnabled: row.fullContentEnabled,
     registeredAt: row.registeredAt,
     validators,
     consecutiveFailures: row.consecutiveFailures,
@@ -54,6 +55,7 @@ function feedToRow(feed: Feed): Omit<FeedRow, "followerCount"> {
     id: feed.id,
     url: feed.url,
     handle: feed.handle,
+    fullContentEnabled: feed.fullContentEnabled,
     title: feed.title,
     description: feed.description,
     registeredAt: feed.registeredAt,
@@ -89,9 +91,18 @@ export function createDrizzleFeedRepository(db: Database): FeedRepository {
       );
     },
 
-    async findByUrl(url) {
+    async findByUrl(url, fullContentEnabled = false) {
       return firstOrNull(
-        await db.select().from(feeds).where(eq(feeds.url, url)).limit(1),
+        await db
+          .select()
+          .from(feeds)
+          .where(
+            and(
+              eq(feeds.url, url),
+              eq(feeds.fullContentEnabled, fullContentEnabled),
+            ),
+          )
+          .limit(1),
       );
     },
 

@@ -25,8 +25,15 @@ export function createInMemoryFeedRepository(): FeedRepository & {
       return feeds.get(id) ?? null;
     },
 
-    async findByUrl(url: FeedUrl): Promise<Feed | null> {
-      for (const feed of feeds.values()) if (feed.url === url) return feed;
+    async findByUrl(
+      url: FeedUrl,
+      fullContentEnabled = false,
+    ): Promise<Feed | null> {
+      for (const feed of feeds.values()) {
+        if (feed.url === url && feed.fullContentEnabled === fullContentEnabled) {
+          return feed;
+        }
+      }
       return null;
     },
 

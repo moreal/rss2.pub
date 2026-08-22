@@ -32,6 +32,13 @@ describe("FeedId", () => {
       type: "InvalidFeedId",
     });
   });
+
+  it("derives a different id for the full-content variant of the same URL (ADR-0009)", () => {
+    const teaserId = FeedId.fromUrl(url);
+    const fullId = FeedId.fromUrl(url, true);
+    expect(fullId).not.toBe(teaserId);
+    expect(FeedId.fromUrl(url, true)).toBe(fullId);
+  });
 });
 
 describe("FeedTitle", () => {
@@ -63,10 +70,26 @@ describe("Feed.register", () => {
     });
     expect(feed.id).toBe(FeedId.fromUrl(url));
     expect(feed.handle).toBe(handle);
+    expect(feed.fullContentEnabled).toBe(false);
     expect(feed.registeredAt).toEqual(now);
     expect(feed.nextPollAt).toEqual(now);
     expect(feed.consecutiveFailures).toBe(0);
     expect(feed.validators).toEqual(NO_VALIDATORS);
+  });
+
+  it("carries the full-content opt-in through to identity (ADR-0009)", () => {
+    const fullHandle = Handle.fromFeedUrl(url, true);
+    const feed = Feed.register({
+      url,
+      handle: fullHandle,
+      title: null,
+      description: null,
+      fullContentEnabled: true,
+      now,
+    });
+    expect(feed.fullContentEnabled).toBe(true);
+    expect(feed.id).toBe(FeedId.fromUrl(url, true));
+    expect(feed.id).not.toBe(FeedId.fromUrl(url));
   });
 });
 

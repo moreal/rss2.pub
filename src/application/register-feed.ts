@@ -29,7 +29,10 @@ export type RegisterFeedResult = {
 };
 
 export type RegisterFeed = {
-  execute(rawUrl: string): Promise<Result<RegisterFeedResult, RegisterFeedError>>;
+  execute(
+    rawUrl: string,
+    fullContentEnabled?: boolean,
+  ): Promise<Result<RegisterFeedResult, RegisterFeedError>>;
 };
 
 function titleFrom(raw: string | null): FeedTitle | null {
@@ -44,6 +47,13 @@ function titleFrom(raw: string | null): FeedTitle | null {
  * and the handle is derived deterministically from the canonical URL
  * (ADR-0004 — always hash-suffixed, so different URLs never collide). Item
  * backlog is left to the first poll — one publishing code path.
+ *
+ * `fullContentEnabled` (ADR-0009, default `false`) opts the feed into
+ * fetching each item's original page instead of publishing the feed's own
+ * teaser. It is part of the feed's identity: registering the same URL again
+ * with a different mode creates a second, separate actor rather than
+ * mutating the first — each mode gets its own handle and description so
+ * followers can tell them apart and choose which to follow.
  */
 export function createRegisterFeed(deps: {
   readonly feeds: FeedRepository;
@@ -51,12 +61,12 @@ export function createRegisterFeed(deps: {
   readonly clock: Clock;
 }): RegisterFeed {
   return {
-    async execute(rawUrl) {
+    async execute(rawUrl, fullContentEnabled = false) {
       const urlResult = FeedUrl.create(rawUrl);
       if (!urlResult.ok) return urlResult;
       const url = urlResult.value;
 
-      const existing = await deps.feeds.findByUrl(url);
+      const existing = await deps.feeds.findByUrl(url, fullContentEnabled);
       if (existing !== null) return ok({ feed: existing, created: false });
 
       const fetched = await deps.fetcher.fetch(url, NO_VALIDATORS);
@@ -72,13 +82,14 @@ export function createRegisterFeed(deps: {
           ? fetched.value.feed
           : { title: null, description: null };
 
-      const handle = Handle.fromFeedUrl(url);
+      const handle = Handle.fromFeedUrl(url, fullContentEnabled);
 
       const feed = Feed.register({
         url,
         handle,
         title: titleFrom(metadata.title),
         description: metadata.description,
+        fullContentEnabled,
         now: deps.clock.now(),
       });
       await deps.feeds.save(feed);

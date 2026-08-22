@@ -15,7 +15,8 @@ export type PopularFeed = {
 export type FeedRepository = {
   save(feed: Feed): Promise<void>;
   findById(id: FeedId): Promise<Feed | null>;
-  findByUrl(url: FeedUrl): Promise<Feed | null>;
+  /** A URL may be registered once per content mode (ADR-0009). */
+  findByUrl(url: FeedUrl, fullContentEnabled?: boolean): Promise<Feed | null>;
   findByHandle(handle: Handle): Promise<Feed | null>;
   /** Feeds whose nextPollAt is at or before `now`. */
   listDue(now: Date): Promise<Feed[]>;

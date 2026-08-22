@@ -117,7 +117,14 @@ const STYLE = `
     box-shadow: inset 0 0 0 1px var(--line), var(--shadow-panel);
   }
   main section + section { margin-top: 0; }
-  form.row { display: flex; gap: 0.625rem; }
+  form.row { display: flex; gap: 0.625rem; flex-wrap: wrap; }
+  form.register-form .checkbox-row {
+    flex-basis: 100%; display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.85rem; color: var(--muted); cursor: pointer;
+  }
+  form.register-form .checkbox-row input {
+    flex: none; min-height: 0; width: auto; margin: 0;
+  }
   form.row input {
     flex: 1; min-width: 0; min-height: 2.75rem;
     padding: 0.6rem 0.8rem; font: inherit; font-size: 1rem;
@@ -171,12 +178,18 @@ const STYLE = `
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.9rem; color: var(--accent); overflow-wrap: anywhere;
   }
+  .badges { display: flex; align-items: baseline; gap: 0.4rem; flex: none; }
   .badge {
     font-variant-numeric: tabular-nums;
     font-size: 0.85rem; color: var(--muted); flex: none;
   }
+  .badge-full-content {
+    padding: 0.1rem 0.4rem; border-radius: 0.4rem;
+    color: var(--accent); box-shadow: inset 0 0 0 1px var(--line);
+  }
   @media (max-width: 32rem) {
     .feed-top { display: block; }
+    .badges { display: block; margin-top: 0.15rem; }
     .badge { display: block; margin-top: 0.15rem; }
   }
   .feed-title { font-weight: 500; margin-top: 0.1rem; }

@@ -9,6 +9,7 @@ import {
   afterSuccessfulPoll,
   type PollPolicy,
 } from "../domain/feed/poll-policy.js";
+import type { ContentExtractor } from "../domain/ports/content-extractor.js";
 import type { Clock } from "../domain/ports/clock.js";
 import type { FeedFetcher, FetchedFeed } from "../domain/ports/feed-fetcher.js";
 import type { FeedRepository } from "../domain/ports/feed-repository.js";
@@ -49,6 +50,21 @@ function parseItems(fetched: FetchedFeed) {
 }
 
 /**
+ * Replaces an item's teaser content with its extracted full article
+ * (ADR-0009). Only called for feeds with `fullContentEnabled`; extraction
+ * failure (no link, request failure, no article found) falls back silently
+ * to the feed-provided content rather than blocking the publish.
+ */
+async function withFullContent(
+  item: FeedItem,
+  extractor: ContentExtractor,
+): Promise<FeedItem> {
+  if (item.link === null) return item;
+  const extracted = await extractor.extract(item.link);
+  return extracted.ok ? { ...item, contentHtml: extracted.value.contentHtml } : item;
+}
+
+/**
  * One poll cycle for one feed: conditional fetch → identify new items →
  * publish oldest-first → remember published keys → refresh metadata and
  * reschedule (success interval or failure backoff).
@@ -58,6 +74,7 @@ export function createPollFeed(deps: {
   readonly items: ItemRepository;
   readonly fetcher: FeedFetcher;
   readonly federation: FederationGateway;
+  readonly contentExtractor: ContentExtractor;
   readonly clock: Clock;
   readonly pollPolicy: PollPolicy;
   readonly contentPolicy: ContentPolicy;
@@ -117,7 +134,10 @@ export function createPollFeed(deps: {
       const publishedRecords: PublishedItemRecord[] = [];
       const publishErrors: string[] = [];
       for (const item of toPublish) {
-        const content = decidePostContent(item, deps.contentPolicy);
+        const enriched = feed.fullContentEnabled
+          ? await withFullContent(item, deps.contentExtractor)
+          : item;
+        const content = decidePostContent(enriched, deps.contentPolicy);
         const result = await deps.federation.publish(feed, content);
         if (result.ok) {
           publishedRecords.push({ key: item.key, publishedAt: now });

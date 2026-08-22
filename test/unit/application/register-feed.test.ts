@@ -94,6 +94,39 @@ describe("RegisterFeed", () => {
     expect(dotted.created).toBe(true);
   });
 
+  it("registers the full-content variant of an already-registered URL as a separate actor (ADR-0009)", async () => {
+    const { feeds, registerFeed, fetcher } = setup();
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({ title: "My Blog" })));
+
+    const teaser = unwrap(await registerFeed.execute("https://a.co/f"));
+    const full = unwrap(await registerFeed.execute("https://a.co/f", true));
+
+    expect(teaser.created).toBe(true);
+    expect(full.created).toBe(true);
+    expect(full.feed.id).not.toBe(teaser.feed.id);
+    expect(full.feed.handle).not.toBe(teaser.feed.handle);
+    expect(full.feed.fullContentEnabled).toBe(true);
+    expect(teaser.feed.fullContentEnabled).toBe(false);
+    expect(await feeds.findByUrl(unwrap(FeedUrl.create("https://a.co/f")), false)).toEqual(
+      teaser.feed,
+    );
+    expect(await feeds.findByUrl(unwrap(FeedUrl.create("https://a.co/f")), true)).toEqual(
+      full.feed,
+    );
+  });
+
+  it("is idempotent per content mode: re-registering the same mode returns the same feed", async () => {
+    const { registerFeed, fetcher } = setup();
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({})));
+
+    const first = unwrap(await registerFeed.execute("https://a.co/f", true));
+    const second = unwrap(await registerFeed.execute("https://a.co/f", true));
+
+    expect(second.created).toBe(false);
+    expect(second.feed.id).toBe(first.feed.id);
+    expect(fetcher.calls).toHaveLength(1);
+  });
+
   it("registers with empty metadata when the server answers not-modified", async () => {
     const { registerFeed, fetcher } = setup();
     fetcher.respondWith("https://a.co/f", ok({ status: "not-modified" }));
