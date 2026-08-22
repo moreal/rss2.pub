@@ -50,23 +50,25 @@ const FeedLine: FC<{
   followers?: number;
 }> = (props) => (
   <li>
-    <div class="feed-top">
-      <span class="handle">
-        @{props.feed.handle}@{props.ctx.host}
-      </span>
-      {props.followers !== undefined && (
-        <span class="badge">
-          {translate(props.ctx.i18n, copy.feedFollowers, {
-            count: props.followers,
-          })}
+    <a class="feed-card" href={`/@${encodeURIComponent(props.feed.handle)}`}>
+      <div class="feed-top">
+        <span class="handle">
+          @{props.feed.handle}@{props.ctx.host}
         </span>
+        {props.followers !== undefined && (
+          <span class="badge">
+            {translate(props.ctx.i18n, copy.feedFollowers, {
+              count: props.followers,
+            })}
+          </span>
+        )}
+      </div>
+      <div class="feed-title">{Feed.displayName(props.feed)}</div>
+      {props.feed.description !== null && (
+        <p class="meta">{props.feed.description}</p>
       )}
-    </div>
-    <div class="feed-title">{Feed.displayName(props.feed)}</div>
-    {props.feed.description !== null && (
-      <p class="meta">{props.feed.description}</p>
-    )}
-    <div class="meta feed-url">{props.feed.url}</div>
+      <div class="meta feed-url">{props.feed.url}</div>
+    </a>
   </li>
 );
 

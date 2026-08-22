@@ -154,6 +154,15 @@ const STYLE = `
   }
   ul.feeds li:first-child { padding-top: 0.2rem; }
   ul.feeds li:last-child { border-bottom: none; }
+  .feed-card {
+    display: block; margin: 0 -0.6rem; padding: 0 0.6rem;
+    color: inherit; text-decoration: none; border-radius: 0.6rem;
+    transition: background-color 120ms ease;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .feed-card:hover { background: var(--surface-muted); }
+  }
+  .feed-card:active { background: var(--surface-muted); }
   .feed-top {
     display: flex; align-items: baseline;
     justify-content: space-between; gap: 0.75rem;

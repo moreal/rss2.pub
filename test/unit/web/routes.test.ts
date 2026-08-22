@@ -235,6 +235,13 @@ describe("localized content", () => {
   });
 });
 
+describe("feed cards", () => {
+  it("links each card to the feed's profile page", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    expect(html).toContain('<a class="feed-card" href="/@example">');
+  });
+});
+
 describe("registration outcomes", () => {
   async function postRegister(app: ReturnType<typeof webApp>, query = "") {
     const form = new FormData();
