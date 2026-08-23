@@ -45,7 +45,12 @@ export function createRssParserFetcher(options?: {
   readonly userAgent?: string;
 }): FeedFetcher {
   const timeoutMs = options?.timeoutMs ?? 30_000;
-  const userAgent = options?.userAgent ?? "rss2.pub (+https://rss2.pub)";
+  // See readability-extractor.ts: a bare "rss2.pub (+url)" UA gets 403'd by
+  // WAFs that require a "Mozilla/5.0" prefix; this form clears that while
+  // staying honestly self-identified as a bot.
+  const userAgent =
+    options?.userAgent ??
+    "Mozilla/5.0 (compatible; rss2.pub/1.0; +https://rss2.pub)";
   const parser = new Parser<Record<string, unknown>, CustomItem>({
     customFields: {
       item: ["id", ["content:encoded", "contentEncoded"], "summary"],
