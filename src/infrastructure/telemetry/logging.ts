@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import {
   configure,
   getConsoleSink,
@@ -15,6 +16,7 @@ export async function configureLogging(options?: {
 }): Promise<void> {
   await configure({
     reset: true,
+    contextLocalStorage: new AsyncLocalStorage(),
     sinks: { console: getConsoleSink() },
     loggers: [
       {
