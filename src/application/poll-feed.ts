@@ -4,6 +4,7 @@ import {
 } from "../domain/content/content-policy.js";
 import { Feed, type FeedId, FeedTitle } from "../domain/feed/feed.js";
 import { FeedItem } from "../domain/feed/feed-item.js";
+import { FeedLanguage } from "../domain/feed/feed-language.js";
 import { IconUrl } from "../domain/feed/icon-url.js";
 import {
   afterFailedPoll,
@@ -64,6 +65,24 @@ async function withFullContent(
   if (item.link === null) return item;
   const extracted = await extractor.extract(item.link);
   return extracted.ok ? { ...item, contentHtml: extracted.value.contentHtml } : item;
+}
+
+/**
+ * Resolves the language a published item should carry (ADR-0011): the
+ * entry's own `xml:lang` (Atom only) if it has one, else the feed's —
+ * using this poll's freshly fetched value, not the pre-poll one, so a
+ * language change on the source feed applies to items published in the
+ * very same poll rather than only from the next one onward.
+ */
+function withLanguage(item: FeedItem, feedLanguage: FeedLanguage | null): FeedItem {
+  if (item.language !== null) return item;
+  return { ...item, language: feedLanguage };
+}
+
+function languageFrom(raw: string | null): FeedLanguage | null {
+  if (raw === null) return null;
+  const result = FeedLanguage.create(raw);
+  return isOk(result) ? result.value : null;
 }
 
 /**
@@ -139,6 +158,8 @@ export function createPollFeed(deps: {
       }
 
       const items = parseItems(fetched.value.feed);
+      const currentLanguage =
+        languageFrom(fetched.value.feed.language) ?? feed.language;
       const newKeys = new Set(
         await deps.items.filterNew(
           feed.id,
@@ -158,7 +179,10 @@ export function createPollFeed(deps: {
         const enriched = feed.fullContentEnabled
           ? await withFullContent(item, deps.contentExtractor)
           : item;
-        const content = decidePostContent(enriched, deps.contentPolicy);
+        const content = decidePostContent(
+          withLanguage(enriched, currentLanguage),
+          deps.contentPolicy,
+        );
         const result = await deps.federation.publish(feed, content);
         if (result.ok) {
           publishedRecords.push({ key: item.key, publishedAt: now });
@@ -186,6 +210,7 @@ export function createPollFeed(deps: {
             : null,
         description: fetched.value.feed.description,
         iconUrl,
+        language: currentLanguage,
       });
       await deps.feeds.save(
         afterSuccessfulPoll(withMetadata, {

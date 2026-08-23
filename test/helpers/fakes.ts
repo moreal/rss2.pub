@@ -4,8 +4,9 @@ import {
   Feed,
   FeedTitle,
 } from "../../src/domain/feed/feed.js";
-import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import type { RawFeedItem } from "../../src/domain/feed/feed-item.js";
+import { FeedLanguage } from "../../src/domain/feed/feed-language.js";
+import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import { Handle } from "../../src/domain/feed/handle.js";
 import { IconUrl } from "../../src/domain/feed/icon-url.js";
 import type { Clock } from "../../src/domain/ports/clock.js";
@@ -53,6 +54,7 @@ export function makeFeed(
     description?: string | null;
     fullContentEnabled?: boolean;
     iconUrl?: string | null;
+    language?: string | null;
     now?: Date;
   } = {},
 ): Feed {
@@ -70,10 +72,19 @@ export function makeFeed(
     fullContentEnabled,
     now: params.now ?? T0,
   });
-  if (params.iconUrl === undefined) return feed;
+  const iconed =
+    params.iconUrl === undefined
+      ? feed
+      : {
+          ...feed,
+          iconUrl:
+            params.iconUrl === null ? null : unwrap(IconUrl.create(params.iconUrl)),
+        };
+  if (params.language === undefined) return iconed;
   return {
-    ...feed,
-    iconUrl: params.iconUrl === null ? null : unwrap(IconUrl.create(params.iconUrl)),
+    ...iconed,
+    language:
+      params.language === null ? null : unwrap(FeedLanguage.create(params.language)),
   };
 }
 
@@ -98,6 +109,7 @@ export const EMPTY_RAW: RawFeedItem = {
   contentHtml: null,
   summaryHtml: null,
   publishedAt: null,
+  language: null,
 };
 
 export function rawItem(overrides: Partial<RawFeedItem>): RawFeedItem {
@@ -108,6 +120,7 @@ export function fetchedFeed(params: {
   title?: string | null;
   description?: string | null;
   link?: string | null;
+  language?: string | null;
   items?: readonly RawFeedItem[];
   validators?: CacheValidators;
 }): FetchFeedSuccess {
@@ -117,6 +130,7 @@ export function fetchedFeed(params: {
       title: params.title ?? null,
       description: params.description ?? null,
       link: params.link ?? null,
+      language: params.language ?? null,
       items: params.items ?? [],
     },
     validators: params.validators ?? { etag: null, lastModified: null },

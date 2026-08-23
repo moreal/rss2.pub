@@ -9,6 +9,9 @@ export type FetchedFeed = {
   /** The channel's own homepage link (RSS `channel.link` / Atom `alternate`),
    * not the feed document's own URL — the source for ADR-0010 favicon lookup. */
   readonly link: string | null;
+  /** Raw BCP-47 tag: RSS channel `<language>` or Atom feed-root `xml:lang`
+   * (ADR-0011). Unvalidated — see `FeedLanguage.create`. */
+  readonly language: string | null;
   readonly items: readonly RawFeedItem[];
 };
 

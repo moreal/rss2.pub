@@ -12,6 +12,7 @@ const EMPTY: RawFeedItem = {
   contentHtml: null,
   summaryHtml: null,
   publishedAt: null,
+  language: null,
 };
 
 describe("FeedItem.fromRaw identity", () => {
@@ -92,5 +93,19 @@ describe("FeedItem.fromRaw normalization", () => {
     const publishedAt = new Date("2026-07-01T00:00:00Z");
     const item = unwrap(FeedItem.fromRaw({ ...EMPTY, guid: "g", publishedAt }));
     expect(item.publishedAt).toEqual(publishedAt);
+  });
+
+  it("validates and normalizes the entry's own xml:lang (ADR-0011)", () => {
+    const item = unwrap(
+      FeedItem.fromRaw({ ...EMPTY, guid: "g", language: "en-us" }),
+    );
+    expect(item.language).toBe("en-US");
+  });
+
+  it("drops a malformed language tag rather than failing the item", () => {
+    const item = unwrap(
+      FeedItem.fromRaw({ ...EMPTY, guid: "g", language: "not a lang" }),
+    );
+    expect(item.language).toBeNull();
   });
 });

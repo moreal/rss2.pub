@@ -1,6 +1,7 @@
 import type { Brand } from "../../shared/brand.js";
 import { err, ok, type Result } from "../../shared/result.js";
 import { sha256Hex } from "../../shared/sha256.js";
+import type { FeedLanguage } from "./feed-language.js";
 import type { FeedUrl } from "./feed-url.js";
 import type { Handle } from "./handle.js";
 import type { IconUrl } from "./icon-url.js";
@@ -69,6 +70,9 @@ export type Feed = {
   readonly fullContentEnabled: boolean;
   /** Actor avatar, resolved from the channel link's favicon (ADR-0010). */
   readonly iconUrl: IconUrl | null;
+  /** RSS channel `<language>` or Atom feed-root `xml:lang` (ADR-0011). Falls
+   * back for items that carry no `xml:lang` of their own. */
+  readonly language: FeedLanguage | null;
   readonly registeredAt: Date;
   readonly validators: CacheValidators;
   readonly consecutiveFailures: number;
@@ -81,6 +85,7 @@ export const Feed = {
     readonly handle: Handle;
     readonly title: FeedTitle | null;
     readonly description: string | null;
+    readonly language?: FeedLanguage | null;
     readonly fullContentEnabled?: boolean;
     readonly now: Date;
   }): Feed {
@@ -95,6 +100,9 @@ export const Feed = {
       // Resolved later, on the first poll (ADR-0010) — registration only
       // proves the feed document is reachable, it never fetches the site.
       iconUrl: null,
+      // Unlike iconUrl, already present in the same document fetched to
+      // register — no extra request needed, so it is set immediately.
+      language: params.language ?? null,
       registeredAt: params.now,
       validators: NO_VALIDATORS,
       consecutiveFailures: 0,
@@ -109,6 +117,7 @@ export const Feed = {
       readonly title: FeedTitle | null;
       readonly description: string | null;
       readonly iconUrl?: IconUrl | null;
+      readonly language?: FeedLanguage | null;
     },
   ): Feed {
     return {
@@ -116,6 +125,7 @@ export const Feed = {
       title: metadata.title ?? feed.title,
       description: metadata.description ?? feed.description,
       iconUrl: metadata.iconUrl ?? feed.iconUrl,
+      language: metadata.language ?? feed.language,
     };
   },
 

@@ -4,6 +4,7 @@ import {
   FeedTitle as FeedTitleFactory,
   NO_VALIDATORS,
 } from "../domain/feed/feed.js";
+import { FeedLanguage } from "../domain/feed/feed-language.js";
 import {
   FeedUrl,
   type InvalidFeedUrl,
@@ -38,6 +39,12 @@ export type RegisterFeed = {
 function titleFrom(raw: string | null): FeedTitle | null {
   if (raw === null) return null;
   const result = FeedTitleFactory.create(raw);
+  return isOk(result) ? result.value : null;
+}
+
+function languageFrom(raw: string | null): FeedLanguage | null {
+  if (raw === null) return null;
+  const result = FeedLanguage.create(raw);
   return isOk(result) ? result.value : null;
 }
 
@@ -80,7 +87,7 @@ export function createRegisterFeed(deps: {
       const metadata =
         fetched.value.status === "fetched"
           ? fetched.value.feed
-          : { title: null, description: null };
+          : { title: null, description: null, language: null };
 
       const handle = Handle.fromFeedUrl(url, fullContentEnabled);
 
@@ -89,6 +96,7 @@ export function createRegisterFeed(deps: {
         handle,
         title: titleFrom(metadata.title),
         description: metadata.description,
+        language: languageFrom(metadata.language),
         fullContentEnabled,
         now: deps.clock.now(),
       });

@@ -322,6 +322,106 @@ describe("federation e2e", () => {
     expect(object["content"]).toContain("<strong>Atom Entry</strong>");
   });
 
+  it("tags Note content with the feed's RSS channel <language> (ADR-0011)", async () => {
+    fixtures.setFixture(
+      "/lang-rss.xml",
+      rssFixture({
+        title: "Korean Blog",
+        language: "ko",
+        items: [
+          {
+            guid: "urn:e2e:lang-rss",
+            title: "Post",
+            description: SHORT_BODY,
+            pubDate: "Fri, 03 Jul 2026 00:00:00 GMT",
+          },
+        ],
+      }),
+    );
+    const feedUrl = fixtures.url("/lang-rss.xml");
+    const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+
+    await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl }),
+    });
+    await app.scheduler.tick();
+
+    const actor = await fetchAp(`${base}/ap/actor/${handle}`);
+    const activities = await collectOutbox(actor["outbox"] as string);
+    const note = await resolveItem(activities[0]?.["object"]);
+    expect(note["type"]).toBe("Note");
+    expect(note["contentMap"]).toMatchObject({ ko: expect.any(String) });
+  });
+
+  it("tags Note content with the Atom feed root's xml:lang (ADR-0011)", async () => {
+    fixtures.setFixture(
+      "/lang-atom.xml",
+      atomFixture({
+        title: "Atom Lang Blog",
+        language: "ja",
+        entries: [
+          {
+            id: "urn:e2e:lang-atom",
+            title: "Entry",
+            contentHtml: "<p>from an atom feed</p>",
+            updated: "2026-07-03T00:00:00Z",
+          },
+        ],
+      }),
+      { contentType: "application/atom+xml" },
+    );
+    const feedUrl = fixtures.url("/lang-atom.xml");
+    const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+
+    await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl }),
+    });
+    await app.scheduler.tick();
+
+    const actor = await fetchAp(`${base}/ap/actor/${handle}`);
+    const activities = await collectOutbox(actor["outbox"] as string);
+    const note = await resolveItem(activities[0]?.["object"]);
+    expect(note["type"]).toBe("Note");
+    expect(note["contentMap"]).toMatchObject({ ja: expect.any(String) });
+  });
+
+  it("lets an Atom entry's own xml:lang override the feed root's (ADR-0011)", async () => {
+    fixtures.setFixture(
+      "/lang-atom-override.xml",
+      atomFixture({
+        title: "Mixed Language Blog",
+        language: "en",
+        entries: [
+          {
+            id: "urn:e2e:lang-override",
+            title: "Entry en Français",
+            contentHtml: "<p>ceci est en français</p>",
+            updated: "2026-07-03T00:00:00Z",
+            language: "fr",
+          },
+        ],
+      }),
+      { contentType: "application/atom+xml" },
+    );
+    const feedUrl = fixtures.url("/lang-atom-override.xml");
+    const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+
+    await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl }),
+    });
+    await app.scheduler.tick();
+
+    const actor = await fetchAp(`${base}/ap/actor/${handle}`);
+    const activities = await collectOutbox(actor["outbox"] as string);
+    const note = await resolveItem(activities[0]?.["object"]);
+    expect(note["type"]).toBe("Note");
+    expect(note["contentMap"]).toMatchObject({ fr: expect.any(String) });
+    expect(note["contentMap"]).not.toHaveProperty("en");
+  });
+
   it("exposes NodeInfo", async () => {
     const response = await fetch(`${base}/nodeinfo/2.1`);
     expect(response.status).toBe(200);

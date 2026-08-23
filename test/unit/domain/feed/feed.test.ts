@@ -5,6 +5,7 @@ import {
   FeedTitle,
   NO_VALIDATORS,
 } from "../../../../src/domain/feed/feed.js";
+import { FeedLanguage } from "../../../../src/domain/feed/feed-language.js";
 import { FeedUrl } from "../../../../src/domain/feed/feed-url.js";
 import { Handle } from "../../../../src/domain/feed/handle.js";
 import { IconUrl } from "../../../../src/domain/feed/icon-url.js";
@@ -79,6 +80,20 @@ describe("Feed.register", () => {
     // Resolved later, on the first poll (ADR-0010) — registration never
     // fetches the channel link's site.
     expect(feed.iconUrl).toBeNull();
+    expect(feed.language).toBeNull();
+  });
+
+  it("sets the language from the same document fetched to register (ADR-0011)", () => {
+    const language = unwrap(FeedLanguage.create("ko"));
+    const feed = Feed.register({
+      url,
+      handle,
+      title: null,
+      description: null,
+      language,
+      now,
+    });
+    expect(feed.language).toBe(language);
   });
 
   it("carries the full-content opt-in through to identity (ADR-0009)", () => {
@@ -138,6 +153,30 @@ describe("Feed.withMetadata", () => {
     });
     const updated = Feed.withMetadata(iconed, { title: null, description: null });
     expect(updated.iconUrl).toBe(iconUrl);
+  });
+
+  it("adopts a newly discovered language (ADR-0011)", () => {
+    const language = unwrap(FeedLanguage.create("ko"));
+    const updated = Feed.withMetadata(base, {
+      title: null,
+      description: null,
+      language,
+    });
+    expect(updated.language).toBe(language);
+  });
+
+  it("keeps the existing language when the poll offers none", () => {
+    const language = unwrap(FeedLanguage.create("ko"));
+    const languaged = Feed.withMetadata(base, {
+      title: null,
+      description: null,
+      language,
+    });
+    const updated = Feed.withMetadata(languaged, {
+      title: null,
+      description: null,
+    });
+    expect(updated.language).toBe(language);
   });
 });
 

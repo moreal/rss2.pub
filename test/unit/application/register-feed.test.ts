@@ -134,5 +134,23 @@ describe("RegisterFeed", () => {
     expect(created).toBe(true);
     expect(feed.title).toBeNull();
     expect(feed.description).toBeNull();
+    expect(feed.language).toBeNull();
+  });
+
+  it("sets the language from the initial fetch (ADR-0011)", async () => {
+    const { registerFeed, fetcher } = setup();
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({ language: "ko" })));
+    const { feed } = unwrap(await registerFeed.execute("https://a.co/f"));
+    expect(feed.language).toBe("ko");
+  });
+
+  it("drops a malformed language tag rather than failing registration", async () => {
+    const { registerFeed, fetcher } = setup();
+    fetcher.respondWith(
+      "https://a.co/f",
+      ok(fetchedFeed({ language: "not a lang" })),
+    );
+    const { feed } = unwrap(await registerFeed.execute("https://a.co/f"));
+    expect(feed.language).toBeNull();
   });
 });

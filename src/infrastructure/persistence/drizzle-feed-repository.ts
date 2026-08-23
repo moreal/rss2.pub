@@ -6,6 +6,7 @@ import {
   FeedId,
   FeedTitle,
 } from "../../domain/feed/feed.js";
+import { FeedLanguage } from "../../domain/feed/feed-language.js";
 import { FeedUrl } from "../../domain/feed/feed-url.js";
 import { Handle } from "../../domain/feed/handle.js";
 import { IconUrl } from "../../domain/feed/icon-url.js";
@@ -48,6 +49,10 @@ function rowToFeed(row: FeedRow): Feed {
       row.iconUrl === null
         ? null
         : parseOrCorrupt(IconUrl.create(row.iconUrl), "iconUrl"),
+    language:
+      row.language === null
+        ? null
+        : parseOrCorrupt(FeedLanguage.create(row.language), "language"),
     registeredAt: row.registeredAt,
     validators,
     consecutiveFailures: row.consecutiveFailures,
@@ -64,6 +69,7 @@ function feedToRow(feed: Feed): Omit<FeedRow, "followerCount"> {
     title: feed.title,
     description: feed.description,
     iconUrl: feed.iconUrl,
+    language: feed.language,
     registeredAt: feed.registeredAt,
     etag: feed.validators.etag,
     lastModified: feed.validators.lastModified,

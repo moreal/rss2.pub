@@ -16,6 +16,7 @@ const EMPTY: RawFeedItem = {
   contentHtml: null,
   summaryHtml: null,
   publishedAt: null,
+  language: null,
 };
 
 function item(overrides: Partial<RawFeedItem>) {
@@ -67,7 +68,24 @@ describe("decidePostContent", () => {
       title: "Short",
       bodyHtml: "<p>tiny <strong>post</strong></p>",
       linkUrl: "https://a.co/1",
+      language: null,
     });
+  });
+
+  it("carries the item's language through to the published content", () => {
+    const note = item({
+      contentHtml: "<p>short</p>",
+      language: "ko",
+    });
+    expect(decidePostContent(note, ContentPolicy.DEFAULT).language).toBe("ko");
+
+    const article = item({
+      contentHtml: `<p>${"word ".repeat(600)}</p>`,
+      language: "ko",
+    });
+    expect(decidePostContent(article, ContentPolicy.DEFAULT).language).toBe(
+      "ko",
+    );
   });
 
   it("measures length on stripped text, not raw HTML (boundary inclusive)", () => {

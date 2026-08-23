@@ -11,6 +11,7 @@ export function rssFixture(params: {
   readonly title: string;
   readonly description?: string;
   readonly link?: string;
+  readonly language?: string;
   readonly items: readonly RssItem[];
 }): string {
   const items = params.items
@@ -44,6 +45,7 @@ export function rssFixture(params: {
     <title>${params.title}</title>
     <link>${params.link ?? "https://example.com/"}</link>
     <description>${params.description ?? ""}</description>
+    ${params.language !== undefined ? `<language>${params.language}</language>` : ""}
 ${items}
   </channel>
 </rss>`;
@@ -56,17 +58,19 @@ type AtomEntry = {
   readonly summary?: string;
   readonly contentHtml?: string;
   readonly updated?: string;
+  readonly language?: string;
 };
 
 export function atomFixture(params: {
   readonly title: string;
   readonly subtitle?: string;
+  readonly language?: string;
   readonly entries: readonly AtomEntry[];
 }): string {
   const entries = params.entries
     .map((entry) =>
       [
-        "  <entry>",
+        `  <entry${entry.language !== undefined ? ` xml:lang="${entry.language}"` : ""}>`,
         entry.id !== undefined ? `    <id>${entry.id}</id>` : null,
         entry.link !== undefined
           ? `    <link rel="alternate" href="${entry.link}"/>`
@@ -87,7 +91,7 @@ export function atomFixture(params: {
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
+<feed xmlns="http://www.w3.org/2005/Atom"${params.language !== undefined ? ` xml:lang="${params.language}"` : ""}>
   <id>urn:example:feed</id>
   <title>${params.title}</title>
   ${params.subtitle !== undefined ? `<subtitle>${params.subtitle}</subtitle>` : ""}

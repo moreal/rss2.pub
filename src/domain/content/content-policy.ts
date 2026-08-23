@@ -1,5 +1,6 @@
 import { err, ok, type Result } from "../../shared/result.js";
 import type { FeedItem } from "../feed/feed-item.js";
+import type { FeedLanguage } from "../feed/feed-language.js";
 import { escapeHtml, firstParagraph, stripHtml, truncateText } from "./html.js";
 
 /**
@@ -13,6 +14,7 @@ export type NotePost = {
   readonly title: string | null;
   readonly bodyHtml: string;
   readonly linkUrl: string | null;
+  readonly language: FeedLanguage | null;
 };
 
 export type ArticlePost = {
@@ -21,6 +23,7 @@ export type ArticlePost = {
   readonly summaryHtml: string;
   readonly contentHtml: string;
   readonly linkUrl: string | null;
+  readonly language: FeedLanguage | null;
 };
 
 export type PostContent = NotePost | ArticlePost;
@@ -81,6 +84,7 @@ export function decidePostContent(
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
+      language: item.language,
     };
   }
 
@@ -97,5 +101,6 @@ export function decidePostContent(
     summaryHtml: teaser,
     contentHtml: item.contentHtml,
     linkUrl: item.link,
+    language: item.language,
   };
 }

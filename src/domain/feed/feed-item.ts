@@ -1,6 +1,7 @@
 import type { Brand } from "../../shared/brand.js";
-import { err, ok, type Result } from "../../shared/result.js";
+import { err, isOk, ok, type Result } from "../../shared/result.js";
 import { sha256Hex } from "../../shared/sha256.js";
+import { FeedLanguage } from "./feed-language.js";
 
 /**
  * Duplicate-suppression identity of an item within one feed. Precedence:
@@ -16,6 +17,9 @@ export type RawFeedItem = {
   readonly contentHtml: string | null;
   readonly summaryHtml: string | null;
   readonly publishedAt: Date | null;
+  /** Raw BCP-47 tag from the entry's own `xml:lang` (Atom only — ADR-0011).
+   * RSS items never carry one; the feed-level language applies instead. */
+  readonly language: string | null;
 };
 
 export type FeedItem = {
@@ -25,6 +29,7 @@ export type FeedItem = {
   readonly contentHtml: string;
   readonly summaryHtml: string | null;
   readonly publishedAt: Date | null;
+  readonly language: FeedLanguage | null;
 };
 
 export type UnidentifiableItem = { readonly type: "UnidentifiableItem" };
@@ -32,6 +37,13 @@ export type UnidentifiableItem = { readonly type: "UnidentifiableItem" };
 function normalize(value: string | null): string | null {
   const trimmed = value?.trim() ?? "";
   return trimmed.length === 0 ? null : trimmed;
+}
+
+/** Malformed `xml:lang` values are dropped rather than failing the item. */
+function parseLanguage(raw: string | null): FeedLanguage | null {
+  if (raw === null) return null;
+  const result = FeedLanguage.create(raw);
+  return isOk(result) ? result.value : null;
 }
 
 export const FeedItem = {
@@ -60,6 +72,7 @@ export const FeedItem = {
       contentHtml: contentHtml ?? summaryHtml ?? "",
       summaryHtml,
       publishedAt: raw.publishedAt,
+      language: parseLanguage(raw.language),
     });
   },
 } as const;

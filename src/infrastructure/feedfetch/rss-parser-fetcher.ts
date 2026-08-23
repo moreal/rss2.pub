@@ -16,8 +16,39 @@ type CustomItem = {
   readonly summary?: string | { readonly _?: string };
 };
 
+/** RSS channel `<language>` — declared explicitly since rss-parser's default
+ * `Output<U>` type doesn't include it even though the runtime populates it. */
+type CustomFeed = {
+  readonly language?: string;
+};
+
 const ACCEPT =
   "application/rss+xml, application/atom+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5";
+
+const XML_LANG = /\bxml:lang=["']([^"']*)["']/;
+
+function xmlLangOf(openTag: string): string | null {
+  return openTag.match(XML_LANG)?.[1] ?? null;
+}
+
+/**
+ * Atom's `xml:lang` (feed root or per-entry) is an XML attribute, not a named
+ * child element, so rss-parser — which only copies named child elements, and
+ * never exposes its own raw parse result — cannot see it (ADR-0011). These
+ * pull it straight from the source document's opening tags instead. RSS
+ * documents have no `<feed>`/`<entry>` tags, so both are natural no-ops there.
+ */
+export function atomFeedXmlLang(body: string): string | null {
+  const tag = body.match(/<feed\b[^>]*>/i)?.[0];
+  return tag === undefined ? null : xmlLangOf(tag);
+}
+
+/** Ordered per-entry `xml:lang`, `null` where an entry has none of its own
+ * (no inheritance applied here — see `RawFeedItem.language`). */
+export function atomEntryXmlLangs(body: string): (string | null)[] {
+  const tags = body.match(/<entry\b[^>]*>/gi) ?? [];
+  return tags.map(xmlLangOf);
+}
 
 function messageOf(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
@@ -51,8 +82,9 @@ export function createRssParserFetcher(options?: {
   const userAgent =
     options?.userAgent ??
     "Mozilla/5.0 (compatible; rss2.pub/1.0; +https://rss2.pub)";
-  const parser = new Parser<Record<string, unknown>, CustomItem>({
+  const parser = new Parser<CustomFeed, CustomItem>({
     customFields: {
+      feed: ["language"],
       item: ["id", ["content:encoded", "contentEncoded"], "summary"],
     },
   });
@@ -103,13 +135,15 @@ export function createRssParserFetcher(options?: {
         });
       }
 
-      const items: RawFeedItem[] = (parsed.items ?? []).map((item) => ({
+      const entryLanguages = atomEntryXmlLangs(body);
+      const items: RawFeedItem[] = (parsed.items ?? []).map((item, index) => ({
         guid: item.guid ?? item.id ?? null,
         link: item.link ?? null,
         title: item.title ?? null,
         contentHtml: item.contentEncoded ?? item.content ?? null,
         summaryHtml: summaryOf(item.summary),
         publishedAt: dateOf(item.isoDate, item.pubDate),
+        language: entryLanguages[index] ?? null,
       }));
 
       return ok({
@@ -118,6 +152,7 @@ export function createRssParserFetcher(options?: {
           title: parsed.title ?? null,
           description: parsed.description ?? null,
           link: parsed.link ?? null,
+          language: parsed.language ?? atomFeedXmlLang(body),
           items,
         },
         validators: {

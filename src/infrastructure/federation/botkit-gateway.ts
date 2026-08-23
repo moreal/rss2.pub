@@ -1,9 +1,10 @@
 import { Article, Note, type BotGroup, type Repository } from "@fedify/botkit";
 import type { Uuid } from "@fedify/botkit/repository";
-import { Delete, Tombstone, Update } from "@fedify/vocab";
+import { Delete, LanguageString, Tombstone, Update } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { PostContent } from "../../domain/content/content-policy.js";
 import type { Feed } from "../../domain/feed/feed.js";
+import type { FeedLanguage } from "../../domain/feed/feed-language.js";
 import type {
   FederationError,
   FederationGateway,
@@ -99,6 +100,7 @@ export function createBotKitFederationGateway(deps: {
     name: string,
     summaryHtml: string,
     linkUrl: string | null,
+    language: FeedLanguage | null,
   ): Promise<void> {
     const uuid = messageUuid(messageId);
     if (uuid === null) {
@@ -114,8 +116,12 @@ export function createBotKitFederationGateway(deps: {
       const object = await activity.getObject(session.context);
       if (!(object instanceof Article)) return activity;
       renamed = object.clone({
-        name,
-        summary: summaryHtml,
+        // BotKit's own `language` publish option (used below) only tags
+        // `content` — name/summary go out through this rewrite regardless,
+        // so they need the same LanguageString wrapping applied here.
+        name: language === null ? name : new LanguageString(name, language),
+        summary:
+          language === null ? summaryHtml : new LanguageString(summaryHtml, language),
         url: parseLinkUrl(linkUrl),
       });
       return activity.clone({ object: renamed });
@@ -166,13 +172,20 @@ export function createBotKitFederationGateway(deps: {
         if (content.kind === "note") {
           const message = await session.publish(
             new RawHtmlText(renderNoteHtml(content)),
-            { visibility: "public" },
+            {
+              visibility: "public",
+              ...(content.language !== null ? { language: content.language } : {}),
+            },
           );
           await applyNoteUrl(session, feed.handle, message.id, content.linkUrl);
         } else {
           const message = await session.publish(
             new RawHtmlText(renderArticleHtml(content)),
-            { class: Article, visibility: "public" },
+            {
+              class: Article,
+              visibility: "public",
+              ...(content.language !== null ? { language: content.language } : {}),
+            },
           );
           await applyArticleMetadata(
             session,
@@ -181,6 +194,7 @@ export function createBotKitFederationGateway(deps: {
             content.name,
             renderArticleSummaryHtml(content),
             content.linkUrl,
+            content.language,
           );
         }
         return ok(undefined);
