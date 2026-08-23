@@ -183,12 +183,61 @@ describe("federation e2e", () => {
     expect(note?.["content"]).toContain("<strong>Short Post</strong>");
     expect(note?.["content"]).toContain("tiny <strong>update</strong>");
     expect(note?.["content"]).toContain("https://blog.example/short");
+    // ADR-0005 follow-up: object-level `url` (distinct from `id`) is the
+    // original feed item link, so remote clients navigate there instead of
+    // rss2.pub's own message page.
+    expect(note?.["url"]).toBe("https://blog.example/short");
 
     expect(article, "long item becomes an Article").toBeDefined();
     expect(article?.["name"]).toBe("Long Post");
     expect(article?.["summary"]).toContain("lead paragraph of the long post");
     expect(article?.["content"]).toContain("<h1>Long Post</h1>");
     expect(article?.["content"]).toContain("word word");
+    expect(article?.["url"]).toBe("https://blog.example/long");
+  });
+
+  it("still publishes when a feed item's link is not an absolute URL", async () => {
+    // `new URL()` throws on a relative link; that must only skip the object's
+    // `url` metadata, not fail the whole publish (regression guard for the
+    // botkit-gateway.ts url rewrite).
+    fixtures.setFixture(
+      "/blog/bad-link-feed.xml",
+      rssFixture({
+        title: "Bad Link Blog",
+        items: [
+          {
+            guid: "urn:e2e:bad-link",
+            link: "/relative/path",
+            title: "Bad Link Post",
+            description: SHORT_BODY,
+            pubDate: "Fri, 03 Jul 2026 00:00:00 GMT",
+          },
+        ],
+      }),
+    );
+
+    const feedUrl = fixtures.url("/blog/bad-link-feed.xml");
+    const badLinkHandle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+
+    const registerResponse = await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl }),
+    });
+    expect(registerResponse.status).toBe(200);
+
+    await app.scheduler.tick();
+
+    const actor = await fetchAp(`${base}/ap/actor/${badLinkHandle}`);
+    const activities = await collectOutbox(actor["outbox"] as string);
+    expect(activities).toHaveLength(1);
+
+    const note = await resolveItem(activities[0]?.["object"]);
+    expect(note["type"]).toBe("Note");
+    expect(note["content"]).toContain("Bad Link Post");
+    // The malformed link is never parsed into `url`; BotKit's own default
+    // permalink (set at publish time) is left untouched instead.
+    expect(note["url"]).not.toBe("/relative/path");
+    expect(typeof note["url"]).toBe("string");
   });
 
   it("does not duplicate items and honors conditional GET on the next poll", async () => {

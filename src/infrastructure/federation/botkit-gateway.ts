@@ -1,4 +1,4 @@
-import { Article, type BotGroup, type Repository } from "@fedify/botkit";
+import { Article, Note, type BotGroup, type Repository } from "@fedify/botkit";
 import type { Uuid } from "@fedify/botkit/repository";
 import { Delete, Tombstone, Update } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
@@ -25,52 +25,64 @@ function messageOf(cause: unknown): string {
 }
 
 /**
- * FederationGateway over a BotKit dynamic bot group. Notes publish directly;
- * Articles need a post-publish repository rewrite because BotKit's publish()
- * cannot set the object-level `name`/`summary` — after rewriting we send an
- * Update so remote copies pick up the title (Mastodon renders Articles from
- * name + summary + link only).
+ * FederationGateway over a BotKit dynamic bot group. Both kinds need a
+ * post-publish repository rewrite because BotKit's publish() cannot set
+ * object-level `name`/`summary`/`url` — after rewriting we send an Update so
+ * remote copies pick it up. `url` (the original feed item link, distinct
+ * from the object's own `id`) makes Mastodon treat it as the post's
+ * permalink and, for Articles, appends it to the rendered text; Articles
+ * additionally need `name`/`summary` for Mastodon's title+teaser+link view.
+ *
+ * This is a workaround for a BotKit API gap, not a permanent design — once
+ * BotKit exposes these fields on session.publish() directly, this rewrite
+ * step should be removed (see AGENTS.md).
  */
 export function createBotKitFederationGateway(deps: {
   readonly group: BotGroup<void>;
   readonly repository: Repository;
   readonly origin: string;
 }): FederationGateway {
-  async function applyArticleMetadata(
-    session: Awaited<ReturnType<BotGroup<void>["getSession"]>>,
-    identifier: string,
-    messageId: URL,
-    name: string,
-    summaryHtml: string,
-  ): Promise<void> {
-    // BotKit message URIs end in a UUIDv7 (…/article/{uuid}); validate before
-    // branding so a URL-shape change fails loudly instead of silently leaving
-    // Articles without name/summary.
+  type Session = Awaited<ReturnType<BotGroup<void>["getSession"]>>;
+
+  // `linkUrl` comes straight from the feed (FeedItem.link is unvalidated —
+  // see feed-item.ts) and may be relative or otherwise malformed. Fail soft:
+  // a bad link should only skip the url metadata, not abort the whole
+  // publish() (the Note/Article itself has already been sent by then).
+  function parseLinkUrl(linkUrl: string | null): URL | null {
+    if (linkUrl === null) return null;
+    try {
+      return new URL(linkUrl);
+    } catch {
+      logger.warn("skipping url metadata: not an absolute URL {link}", {
+        link: linkUrl,
+      });
+      return null;
+    }
+  }
+
+  // BotKit message URIs end in a UUIDv7 (…/note|article/{uuid}); validate
+  // before branding so a URL-shape change fails loudly instead of silently
+  // leaving messages with stale object-level metadata.
+  function messageUuid(messageId: URL): Uuid | null {
     const lastSegment = messageId.pathname.split("/").at(-1) ?? "";
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(lastSegment)) {
-      logger.warn(
-        "cannot apply Article metadata: unexpected message URI shape {id}",
-        { id: messageId.href },
-      );
-      return;
+      return null;
     }
-    const uuid = lastSegment as Uuid;
+    return lastSegment as Uuid;
+  }
 
-    let renamed: Article | null = null;
-    await deps.repository.updateMessage(identifier, uuid, async (activity) => {
-      const object = await activity.getObject(session.context);
-      if (!(object instanceof Article)) return activity;
-      renamed = object.clone({ name, summary: summaryHtml });
-      return activity.clone({ object: renamed });
-    });
-    if (renamed === null) return;
-
+  async function sendObjectUpdate(
+    session: Session,
+    identifier: string,
+    messageId: URL,
+    object: Article | Note,
+  ): Promise<void> {
     const update = new Update({
-      id: new URL(`${messageId.href}#name/${crypto.randomUUID()}`),
+      id: new URL(`${messageId.href}#update/${crypto.randomUUID()}`),
       actor: session.actorId,
       tos: [PUBLIC],
       ccs: [session.context.getFollowersUri(identifier)],
-      object: renamed,
+      object,
     });
     await session.context.sendActivity(
       { identifier },
@@ -78,6 +90,66 @@ export function createBotKitFederationGateway(deps: {
       update,
       { preferSharedInbox: true },
     );
+  }
+
+  async function applyArticleMetadata(
+    session: Session,
+    identifier: string,
+    messageId: URL,
+    name: string,
+    summaryHtml: string,
+    linkUrl: string | null,
+  ): Promise<void> {
+    const uuid = messageUuid(messageId);
+    if (uuid === null) {
+      logger.warn(
+        "cannot apply Article metadata: unexpected message URI shape {id}",
+        { id: messageId.href },
+      );
+      return;
+    }
+
+    let renamed: Article | null = null;
+    await deps.repository.updateMessage(identifier, uuid, async (activity) => {
+      const object = await activity.getObject(session.context);
+      if (!(object instanceof Article)) return activity;
+      renamed = object.clone({
+        name,
+        summary: summaryHtml,
+        url: parseLinkUrl(linkUrl),
+      });
+      return activity.clone({ object: renamed });
+    });
+    if (renamed === null) return;
+    await sendObjectUpdate(session, identifier, messageId, renamed);
+  }
+
+  async function applyNoteUrl(
+    session: Session,
+    identifier: string,
+    messageId: URL,
+    linkUrl: string | null,
+  ): Promise<void> {
+    const url = parseLinkUrl(linkUrl);
+    if (url === null) return;
+    const uuid = messageUuid(messageId);
+    if (uuid === null) {
+      logger.warn(
+        "cannot apply Note url: unexpected message URI shape {id}",
+        { id: messageId.href },
+      );
+      return;
+    }
+
+    let updated: Note | null = null;
+    await deps.repository.updateMessage(identifier, uuid, async (activity) => {
+      const object = await activity.getObject(session.context);
+      if (!(object instanceof Note)) return activity;
+      updated = object.clone({ url });
+      return activity.clone({ object: updated });
+    });
+    if (updated === null) return;
+    await sendObjectUpdate(session, identifier, messageId, updated);
   }
 
   return {
@@ -92,9 +164,11 @@ export function createBotKitFederationGateway(deps: {
           undefined,
         );
         if (content.kind === "note") {
-          await session.publish(new RawHtmlText(renderNoteHtml(content)), {
-            visibility: "public",
-          });
+          const message = await session.publish(
+            new RawHtmlText(renderNoteHtml(content)),
+            { visibility: "public" },
+          );
+          await applyNoteUrl(session, feed.handle, message.id, content.linkUrl);
         } else {
           const message = await session.publish(
             new RawHtmlText(renderArticleHtml(content)),
@@ -106,6 +180,7 @@ export function createBotKitFederationGateway(deps: {
             message.id,
             content.name,
             renderArticleSummaryHtml(content),
+            content.linkUrl,
           );
         }
         return ok(undefined);
