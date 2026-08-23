@@ -83,6 +83,8 @@ beforeAll(async () => {
     // Both sides talk over 127.0.0.1, so the SSRF guard must stand down for
     // signature key fetches — this is exactly what the flag exists for.
     allowPrivateAddress: true,
+    logLevel: "warning",
+    logFormat: "console",
   };
   app = await createApp(config);
   appServer = serve({ fetch: app.fetch, port: appPort, hostname: "127.0.0.1" });

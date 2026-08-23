@@ -16,6 +16,8 @@ describe("loadConfig", () => {
       schedulerTickMs: 60_000,
       noteMaxChars: 2000,
       teaserMaxChars: 200,
+      logLevel: "info",
+      logFormat: "console",
     });
   });
 
@@ -45,6 +47,24 @@ describe("loadConfig", () => {
     ).toMatchObject({ key: "POLL_INTERVAL_SECONDS" });
     expect(unwrapErr(loadConfig({ ...BASE, PORT: "0" }))).toMatchObject({
       key: "PORT",
+    });
+  });
+
+  it("parses LOG_LEVEL case-insensitively and rejects unknown levels", () => {
+    expect(
+      loadConfig({ ...BASE, LOG_LEVEL: "DEBUG" }),
+    ).toMatchObject({ ok: true, value: { logLevel: "debug" } });
+    expect(unwrapErr(loadConfig({ ...BASE, LOG_LEVEL: "verbose" }))).toMatchObject(
+      { key: "LOG_LEVEL" },
+    );
+  });
+
+  it("parses LOG_FORMAT case-insensitively and rejects unknown formats", () => {
+    expect(
+      loadConfig({ ...BASE, LOG_FORMAT: "JSON" }),
+    ).toMatchObject({ ok: true, value: { logFormat: "json" } });
+    expect(unwrapErr(loadConfig({ ...BASE, LOG_FORMAT: "xml" }))).toMatchObject({
+      key: "LOG_FORMAT",
     });
   });
 });

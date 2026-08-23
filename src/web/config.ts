@@ -1,4 +1,12 @@
+import { isLogLevel, type LogLevel } from "@logtape/logtape";
 import { err, ok, type Result } from "../shared/result.js";
+
+export const LOG_FORMATS = ["console", "json"] as const;
+export type LogFormat = (typeof LOG_FORMATS)[number];
+
+function isLogFormat(value: string): value is LogFormat {
+  return LOG_FORMATS.includes(value as LogFormat);
+}
 
 export type AppConfig = {
   /** Public federation origin, e.g. "https://rss2.pub". */
@@ -16,6 +24,10 @@ export type AppConfig = {
   readonly behindProxy: boolean;
   /** TEST ONLY (ALLOW_PRIVATE_ADDRESS=true): disables the SSRF guard. */
   readonly allowPrivateAddress: boolean;
+  /** Minimum level logged by application ("rss2pub") categories. */
+  readonly logLevel: LogLevel;
+  /** "console" for human-readable output, "json" for one JSON object per line. */
+  readonly logFormat: LogFormat;
 };
 
 export type InvalidConfig = {
@@ -94,6 +106,34 @@ export function loadConfig(
   const teaserMaxChars = integer(env, "TEASER_MAX_CHARS", 200);
   if (!teaserMaxChars.ok) return teaserMaxChars;
 
+  let logLevel: LogLevel = "info";
+  const rawLogLevel = env["LOG_LEVEL"];
+  if (rawLogLevel !== undefined && rawLogLevel.trim() !== "") {
+    const normalized = rawLogLevel.trim().toLowerCase();
+    if (!isLogLevel(normalized)) {
+      return err({
+        type: "InvalidConfig",
+        key: "LOG_LEVEL",
+        message: `expected one of trace|debug|info|warning|error|fatal, got "${rawLogLevel}"`,
+      });
+    }
+    logLevel = normalized;
+  }
+
+  let logFormat: LogFormat = "console";
+  const rawLogFormat = env["LOG_FORMAT"];
+  if (rawLogFormat !== undefined && rawLogFormat.trim() !== "") {
+    const normalized = rawLogFormat.trim().toLowerCase();
+    if (!isLogFormat(normalized)) {
+      return err({
+        type: "InvalidConfig",
+        key: "LOG_FORMAT",
+        message: `expected one of ${LOG_FORMATS.join("|")}, got "${rawLogFormat}"`,
+      });
+    }
+    logFormat = normalized;
+  }
+
   return ok({
     origin: origin.origin,
     host: origin.host,
@@ -106,5 +146,7 @@ export function loadConfig(
     teaserMaxChars: teaserMaxChars.value,
     behindProxy: env["BEHIND_PROXY"] === "true",
     allowPrivateAddress: env["ALLOW_PRIVATE_ADDRESS"] === "true",
+    logLevel,
+    logFormat,
   });
 }

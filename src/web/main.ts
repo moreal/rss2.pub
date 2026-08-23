@@ -14,7 +14,7 @@ if (!configResult.ok) {
 }
 const config = configResult.value;
 
-await configureLogging();
+await configureLogging({ appLevel: config.logLevel, format: config.logFormat });
 const telemetry = startTelemetry({
   serviceName: "rss2pub",
   endpoint: process.env["OTEL_EXPORTER_OTLP_ENDPOINT"],

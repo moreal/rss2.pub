@@ -50,6 +50,8 @@ beforeAll(async () => {
     teaserMaxChars: 200,
     behindProxy: false,
     allowPrivateAddress: false,
+    logLevel: "warning",
+    logFormat: "console",
   };
   app = await createApp(config);
   server = serve({ fetch: app.fetch, port, hostname: "127.0.0.1" });
