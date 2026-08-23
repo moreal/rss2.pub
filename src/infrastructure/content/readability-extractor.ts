@@ -22,7 +22,15 @@ export function createReadabilityContentExtractor(options?: {
   readonly userAgent?: string;
 }): ContentExtractor {
   const timeoutMs = options?.timeoutMs ?? 15_000;
-  const userAgent = options?.userAgent ?? "rss2.pub (+https://rss2.pub)";
+  // Some origin sites' bot filters reject any User-Agent that doesn't start
+  // with "Mozilla/5.0" (a common, crude WAF heuristic), 403-ing the plain
+  // "rss2.pub (+https://rss2.pub)" identifier and silently degrading every
+  // extraction on that site back to the feed's teaser. The Googlebot-style
+  // "compatible; ...; +url" form keeps us honestly self-identified as a bot
+  // while clearing that filter.
+  const userAgent =
+    options?.userAgent ??
+    "Mozilla/5.0 (compatible; rss2.pub/1.0; +https://rss2.pub)";
 
   return {
     async extract(
