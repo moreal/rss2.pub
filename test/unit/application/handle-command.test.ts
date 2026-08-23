@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createCommandHandler,
   parseCommand,
+  type ReplyPart,
 } from "../../../src/application/handle-command.js";
 import { createRegisterFeed } from "../../../src/application/register-feed.js";
 import { createSearchFeeds } from "../../../src/application/search-feeds.js";
@@ -55,6 +56,13 @@ describe("parseCommand", () => {
   });
 });
 
+/** Flattens reply parts back into plain text, e.g. `@handle@host` for a mention part. */
+function flatten(parts: readonly ReplyPart[]): string {
+  return parts
+    .map((part) => (part.type === "text" ? part.value : part.handle))
+    .join("");
+}
+
 describe("CommandHandler", () => {
   const now = new Date("2026-07-26T12:00:00Z");
 
@@ -82,17 +90,23 @@ describe("CommandHandler", () => {
       ok(fetchedFeed({ title: "My Blog" })),
     );
     const reply = await handler.handle("@rss2pub register https://a.co/f");
-    expect(reply).toContain("Registered My Blog!");
-    expect(reply).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
+    expect(flatten(reply)).toContain('Registered "My Blog"!');
+    expect(flatten(reply)).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
+    expect(reply).toContainEqual(
+      expect.objectContaining({
+        type: "mention",
+        handle: expect.stringMatching(/@a_co_f_[a-z0-9]{7}@rss2\.test/),
+      }),
+    );
   });
 
   it("registers the full-content variant as a distinct, separately followable account", async () => {
     const { fetcher, handler } = setup();
     fetcher.respondWith("https://a.co/f", ok(fetchedFeed({ title: "My Blog" })));
-    const teaser = await handler.handle("register https://a.co/f");
-    const full = await handler.handle("register https://a.co/f full");
-    expect(teaser).toContain("Registered My Blog!");
-    expect(full).toContain("Registered My Blog!");
+    const teaser = flatten(await handler.handle("register https://a.co/f"));
+    const full = flatten(await handler.handle("register https://a.co/f full"));
+    expect(teaser).toContain('Registered "My Blog"!');
+    expect(full).toContain('Registered "My Blog"!');
     const teaserHandle = /@(a_co_f_[a-z0-9]{7})@rss2\.test/.exec(teaser)?.[1];
     const fullHandle = /@(a_co_f_[a-z0-9]{7})@rss2\.test/.exec(full)?.[1];
     expect(teaserHandle).toBeDefined();
@@ -105,16 +119,22 @@ describe("CommandHandler", () => {
     fetcher.respondWith("https://a.co/f", ok(fetchedFeed({})));
     await handler.handle("register https://a.co/f");
     const reply = await handler.handle("register https://a.co/f");
-    expect(reply).toContain("Already registered");
-    expect(reply).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
+    expect(flatten(reply)).toContain("Already registered");
+    expect(flatten(reply)).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
+    expect(reply).toContainEqual(
+      expect.objectContaining({
+        type: "mention",
+        handle: expect.stringMatching(/@a_co_f_[a-z0-9]{7}@rss2\.test/),
+      }),
+    );
   });
 
   it("explains registration failures", async () => {
     const { fetcher, handler } = setup();
-    expect(await handler.handle("register not-a-url")).toContain(
+    expect(flatten(await handler.handle("register not-a-url"))).toContain(
       "doesn't look like a URL",
     );
-    expect(await handler.handle("register ftp://a.co/f")).toContain(
+    expect(flatten(await handler.handle("register ftp://a.co/f"))).toContain(
       "Only http(s) feeds are supported",
     );
     fetcher.respondWith(
@@ -125,9 +145,9 @@ describe("CommandHandler", () => {
         message: "connection refused",
       }),
     );
-    expect(await handler.handle("register https://dead.example/f")).toContain(
-      "couldn't read a feed",
-    );
+    expect(
+      flatten(await handler.handle("register https://dead.example/f")),
+    ).toContain("couldn't read a feed");
   });
 
   it("lists search hits with account handles", async () => {
@@ -138,20 +158,20 @@ describe("CommandHandler", () => {
     );
     await handler.handle("register https://rust.blog/rss");
 
-    const reply = await handler.handle("search rust");
+    const reply = flatten(await handler.handle("search rust"));
     expect(reply).toContain("Found:");
     expect(reply).toMatch(/@rust_blog_rss_[a-z0-9]{7}@rss2\.test — Rust Blog/);
   });
 
   it("suggests registering when a search finds nothing", async () => {
     const { handler } = setup();
-    const reply = await handler.handle("search nothing");
+    const reply = flatten(await handler.handle("search nothing"));
     expect(reply).toContain('No feeds found for "nothing"');
   });
 
   it("answers anything else with usage help", async () => {
     const { handler } = setup();
-    const reply = await handler.handle("@rss2pub hi!");
+    const reply = flatten(await handler.handle("@rss2pub hi!"));
     expect(reply).toContain("register <feed-url>");
     expect(reply).toContain("search <keyword>");
   });

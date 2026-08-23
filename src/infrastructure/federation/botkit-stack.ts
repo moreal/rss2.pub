@@ -5,14 +5,19 @@ import {
   type CreateInstanceOptions,
   type InstanceWithVoidContextData,
   link,
+  mention,
   type Repository,
   text,
+  type Text,
 } from "@fedify/botkit";
 import { PostgresRepository } from "@fedify/botkit-postgres";
 import { PostgresKvStore, PostgresMessageQueue } from "@fedify/postgres";
 import { getLogger } from "@logtape/logtape";
 import type postgres from "postgres";
-import type { CommandHandler } from "../../application/handle-command.js";
+import type {
+  CommandHandler,
+  ReplyPart,
+} from "../../application/handle-command.js";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
 import { Feed } from "../../domain/feed/feed.js";
 import { Handle } from "../../domain/feed/handle.js";
@@ -22,6 +27,45 @@ import { RawHtmlText } from "./raw-html-text.js";
 import { renderFeedProfileHtml } from "./render.js";
 
 const logger = getLogger(["rss2pub", "federation"]);
+
+/**
+ * Splits reply parts into the alternating (literal, mentioned-handle)
+ * shape `text()`'s template-tag form expects: one more string segment
+ * than there are mention handles, each handle sitting between the string
+ * segments around it. Pulled out of {@link renderReply} so this ordering
+ * logic is unit-testable without a live BotKit session.
+ */
+export function toTemplateParts(parts: readonly ReplyPart[]): {
+  readonly strings: readonly string[];
+  readonly mentionHandles: readonly string[];
+} {
+  const strings: string[] = [""];
+  const mentionHandles: string[] = [];
+  for (const part of parts) {
+    if (part.type === "text") {
+      strings[strings.length - 1] += part.value;
+    } else {
+      mentionHandles.push(part.handle);
+      strings.push("");
+    }
+  }
+  return { strings, mentionHandles };
+}
+
+/**
+ * Renders application-layer reply parts as a BotKit text tree, turning each
+ * `mention` part into a real `mention()` node — this is what makes the
+ * handle in a reply a clickable, followable ActivityPub `Mention` (with a
+ * `tag` entry and delivery to the mentioned actor's inbox) instead of inert
+ * text, per ActivityPub's mention convention.
+ */
+function renderReply(parts: readonly ReplyPart[]): Text<"block", void> {
+  const { strings, mentionHandles } = toTemplateParts(parts);
+  return text(
+    Object.assign([...strings], { raw: strings }),
+    ...mentionHandles.map((handle) => mention(handle)),
+  );
+}
 
 /** Handle of the static main actor (PLAN.md 확정 사항). */
 export const MAIN_ACTOR_HANDLE = "rss2pub";
@@ -77,7 +121,7 @@ export function createFederationStack(deps: {
 
   mainBot.onMention = async (_session, message) => {
     const reply = await deps.commandHandler.handle(message.text);
-    await message.reply(text`${reply}`, {
+    await message.reply(renderReply(reply), {
       visibility: message.visibility === "direct" ? "direct" : "unlisted",
     });
   };
