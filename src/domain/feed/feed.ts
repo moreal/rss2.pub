@@ -3,6 +3,7 @@ import { err, ok, type Result } from "../../shared/result.js";
 import { sha256Hex } from "../../shared/sha256.js";
 import type { FeedUrl } from "./feed-url.js";
 import type { Handle } from "./handle.js";
+import type { IconUrl } from "./icon-url.js";
 
 /**
  * Deterministic feed identity: SHA-256 hex of the canonical feed URL and
@@ -66,6 +67,8 @@ export type Feed = {
   /** Opt-in per ADR-0009: fetch each item's original page and extract its
    * main content instead of publishing the feed-provided teaser. */
   readonly fullContentEnabled: boolean;
+  /** Actor avatar, resolved from the channel link's favicon (ADR-0010). */
+  readonly iconUrl: IconUrl | null;
   readonly registeredAt: Date;
   readonly validators: CacheValidators;
   readonly consecutiveFailures: number;
@@ -89,6 +92,9 @@ export const Feed = {
       title: params.title,
       description: params.description,
       fullContentEnabled,
+      // Resolved later, on the first poll (ADR-0010) — registration only
+      // proves the feed document is reachable, it never fetches the site.
+      iconUrl: null,
       registeredAt: params.now,
       validators: NO_VALIDATORS,
       consecutiveFailures: 0,
@@ -102,12 +108,14 @@ export const Feed = {
     metadata: {
       readonly title: FeedTitle | null;
       readonly description: string | null;
+      readonly iconUrl?: IconUrl | null;
     },
   ): Feed {
     return {
       ...feed,
       title: metadata.title ?? feed.title,
       description: metadata.description ?? feed.description,
+      iconUrl: metadata.iconUrl ?? feed.iconUrl,
     };
   },
 

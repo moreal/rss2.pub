@@ -6,6 +6,9 @@ import type { FeedUrl } from "../feed/feed-url.js";
 export type FetchedFeed = {
   readonly title: string | null;
   readonly description: string | null;
+  /** The channel's own homepage link (RSS `channel.link` / Atom `alternate`),
+   * not the feed document's own URL — the source for ADR-0010 favicon lookup. */
+  readonly link: string | null;
   readonly items: readonly RawFeedItem[];
 };
 

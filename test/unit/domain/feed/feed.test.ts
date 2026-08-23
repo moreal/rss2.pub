@@ -7,6 +7,7 @@ import {
 } from "../../../../src/domain/feed/feed.js";
 import { FeedUrl } from "../../../../src/domain/feed/feed-url.js";
 import { Handle } from "../../../../src/domain/feed/handle.js";
+import { IconUrl } from "../../../../src/domain/feed/icon-url.js";
 import { sha256Hex } from "../../../../src/shared/sha256.js";
 import { unwrap, unwrapErr } from "../../../helpers/result.js";
 
@@ -75,6 +76,9 @@ describe("Feed.register", () => {
     expect(feed.nextPollAt).toEqual(now);
     expect(feed.consecutiveFailures).toBe(0);
     expect(feed.validators).toEqual(NO_VALIDATORS);
+    // Resolved later, on the first poll (ADR-0010) — registration never
+    // fetches the channel link's site.
+    expect(feed.iconUrl).toBeNull();
   });
 
   it("carries the full-content opt-in through to identity (ADR-0009)", () => {
@@ -113,6 +117,27 @@ describe("Feed.withMetadata", () => {
     const updated = Feed.withMetadata(titled, { title: null, description: null });
     expect(updated.title).toBe("Keep Me");
     expect(updated.description).toBe("keep");
+  });
+
+  it("adopts a newly resolved icon (ADR-0010)", () => {
+    const iconUrl = unwrap(IconUrl.create("https://example.com/icon.png"));
+    const updated = Feed.withMetadata(base, {
+      title: null,
+      description: null,
+      iconUrl,
+    });
+    expect(updated.iconUrl).toBe(iconUrl);
+  });
+
+  it("keeps the existing icon when no new one is offered", () => {
+    const iconUrl = unwrap(IconUrl.create("https://example.com/icon.png"));
+    const iconed = Feed.withMetadata(base, {
+      title: null,
+      description: null,
+      iconUrl,
+    });
+    const updated = Feed.withMetadata(iconed, { title: null, description: null });
+    expect(updated.iconUrl).toBe(iconUrl);
   });
 });
 

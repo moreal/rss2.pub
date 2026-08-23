@@ -12,6 +12,7 @@ import { err, ok } from "../../../src/shared/result.js";
 import {
   capturingFederation,
   fakeContentExtractor,
+  fakeFaviconResolver,
   fakeFetcher,
   fetchedFeed,
   makeFeed,
@@ -37,6 +38,7 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
   const fetcher = fakeFetcher();
   const federation = capturingFederation();
   const contentExtractor = fakeContentExtractor();
+  const faviconResolver = fakeFaviconResolver();
   const clock = mutableClock(now);
   const pollFeed = createPollFeed({
     feeds,
@@ -44,6 +46,7 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
     fetcher,
     federation,
     contentExtractor,
+    faviconResolver,
     clock,
     pollPolicy,
     contentPolicy: ContentPolicy.DEFAULT,
@@ -56,6 +59,7 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
     fetcher,
     federation,
     contentExtractor,
+    faviconResolver,
     clock,
     pollFeed,
   };
@@ -275,6 +279,71 @@ describe("PollFeed", () => {
     expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
       "<p>teaser</p>",
     );
+  });
+});
+
+describe("PollFeed icon resolution (ADR-0010)", () => {
+  it("resolves the actor icon from the channel link on the first poll", async () => {
+    const { feed, feeds, fetcher, faviconResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ link: "https://a.co/" })),
+    );
+    faviconResolver.respondWith(
+      "https://a.co/",
+      ok({ iconUrl: "https://a.co/favicon.ico" }),
+    );
+
+    await pollFeed.execute(feed.id);
+    expect(faviconResolver.calls).toEqual(["https://a.co/"]);
+    const saved = await feeds.findById(feed.id);
+    expect(saved?.iconUrl).toBe("https://a.co/favicon.ico");
+  });
+
+  it("never re-fetches once an icon is already set", async () => {
+    const { feeds, fetcher, faviconResolver, pollFeed } = setup();
+    const feed = makeFeed({ iconUrl: "https://a.co/existing-icon.png" });
+    await feeds.save(feed);
+    fetcher.respondWith(feed.url, ok(fetchedFeed({ link: "https://a.co/" })));
+
+    await pollFeed.execute(feed.id);
+    expect(faviconResolver.calls).toHaveLength(0);
+    const saved = await feeds.findById(feed.id);
+    expect(saved?.iconUrl).toBe("https://a.co/existing-icon.png");
+  });
+
+  it("leaves the icon null when the channel link is missing or resolution fails", async () => {
+    const { feed, feeds, fetcher, faviconResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(feed.url, ok(fetchedFeed({ link: null })));
+
+    await pollFeed.execute(feed.id);
+    expect(faviconResolver.calls).toHaveLength(0);
+    expect((await feeds.findById(feed.id))?.iconUrl).toBeNull();
+  });
+
+  it("does not fail the poll when favicon resolution errors", async () => {
+    const { feed, feeds, fetcher, federation, faviconResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(
+        fetchedFeed({
+          link: "https://a.co/",
+          items: [rawItem({ guid: "x", title: "post" })],
+        }),
+      ),
+    );
+    faviconResolver.respondWith(
+      "https://a.co/",
+      err({ type: "NotFound", url: "https://a.co/" }),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report).toMatchObject({ status: "polled", published: 1 });
+    expect(federation.published).toHaveLength(1);
+    expect((await feeds.findById(feed.id))?.iconUrl).toBeNull();
   });
 });
 

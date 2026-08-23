@@ -108,6 +108,7 @@ adapter.
 | Single PostgreSQL for domain + Fedify KV/MQ + BotKit state | ADR-0006 |
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
 | Full-content extraction is opt-in per registration (`register <url> full`); teaser and full-content are separate actors, one handle/id per (url, mode) | ADR-0009 (handle/id derivation: ADR-0004) |
+| Actor avatar resolved from the channel link's favicon on the first poll (not at registration); resolved once, never re-fetched | ADR-0010 |
 
 ## Gotchas
 

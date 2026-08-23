@@ -4,6 +4,7 @@ import {
 } from "../domain/content/content-policy.js";
 import { Feed, type FeedId, FeedTitle } from "../domain/feed/feed.js";
 import { FeedItem } from "../domain/feed/feed-item.js";
+import { IconUrl } from "../domain/feed/icon-url.js";
 import {
   afterFailedPoll,
   afterSuccessfulPoll,
@@ -11,6 +12,7 @@ import {
 } from "../domain/feed/poll-policy.js";
 import type { ContentExtractor } from "../domain/ports/content-extractor.js";
 import type { Clock } from "../domain/ports/clock.js";
+import type { FaviconResolver } from "../domain/ports/favicon-resolver.js";
 import type { FeedFetcher, FetchedFeed } from "../domain/ports/feed-fetcher.js";
 import type { FeedRepository } from "../domain/ports/feed-repository.js";
 import type { FederationGateway } from "../domain/ports/federation-gateway.js";
@@ -65,6 +67,24 @@ async function withFullContent(
 }
 
 /**
+ * Resolves the actor avatar from the channel link's favicon (ADR-0010).
+ * Only attempted while the feed has no icon yet — once found it is never
+ * re-fetched, and a failed attempt just leaves it null for a later poll to
+ * retry rather than blocking or failing this one.
+ */
+async function resolveIcon(
+  feed: Feed,
+  channelLink: string | null,
+  resolver: FaviconResolver,
+): Promise<IconUrl | null> {
+  if (feed.iconUrl !== null || channelLink === null) return null;
+  const resolved = await resolver.resolve(channelLink);
+  if (!resolved.ok) return null;
+  const iconUrl = IconUrl.create(resolved.value.iconUrl);
+  return isOk(iconUrl) ? iconUrl.value : null;
+}
+
+/**
  * One poll cycle for one feed: conditional fetch → identify new items →
  * publish oldest-first → remember published keys → refresh metadata and
  * reschedule (success interval or failure backoff).
@@ -75,6 +95,7 @@ export function createPollFeed(deps: {
   readonly fetcher: FeedFetcher;
   readonly federation: FederationGateway;
   readonly contentExtractor: ContentExtractor;
+  readonly faviconResolver: FaviconResolver;
   readonly clock: Clock;
   readonly pollPolicy: PollPolicy;
   readonly contentPolicy: ContentPolicy;
@@ -153,12 +174,18 @@ export function createPollFeed(deps: {
         fetched.value.feed.title !== null
           ? FeedTitle.create(fetched.value.feed.title)
           : null;
+      const iconUrl = await resolveIcon(
+        feed,
+        fetched.value.feed.link,
+        deps.faviconResolver,
+      );
       const withMetadata = Feed.withMetadata(feed, {
         title:
           metadataTitle !== null && isOk(metadataTitle)
             ? metadataTitle.value
             : null,
         description: fetched.value.feed.description,
+        iconUrl,
       });
       await deps.feeds.save(
         afterSuccessfulPoll(withMetadata, {

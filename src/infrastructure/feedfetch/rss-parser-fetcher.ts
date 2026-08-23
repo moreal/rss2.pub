@@ -112,6 +112,7 @@ export function createRssParserFetcher(options?: {
         feed: {
           title: parsed.title ?? null,
           description: parsed.description ?? null,
+          link: parsed.link ?? null,
           items,
         },
         validators: {

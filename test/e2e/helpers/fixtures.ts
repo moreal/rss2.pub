@@ -10,6 +10,7 @@ type RssItem = {
 export function rssFixture(params: {
   readonly title: string;
   readonly description?: string;
+  readonly link?: string;
   readonly items: readonly RssItem[];
 }): string {
   const items = params.items
@@ -41,7 +42,7 @@ export function rssFixture(params: {
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${params.title}</title>
-    <link>https://example.com/</link>
+    <link>${params.link ?? "https://example.com/"}</link>
     <description>${params.description ?? ""}</description>
 ${items}
   </channel>

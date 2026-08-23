@@ -93,6 +93,10 @@ export function createFederationStack(deps: {
       name: Feed.displayName(feed),
       summary: new RawHtmlText<void>(renderFeedProfileHtml(feed)),
       properties: { Feed: link(feed.url) },
+      // ADR-0010: resolved from the channel link's favicon; BotKit accepts a
+      // bare URL and lets remote servers fetch it directly, so there is
+      // nothing for us to download or host.
+      ...(feed.iconUrl !== null ? { icon: new URL(feed.iconUrl) } : {}),
     };
   });
 

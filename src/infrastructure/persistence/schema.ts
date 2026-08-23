@@ -24,6 +24,8 @@ export const feeds = pgTable(
     fullContentEnabled: boolean("full_content_enabled").notNull().default(false),
     title: text("title"),
     description: text("description"),
+    // Actor avatar resolved from the channel link's favicon (ADR-0010).
+    iconUrl: text("icon_url"),
     registeredAt: timestamp("registered_at", { withTimezone: true }).notNull(),
     etag: text("etag"),
     lastModified: text("last_modified"),

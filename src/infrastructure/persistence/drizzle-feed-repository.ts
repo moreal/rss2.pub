@@ -8,6 +8,7 @@ import {
 } from "../../domain/feed/feed.js";
 import { FeedUrl } from "../../domain/feed/feed-url.js";
 import { Handle } from "../../domain/feed/handle.js";
+import { IconUrl } from "../../domain/feed/icon-url.js";
 import type {
   FeedRepository,
   PopularFeed,
@@ -43,6 +44,10 @@ function rowToFeed(row: FeedRow): Feed {
         : parseOrCorrupt(FeedTitle.create(row.title), "title"),
     description: row.description,
     fullContentEnabled: row.fullContentEnabled,
+    iconUrl:
+      row.iconUrl === null
+        ? null
+        : parseOrCorrupt(IconUrl.create(row.iconUrl), "iconUrl"),
     registeredAt: row.registeredAt,
     validators,
     consecutiveFailures: row.consecutiveFailures,
@@ -58,6 +63,7 @@ function feedToRow(feed: Feed): Omit<FeedRow, "followerCount"> {
     fullContentEnabled: feed.fullContentEnabled,
     title: feed.title,
     description: feed.description,
+    iconUrl: feed.iconUrl,
     registeredAt: feed.registeredAt,
     etag: feed.validators.etag,
     lastModified: feed.validators.lastModified,

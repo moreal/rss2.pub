@@ -7,12 +7,18 @@ import {
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import type { RawFeedItem } from "../../src/domain/feed/feed-item.js";
 import { Handle } from "../../src/domain/feed/handle.js";
+import { IconUrl } from "../../src/domain/feed/icon-url.js";
 import type { Clock } from "../../src/domain/ports/clock.js";
 import type {
   ContentExtractor,
   ExtractContentError,
   ExtractedContent,
 } from "../../src/domain/ports/content-extractor.js";
+import type {
+  FaviconResolver,
+  ResolveFaviconError,
+  ResolvedFavicon,
+} from "../../src/domain/ports/favicon-resolver.js";
 import type {
   FeedFetcher,
   FetchFeedError,
@@ -46,13 +52,14 @@ export function makeFeed(
     title?: string | null;
     description?: string | null;
     fullContentEnabled?: boolean;
+    iconUrl?: string | null;
     now?: Date;
   } = {},
 ): Feed {
   const url = unwrap(FeedUrl.create(params.url ?? "https://a.co/f"));
   const rawTitle = params.title ?? null;
   const fullContentEnabled = params.fullContentEnabled ?? false;
-  return Feed.register({
+  const feed = Feed.register({
     url,
     handle:
       params.handle === undefined
@@ -63,6 +70,11 @@ export function makeFeed(
     fullContentEnabled,
     now: params.now ?? T0,
   });
+  if (params.iconUrl === undefined) return feed;
+  return {
+    ...feed,
+    iconUrl: params.iconUrl === null ? null : unwrap(IconUrl.create(params.iconUrl)),
+  };
 }
 
 export function fixedClock(date: Date): Clock {
@@ -95,6 +107,7 @@ export function rawItem(overrides: Partial<RawFeedItem>): RawFeedItem {
 export function fetchedFeed(params: {
   title?: string | null;
   description?: string | null;
+  link?: string | null;
   items?: readonly RawFeedItem[];
   validators?: CacheValidators;
 }): FetchFeedSuccess {
@@ -103,6 +116,7 @@ export function fetchedFeed(params: {
     feed: {
       title: params.title ?? null,
       description: params.description ?? null,
+      link: params.link ?? null,
       items: params.items ?? [],
     },
     validators: params.validators ?? { etag: null, lastModified: null },
@@ -192,6 +206,30 @@ export function fakeContentExtractor(): FakeContentExtractor {
         responses.get(url) ??
         err({ type: "ExtractionFailed", url, message: "no fake response" })
       );
+    },
+  };
+}
+
+export type FakeFaviconResolver = FaviconResolver & {
+  respondWith(
+    url: string,
+    result: Result<ResolvedFavicon, ResolveFaviconError>,
+  ): void;
+  readonly calls: string[];
+};
+
+/** Reports "not found" for any URL with no configured response. */
+export function fakeFaviconResolver(): FakeFaviconResolver {
+  const responses = new Map<string, Result<ResolvedFavicon, ResolveFaviconError>>();
+  const calls: string[] = [];
+  return {
+    calls,
+    respondWith(url, result) {
+      responses.set(url, result);
+    },
+    async resolve(url) {
+      calls.push(url);
+      return responses.get(url) ?? err({ type: "NotFound", url });
     },
   };
 }
