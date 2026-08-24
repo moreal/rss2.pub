@@ -1,6 +1,7 @@
 # ADR-0007: BotKit 한계 우회 — Article 제목과 federationOptions 패치
 
-- Status: accepted (2026-07-27)
+- Status: accepted (2026-07-27); amended (2026-08-25) — 한계 1은 BotKit 0.6에서
+  업스트림 해소, 한계 2 패치는 0.6.0-dev.345로 포팅
 - Context: M3 구현 중 확인된 BotKit 0.5.1의 두 가지 한계 (node_modules 소스 수준 확인)
 
 ## 한계 1: `session.publish()`가 Article의 `name`/`summary`를 설정할 수 없음
@@ -36,3 +37,16 @@ BotKit은 `createFederation({ kv, queue, userAgent })`를 하드코딩한다. �
 
 BotKit이 publish에 name/summary 옵션 또는 createInstance에 Fedify 옵션 패스스루를
 공식 제공할 때(그때 패치 제거).
+
+## 개정 (2026-08-25): BotKit 0.6.0-dev.345 업그레이드
+
+- **한계 1 해소**: 0.6.0부터 `session.publish()`가 `name`/`summary`/`url` 옵션을
+  직접 받고, `language` 옵션이 content뿐 아니라 name/summary까지 태깅한다.
+  `botkit-gateway.ts`의 post-publish `updateMessage()` + `Update` 재작성 단계를
+  제거하고 단일 Create로 전송한다. `summary`는 이미 sanitize된 HTML이므로
+  문자열(이스케이프됨)이 아닌 `RawInlineHtmlText`(`Text<"inline">`)로 넘긴다.
+  `url` 미지정 시 BotKit이 자체 메시지 페이지 URL을 기본값으로 채운다.
+- **한계 2 유지**: `federationOptions` 패스스루는 여전히 업스트림에 없어 동일한
+  1줄 패치를 0.6.0-dev.345에 포팅했다
+  (`.yarn/patches/@fedify-botkit-npm-0.6.0-dev.345-*.patch`).
+- 콘텐츠 본문의 `<h1>` 제목 중복 포함(전문 렌더러용)은 그대로 유지.

@@ -1,16 +1,14 @@
-import { Article, Note, type BotGroup, type Repository } from "@fedify/botkit";
-import type { Uuid } from "@fedify/botkit/repository";
-import { Delete, LanguageString, Tombstone, Update } from "@fedify/vocab";
+import { Article, type BotGroup } from "@fedify/botkit";
+import { Delete, Tombstone } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { PostContent } from "../../domain/content/content-policy.js";
 import type { Feed } from "../../domain/feed/feed.js";
-import type { FeedLanguage } from "../../domain/feed/feed-language.js";
 import type {
   FederationError,
   FederationGateway,
 } from "../../domain/ports/federation-gateway.js";
 import { err, ok, type Result } from "../../shared/result.js";
-import { RawHtmlText } from "./raw-html-text.js";
+import { RawHtmlText, RawInlineHtmlText } from "./raw-html-text.js";
 import {
   renderArticleHtml,
   renderArticleSummaryHtml,
@@ -26,29 +24,23 @@ function messageOf(cause: unknown): string {
 }
 
 /**
- * FederationGateway over a BotKit dynamic bot group. Both kinds need a
- * post-publish repository rewrite because BotKit's publish() cannot set
- * object-level `name`/`summary`/`url` — after rewriting we send an Update so
- * remote copies pick it up. `url` (the original feed item link, distinct
- * from the object's own `id`) makes Mastodon treat it as the post's
- * permalink and, for Articles, appends it to the rendered text; Articles
- * additionally need `name`/`summary` for Mastodon's title+teaser+link view.
- *
- * This is a workaround for a BotKit API gap, not a permanent design — once
- * BotKit exposes these fields on session.publish() directly, this rewrite
- * step should be removed (see AGENTS.md).
+ * FederationGateway over a BotKit dynamic bot group. Since BotKit 0.6,
+ * `session.publish()` takes object-level `name`/`summary`/`url` directly
+ * (and language-tags all three alongside `content`), so both kinds go out
+ * in a single Create — no post-publish repository rewrite. `url` (the
+ * original feed item link, distinct from the object's own `id`) makes
+ * Mastodon treat it as the post's permalink and, for Articles, appends it
+ * to the rendered text; Articles additionally need `name`/`summary` for
+ * Mastodon's title+teaser+link view.
  */
 export function createBotKitFederationGateway(deps: {
   readonly group: BotGroup<void>;
-  readonly repository: Repository;
   readonly origin: string;
 }): FederationGateway {
-  type Session = Awaited<ReturnType<BotGroup<void>["getSession"]>>;
-
   // `linkUrl` comes straight from the feed (FeedItem.link is unvalidated —
   // see feed-item.ts) and may be relative or otherwise malformed. Fail soft:
-  // a bad link should only skip the url metadata, not abort the whole
-  // publish() (the Note/Article itself has already been sent by then).
+  // a bad link should only fall back to the message's BotKit page URL, not
+  // abort the whole publish.
   function parseLinkUrl(linkUrl: string | null): URL | null {
     if (linkUrl === null) return null;
     try {
@@ -59,103 +51,6 @@ export function createBotKitFederationGateway(deps: {
       });
       return null;
     }
-  }
-
-  // BotKit message URIs end in a UUIDv7 (…/note|article/{uuid}); validate
-  // before branding so a URL-shape change fails loudly instead of silently
-  // leaving messages with stale object-level metadata.
-  function messageUuid(messageId: URL): Uuid | null {
-    const lastSegment = messageId.pathname.split("/").at(-1) ?? "";
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(lastSegment)) {
-      return null;
-    }
-    return lastSegment as Uuid;
-  }
-
-  async function sendObjectUpdate(
-    session: Session,
-    identifier: string,
-    messageId: URL,
-    object: Article | Note,
-  ): Promise<void> {
-    const update = new Update({
-      id: new URL(`${messageId.href}#update/${crypto.randomUUID()}`),
-      actor: session.actorId,
-      tos: [PUBLIC],
-      ccs: [session.context.getFollowersUri(identifier)],
-      object,
-    });
-    await session.context.sendActivity(
-      { identifier },
-      "followers",
-      update,
-      { preferSharedInbox: true },
-    );
-  }
-
-  async function applyArticleMetadata(
-    session: Session,
-    identifier: string,
-    messageId: URL,
-    name: string,
-    summaryHtml: string,
-    linkUrl: string | null,
-    language: FeedLanguage | null,
-  ): Promise<void> {
-    const uuid = messageUuid(messageId);
-    if (uuid === null) {
-      logger.warn(
-        "cannot apply Article metadata: unexpected message URI shape {id}",
-        { id: messageId.href },
-      );
-      return;
-    }
-
-    let renamed: Article | null = null;
-    await deps.repository.updateMessage(identifier, uuid, async (activity) => {
-      const object = await activity.getObject(session.context);
-      if (!(object instanceof Article)) return activity;
-      renamed = object.clone({
-        // BotKit's own `language` publish option (used below) only tags
-        // `content` — name/summary go out through this rewrite regardless,
-        // so they need the same LanguageString wrapping applied here.
-        name: language === null ? name : new LanguageString(name, language),
-        summary:
-          language === null ? summaryHtml : new LanguageString(summaryHtml, language),
-        url: parseLinkUrl(linkUrl),
-      });
-      return activity.clone({ object: renamed });
-    });
-    if (renamed === null) return;
-    await sendObjectUpdate(session, identifier, messageId, renamed);
-  }
-
-  async function applyNoteUrl(
-    session: Session,
-    identifier: string,
-    messageId: URL,
-    linkUrl: string | null,
-  ): Promise<void> {
-    const url = parseLinkUrl(linkUrl);
-    if (url === null) return;
-    const uuid = messageUuid(messageId);
-    if (uuid === null) {
-      logger.warn(
-        "cannot apply Note url: unexpected message URI shape {id}",
-        { id: messageId.href },
-      );
-      return;
-    }
-
-    let updated: Note | null = null;
-    await deps.repository.updateMessage(identifier, uuid, async (activity) => {
-      const object = await activity.getObject(session.context);
-      if (!(object instanceof Note)) return activity;
-      updated = object.clone({ url });
-      return activity.clone({ object: updated });
-    });
-    if (updated === null) return;
-    await sendObjectUpdate(session, identifier, messageId, updated);
   }
 
   return {
@@ -169,33 +64,22 @@ export function createBotKitFederationGateway(deps: {
           feed.handle,
           undefined,
         );
+        const url = parseLinkUrl(content.linkUrl);
         if (content.kind === "note") {
-          const message = await session.publish(
-            new RawHtmlText(renderNoteHtml(content)),
-            {
-              visibility: "public",
-              ...(content.language !== null ? { language: content.language } : {}),
-            },
-          );
-          await applyNoteUrl(session, feed.handle, message.id, content.linkUrl);
+          await session.publish(new RawHtmlText(renderNoteHtml(content)), {
+            visibility: "public",
+            ...(content.language !== null ? { language: content.language } : {}),
+            ...(url !== null ? { url } : {}),
+          });
         } else {
-          const message = await session.publish(
-            new RawHtmlText(renderArticleHtml(content)),
-            {
-              class: Article,
-              visibility: "public",
-              ...(content.language !== null ? { language: content.language } : {}),
-            },
-          );
-          await applyArticleMetadata(
-            session,
-            feed.handle,
-            message.id,
-            content.name,
-            renderArticleSummaryHtml(content),
-            content.linkUrl,
-            content.language,
-          );
+          await session.publish(new RawHtmlText(renderArticleHtml(content)), {
+            class: Article,
+            visibility: "public",
+            name: content.name,
+            summary: new RawInlineHtmlText(renderArticleSummaryHtml(content)),
+            ...(content.language !== null ? { language: content.language } : {}),
+            ...(url !== null ? { url } : {}),
+          });
         }
         return ok(undefined);
       } catch (cause) {

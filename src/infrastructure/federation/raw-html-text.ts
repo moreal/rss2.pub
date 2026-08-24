@@ -24,3 +24,29 @@ export class RawHtmlText<TContextData> implements Text<"block", TContextData> {
     return [];
   }
 }
+
+/**
+ * Inline-typed sibling of {@link RawHtmlText}, for slots that take
+ * `Text<"inline">` — e.g. `session.publish()`'s `summary` option, where a
+ * plain string would be escaped but our teaser is already sanitized HTML.
+ */
+export class RawInlineHtmlText<TContextData>
+  implements Text<"inline", TContextData>
+{
+  readonly type = "inline" as const;
+  readonly #html: string;
+
+  constructor(sanitizedHtml: string) {
+    this.#html = sanitizedHtml;
+  }
+
+  async *getHtml(): AsyncIterable<string> {
+    yield this.#html;
+  }
+
+  async *getTags(): AsyncIterable<never> {}
+
+  getCachedObjects(): never[] {
+    return [];
+  }
+}

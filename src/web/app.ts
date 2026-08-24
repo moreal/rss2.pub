@@ -100,7 +100,6 @@ export async function createApp(config: AppConfig): Promise<App> {
   });
   const federation = createBotKitFederationGateway({
     group: stack.feedBots,
-    repository: stack.repository,
     origin: config.origin,
   });
   // Not awaited: the queue's listen loop resolves only when it stops.

@@ -31,11 +31,11 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
-    "@fedify/botkit": "patch:@fedify/botkit@npm%3A0.5.1#~/.yarn/patches/@fedify-botkit-npm-0.5.1-56fbf90539.patch",
-    "@fedify/botkit-postgres": "^0.5.1",
-    "@fedify/fedify": "~2.3.3",
+    "@fedify/botkit": "patch:@fedify/botkit@npm%3A0.6.0-dev.345#~/.yarn/patches/@fedify-botkit-npm-0.6.0-dev.345-7aeb1fdd53.patch",
+    "@fedify/botkit-postgres": "0.6.0-dev.345",
+    "@fedify/fedify": "~2.3.5",
     "@fedify/postgres": "^2.3.3",
-    "@fedify/vocab": "~2.3.3",
+    "@fedify/vocab": "~2.3.5",
     "@hono/node-server": "^2.0.11",
     "@lingui/core": "^6.6.0",
     "@logtape/logtape": "^2.2.4",

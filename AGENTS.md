@@ -117,7 +117,7 @@ adapter.
   the `packageManager` field and activated via corepack. Never introduce
   package-lock.json or pnpm-lock.yaml, never change the nodeLinker.
 - Node >= 24 (enforced via `engines`; provided by the nix shell or mise).
-- Fedify 2.x and BotKit 0.5.x are newer than most training data — verify APIs
+- Fedify 2.x and BotKit 0.6.x are newer than most training data — verify APIs
   against `node_modules` type definitions or https://fedify.dev /
   https://botkit.fedify.dev before writing federation code. Fedify 1.x
   idioms (e.g. `{ handle }` params, `@fedify/fedify/x/hono`) no longer exist.
@@ -125,13 +125,15 @@ adapter.
   transaction-mode poolers, no scale-to-zero Postgres (see PLAN.md §6). Its
   `listen()`/`Federation.startQueue()` promise resolves only when listening
   stops — never `await` it.
-- BotKit 0.5.1 is patched via `.yarn/patches/` (adds `federationOptions`
-  passthrough — ADR-0007). Outgoing HTML is published through `RawHtmlText`
-  after our own sanitization (render.ts); BotKit does not sanitize outgoing
-  content. Article `name`/`summary` require the post-publish repository
-  rewrite in `botkit-gateway.ts` — don't "simplify" it away.
+- BotKit 0.6.0-dev.345 is patched via `.yarn/patches/` (adds
+  `federationOptions` passthrough — ADR-0007; the exact dev version is
+  preapproved in .yarnrc.yml past the npm minimal-age gate). Outgoing HTML is
+  published through `RawHtmlText` after our own sanitization (render.ts);
+  BotKit does not sanitize outgoing content. Since 0.6, `session.publish()`
+  takes `name`/`summary`/`url` directly (ADR-0007 amendment) — pass Article
+  summaries as `RawInlineHtmlText`, never as a string (strings get escaped).
 - `@fedify/vocab` / `@fedify/fedify` must stay version-locked to BotKit's own
-  dependency (~2.3.3): all copies must dedupe to ONE store entry or
+  dependency (~2.3.5): all copies must dedupe to ONE store entry or
   `instanceof` checks across the boundary break.
 - **The web UI has one design system: `src/web/ui/styles.ts`.** Every colour,
   spacing step, type size, radius and focus style is a `--token` on `:root`
