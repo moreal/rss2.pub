@@ -23,6 +23,7 @@ import { Feed } from "../../domain/feed/feed.js";
 import { Handle } from "../../domain/feed/handle.js";
 import type { FeedRepository } from "../../domain/ports/feed-repository.js";
 import { isErr } from "../../shared/result.js";
+import { BOTKIT_THEME_CSS } from "./pages-theme.js";
 import { RawHtmlText } from "./raw-html-text.js";
 import { renderFeedProfileHtml } from "./render.js";
 
@@ -107,6 +108,10 @@ export function createFederationStack(deps: {
       homepage: new URL("https://github.com/moreal/rss2.pub"),
     },
     behindProxy: deps.behindProxy,
+    // Closest built-in preset to our accent, kept for readers scanning this
+    // config; BOTKIT_THEME_CSS overrides every color it actually renders
+    // with, matching rss2.pub's own web UI (src/web/ui/layout.tsx).
+    pages: { color: "orange", css: BOTKIT_THEME_CSS },
     ...(deps.allowPrivateAddress === true
       ? { federationOptions: { allowPrivateAddress: true } }
       : {}),
