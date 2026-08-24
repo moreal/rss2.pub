@@ -134,7 +134,7 @@ describe("federation e2e", () => {
     });
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain("Registered!");
+    expect(html).toContain("Feed registered");
     expect(html).toContain(`@${feedHandle}@${host}`);
   });
 

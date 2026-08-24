@@ -133,6 +133,52 @@ adapter.
 - `@fedify/vocab` / `@fedify/fedify` must stay version-locked to BotKit's own
   dependency (~2.3.3): all copies must dedupe to ONE store entry or
   `instanceof` checks across the boundary break.
+- **The web UI has one design system: `src/web/ui/styles.ts`.** Every colour,
+  spacing step, type size, radius and focus style is a `--token` on `:root`
+  there (with a dark-mode block redefining the same semantic roles); pages and
+  components reference `var(--…)` and never a literal value. Text colours are
+  chosen for contrast, not brand — the bright `--brand` orange is decorative
+  only, while `--accent` / `--accent-ink` are the AA-passing pair used for
+  fills and text. `test/unit/web/styles.test.ts` enforces both halves of that:
+  every foreground/background role pair a page renders clears WCAG 2.2 AA
+  (4.5:1) in *both* themes, and no rule outside the `:root` blocks may name a
+  raw colour. Retune a token and that test tells you if it still passes.
+  `src/infrastructure/federation/pages-theme.ts` restates the same palette for
+  BotKit's `/@handle` pages and must be updated alongside.
+  UI primitives (feed card, notice, forms, icons) live in `components.tsx` /
+  `icons.tsx`; `pages.tsx` composes them and owns no styling of its own.
+  Buttons come in three tiers and the page should use all three rather than
+  promoting everything: `btn-primary` for the one action the page exists for,
+  `btn-secondary` for a useful follow-up, `btn-quiet` for a way out.
+- **`STYLE`, `COPY_SCRIPT` and `PENDING_SCRIPT` are emitted through `raw()`**
+  (layout.tsx). Hono escapes `"`, `<`, `>` and `&` in text children, which
+  silently corrupted quoted font names and would break any child selector or
+  script. A unit test pins this. Corollary: never put a backtick in those
+  literals.
+- **The most-followed list is one list on two surfaces, and the split is
+  deliberate.** The home page's job is registration, so it shows
+  `HOME_POPULAR_LIMIT` (8) of the list and nothing more; `/search` with no
+  query shows all of it, which is this product's only way to *browse* rather
+  than search. The home route asks for one row past the limit and drops it —
+  that extra row, not `popular.length`, is how the page knows whether to
+  render the "See more feeds" link. `/search`'s three states are a
+  discriminated `SearchState` (`browse` | `results`), and the blank-query
+  branch is driven by `SearchFeeds`' own `EmptyQuery` error rather than by
+  the route re-deciding what "empty" means: don't reintroduce a `.trim()`
+  test in the route, and don't turn the browse state back into a dashed "type
+  something" box — that screen was almost entirely empty. The search field's
+  placeholder is examples; the sentence explaining what matches is help text
+  wired with `aria-describedby`.
+- **The feed list's identifiers are clipped, not wrapped, and that only holds
+  because every box above them opts out of the automatic minimum size.** The
+  handle and the source URL are `white-space: nowrap` with an ellipsis; a
+  grid item's default `min-width: auto` is its content's min-content width, so
+  without `min-width: 0` on `ul.feeds li` and `.feed-meta` the widest handle
+  in the list silently widens the column and the whole page scrolls sideways
+  on a phone. `test/unit/web/styles.test.ts` pins the pair. Feed titles and
+  descriptions carry `word-break: keep-all` (their language is the *feed's*,
+  so the `:lang(ko)` rule cannot reach them) plus `overflow-wrap: anywhere` —
+  `break-word` loses to `keep-all` and lets a long bare domain overflow.
 - **Web UI strings are localized** (en/ko — ADR-0008). Never hardcode
   user-facing copy in pages/routes: add a `/*i18n*/`-annotated descriptor to
   `src/web/ui/messages.ts` (exported as `copy`, not `msg` — that name belongs

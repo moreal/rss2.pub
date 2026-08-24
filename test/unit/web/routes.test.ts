@@ -20,7 +20,13 @@ function webApp(overrides: Partial<WebDeps> = {}) {
   const registerFeed: RegisterFeed = {
     execute: async () => ok({ feed: FEED, created: true }),
   };
-  const searchFeeds: SearchFeeds = { execute: async () => ok([]) };
+  // Mirrors createSearchFeeds: a blank keyword is rejected rather than run,
+  // and /search reads that rejection as "nothing asked yet". A fake that
+  // answered ok([]) would let the route pass a case the real one never sends.
+  const searchFeeds: SearchFeeds = {
+    execute: async (keyword) =>
+      keyword.trim() === "" ? err({ type: "EmptyQuery" }) : ok([]),
+  };
   const listPopularFeeds: ListPopularFeeds = {
     execute: async () => [{ feed: FEED, followerCount: 2 }],
   };
@@ -179,9 +185,17 @@ describe("localized page chrome", () => {
 
   it("ships usable motion selectors and a reduced-motion alternative", async () => {
     const html = await bodyOf(webApp().request("/"));
-    expect(html).toContain("main section, .back-link");
+    expect(html).toContain("main .page-head, main .panel");
     expect(html).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(html).not.toContain("main &gt; section");
+  });
+
+  // Hono escapes `"`, `<`, `>` and `&` in text children; a stylesheet that
+  // went through that would lose every quoted font name and child selector,
+  // silently dropping the declaration. `raw()` is what prevents it.
+  it("emits the stylesheet unescaped, so quoted font names survive", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    expect(html).toContain('"Segoe UI"');
+    expect(html).not.toContain("&quot;Segoe UI&quot;");
   });
 });
 
@@ -195,13 +209,19 @@ describe("localized content", () => {
 
   it("renders the Korean empty-search notice with the query", async () => {
     const html = await bodyOf(webApp().request("/search?q=없는피드&lang=ko"));
-    expect(html).toContain("“없는피드”에 해당하는 피드가 없습니다.");
+    expect(html).toContain("“없는피드”에 해당하는 피드가 없습니다");
+  });
+
+  it("offers registration as the way out of an empty search", async () => {
+    const html = await bodyOf(webApp().request("/search?q=없는피드&lang=ko"));
+    expect(html).toContain("피드 등록하기");
   });
 
   it("escapes user input echoed into a localized notice", async () => {
     const html = await bodyOf(webApp().request("/search?q=%3Cscript%3E&lang=ko"));
     expect(html).toContain("&lt;script&gt;");
-    expect(html).not.toContain("<script>");
+    // The exact injection point: the query sits between curly quotes.
+    expect(html).not.toContain("“<script>”");
   });
 
   it("renders matched feeds instead of the empty notice", async () => {
@@ -225,20 +245,143 @@ describe("localized content", () => {
     const html = await bodyOf(
       webApp({ searchFeeds }).request("/search?q=example"),
     );
-    expect(html).toContain('<p class="meta">a blog about examples</p>');
+    expect(html).toContain('<p class="feed-desc">a blog about examples</p>');
   });
 
-  it("renders a blank query as an empty search rather than failing", async () => {
+  it("browses instead of failing when no query has been typed yet", async () => {
     const res = await webApp().request("/search?lang=ko");
     expect(res.status).toBe(200);
-    expect(await res.text()).toContain("“”에 해당하는 피드가 없습니다.");
+    const html = await res.text();
+    // Nobody has asked anything yet, so the page answers with what there is
+    // to follow rather than with an empty box and an instruction.
+    expect(html).toContain("팔로워가 가장 많은 피드");
+    expect(html).toContain("@example@rss2.test");
+    // A blank query is not a failed search, so it must not read like one.
+    expect(html).not.toContain("해당하는 피드가 없습니다");
+  });
+});
+
+/**
+ * The most-followed list is the product's only way to *browse* rather than
+ * search, and it lives in two places: a screenful of it on the home page,
+ * all of it on /search. These pin the seam between them — the home page must
+ * not grow without bound, and the link to the rest must appear exactly when
+ * there is a rest.
+ */
+describe("browsing the most-followed feeds", () => {
+  function manyFeeds(count: number) {
+    return Array.from({ length: count }, (_, i) => ({
+      feed: makeFeed({
+        url: `https://example.com/${i}.xml`,
+        handle: `feed${i}`,
+        title: `Feed ${i}`,
+      }),
+      followerCount: count - i,
+    }));
+  }
+
+  /** Records what limit the page asked for, and answers with that many. */
+  function countingPopular(available: number) {
+    const asked: (number | undefined)[] = [];
+    const listPopularFeeds: ListPopularFeeds = {
+      execute: async (limit) => {
+        asked.push(limit);
+        return manyFeeds(Math.min(available, limit ?? available));
+      },
+    };
+    return { asked, listPopularFeeds };
+  }
+
+  it("shows a screenful on the home page, not the whole database", async () => {
+    const { asked, listPopularFeeds } = countingPopular(50);
+    const html = await bodyOf(webApp({ listPopularFeeds }).request("/"));
+    expect(html.match(/class="feed-title"/g)).toHaveLength(8);
+    // One row past the limit is fetched and dropped: that extra row is how
+    // the page knows something was left out.
+    expect(asked).toEqual([9]);
+    expect(html).toContain("See more feeds");
+  });
+
+  it("omits the link to the rest when the home page is already the rest", async () => {
+    const { listPopularFeeds } = countingPopular(3);
+    const html = await bodyOf(webApp({ listPopularFeeds }).request("/"));
+    expect(html.match(/class="feed-title"/g)).toHaveLength(3);
+    expect(html).not.toContain("See more feeds");
+  });
+
+  it("lists the full set on /search, which is where the link points", async () => {
+    const { asked, listPopularFeeds } = countingPopular(50);
+    const html = await bodyOf(webApp({ listPopularFeeds }).request("/search"));
+    // No limit of its own: /search browses whatever the use case considers
+    // the popular set (ListPopularFeeds owns that number).
+    expect(asked).toEqual([undefined]);
+    expect(html).toContain("Most followed feeds");
+  });
+
+  it("keeps the shortened list on a bounced registration", async () => {
+    const { asked, listPopularFeeds } = countingPopular(50);
+    const registerFeed: RegisterFeed = {
+      execute: async () => err({ type: "NotAUrl", raw: "nope" }),
+    };
+    const form = new FormData();
+    form.set("url", "nope");
+    const res = await webApp({ listPopularFeeds, registerFeed }).request(
+      "/register",
+      { method: "POST", body: form },
+    );
+    expect(res.status).toBe(422);
+    expect(asked).toEqual([9]);
+  });
+
+  it("points an instance with no feeds at all back at registration", async () => {
+    const listPopularFeeds: ListPopularFeeds = { execute: async () => [] };
+    const html = await bodyOf(
+      webApp({ listPopularFeeds }).request("/search?lang=ko"),
+    );
+    expect(html).toContain("아직 등록된 피드가 없습니다");
+    expect(html).toContain("피드 등록하기");
+  });
+});
+
+describe("the search field", () => {
+  it("describes what matches instead of echoing its own label", async () => {
+    const html = await bodyOf(webApp().request("/search"));
+    // A placeholder that repeats the label teaches nothing and vanishes on
+    // the first keystroke; the sentence that explains the field is help text
+    // wired to the input, and the placeholder shows examples.
+    expect(html).toContain('aria-describedby="search-q-help"');
+    expect(html).toContain(
+      '<p class="help" id="search-q-help">Type part of a feed’s name, description, or address.</p>',
+    );
+    expect(html).toContain('placeholder="rust, weather, example.com"');
+  });
+
+  it("names the result section with the count, so it is said once", async () => {
+    const searchFeeds: SearchFeeds = { execute: async () => ok([FEED]) };
+    const html = await bodyOf(
+      webApp({ searchFeeds }).request("/search?q=example"),
+    );
+    expect(html).toContain('aria-labelledby="results-count"');
+    expect(html).toContain(
+      '<p class="help" id="results-count" role="status">1 feed matches “example”</p>',
+    );
   });
 });
 
 describe("feed cards", () => {
-  it("links each card to the feed's profile page", async () => {
+  it("links each card to the feed's profile page from its title", async () => {
     const html = await bodyOf(webApp().request("/"));
-    expect(html).toContain('<a class="feed-card" href="/@example">');
+    // The title is the link, so the card's accessible name is the feed name
+    // rather than every line of the row concatenated.
+    expect(html).toContain(
+      '<h3 class="feed-title"><a href="/@example">Example Blog</a></h3>',
+    );
+  });
+
+  it("keeps the fediverse handle on the card, below the name", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    const title = html.indexOf('href="/@example"');
+    expect(html.slice(title)).toContain("@example@rss2.test");
   });
 
   it("badges full-content feeds and leaves plain feeds unbadged (ADR-0009)", async () => {
@@ -250,11 +393,11 @@ describe("feed cards", () => {
     });
     const searchFeeds: SearchFeeds = { execute: async () => ok([fullFeed, FEED]) };
     const html = await bodyOf(webApp({ searchFeeds }).request("/search?q=example"));
-    expect(html).toContain('<span class="badge badge-full-content">Full content</span>');
+    expect(html).toContain('<span class="tag tag-accent">Full content</span>');
     // FEED (not full-content) still renders, but without the badge markup.
     const feedCardStart = html.indexOf('href="/@example"');
-    expect(html.slice(feedCardStart, feedCardStart + 300)).not.toContain(
-      "badge-full-content",
+    expect(html.slice(feedCardStart, feedCardStart + 400)).not.toContain(
+      "tag-accent",
     );
   });
 });
@@ -306,8 +449,8 @@ describe("registration outcomes", () => {
   });
 
   it.each([
-    { created: true, expected: "등록되었습니다!" },
-    { created: false, expected: "이미 등록된 피드입니다." },
+    { created: true, expected: "등록되었습니다" },
+    { created: false, expected: "이미 등록된 피드입니다" },
   ])(
     "distinguishes created=$created in Korean",
     async ({ created, expected }) => {
@@ -354,6 +497,138 @@ describe("registration outcomes", () => {
     });
     expect(res.status).toBe(400);
     expect(await res.text()).toContain("피드 URL이 없습니다.");
+  });
+});
+
+describe("recovering from a rejected registration", () => {
+  const rejecting: RegisterFeed = {
+    execute: async () => err({ type: "NotAUrl", raw: "nope" } as const),
+  };
+
+  async function reject(full = false) {
+    const form = new FormData();
+    form.set("url", "nope");
+    if (full) form.set("full", "1");
+    return webApp({ registerFeed: rejecting }).request("/register", {
+      method: "POST",
+      body: form,
+    });
+  }
+
+  it("hands back the form with the rejected URL still in it", async () => {
+    const html = await bodyOf(reject());
+    // Retyping a long feed URL is the cost of getting this wrong.
+    expect(html).toContain('value="nope"');
+    expect(html).toContain('<form class="register-form field"');
+  });
+
+  it("ties the reason to the field for assistive tech", async () => {
+    const html = await bodyOf(reject());
+    expect(html).toContain('aria-invalid="true"');
+    expect(html).toContain('aria-describedby="register-url-error register-url-help"');
+    expect(html).toContain('<p id="register-url-error">');
+    expect(html).toContain('role="alert"');
+  });
+
+  it("moves focus to the field that needs fixing", async () => {
+    expect(await bodyOf(reject())).toContain("autofocus");
+  });
+
+  it("preserves the full-content choice (ADR-0009)", async () => {
+    expect(await bodyOf(reject(true))).toContain('value="1" checked');
+  });
+
+  it("still answers 422 — only the body moved, not the contract", async () => {
+    expect((await reject()).status).toBe(422);
+  });
+});
+
+describe("finishing a registration", () => {
+  async function succeed() {
+    const form = new FormData();
+    form.set("url", "https://example.com/feed.xml");
+    return bodyOf(webApp().request("/register", { method: "POST", body: form }));
+  }
+
+  it("puts the account name one click from the clipboard", async () => {
+    const html = await succeed();
+    expect(html).toContain('data-copy="@example@rss2.test"');
+    // Ships hidden and is revealed only where the Clipboard API exists.
+    expect(html).toContain("hidden");
+  });
+
+  it("links on to the account page, where following happens", async () => {
+    expect(await succeed()).toContain('href="/@example"');
+  });
+
+  it("offers a way back to registering another feed", async () => {
+    expect(await succeed()).toContain("Register another feed");
+  });
+});
+
+describe("page chrome", () => {
+  it("marks the page the user is on in the primary nav", async () => {
+    const home = await bodyOf(webApp().request("/"));
+    expect(home).toContain('<a href="/" aria-current="page">Home</a>');
+    const search = await bodyOf(webApp().request("/search"));
+    expect(search).toContain('<a href="/search" aria-current="page">Search</a>');
+  });
+
+  it("opens every page with a skip link, the first tab stop", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    expect(html.indexOf('<a class="skip" href="#main">')).toBeLessThan(
+      html.indexOf("<header"),
+    );
+    expect(html).toContain('<main id="main"');
+  });
+});
+
+/**
+ * Registering fetches the feed over the network, so the gap between pressing
+ * the button and seeing a result is seconds long. These pin the parts of the
+ * page the enhancement needs; the enhancement itself lives in PENDING_SCRIPT
+ * and degrades to an ordinary submit when it does not run.
+ */
+describe("waiting for a slow registration", () => {
+  it("marks the form and labels what the button will say while it waits", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    expect(html).toContain("data-pending-form");
+    expect(html).toContain('data-pending-label="Registering…"');
+    // The label lives in its own element so swapping the text leaves the
+    // spinner beside it alone.
+    expect(html).toContain("data-btn-label");
+    expect(html).toContain('<span class="btn-spinner" aria-hidden="true">');
+  });
+
+  it("localizes the waiting label", async () => {
+    const html = await bodyOf(webApp().request("/?lang=ko"));
+    expect(html).toContain('data-pending-label="등록하는 중…"');
+  });
+
+  it("gives the wait a live region that starts empty", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    // Empty until the submission starts: an announced region with text in it
+    // would speak on load, before there is anything to report.
+    expect(html).toContain(
+      '<span class="sr-only" role="status" data-pending-status="true"></span>',
+    );
+  });
+});
+
+describe("the account name to copy", () => {
+  async function registered() {
+    const form = new FormData();
+    form.set("url", "https://example.com/feed.xml");
+    return bodyOf(webApp().request("/register", { method: "POST", body: form }));
+  }
+
+  it("copies the whole address, and breaks it only at the host", async () => {
+    const html = await registered();
+    expect(html).toContain('data-copy="@example@rss2.test"');
+    // <wbr> is a break opportunity, not a character: the copied and selected
+    // text are unchanged, but a narrow screen wraps at the address's seam
+    // instead of mid-domain.
+    expect(html).toContain("@example<wbr/>@rss2.test");
   });
 });
 

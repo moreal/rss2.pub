@@ -48,32 +48,30 @@ describe("translate", () => {
 
 describe("translateWithSlots", () => {
   it("interleaves slot values between translated text runs", () => {
-    const parts = translateWithSlots(i18nFor("en"), copy.layoutTagline, {
+    const parts = translateWithSlots(i18nFor("en"), copy.registerBotAlt, {
       handle: "@rss2pub@example.com",
       command: "register <url>",
     });
     expect(parts.join("")).toBe(
-      "Follow RSS and Atom feeds from the fediverse. Mention @rss2pub@example.com with register <url> or use the form below.",
+      "Prefer the fediverse? Mention @rss2pub@example.com with register <url>.",
     );
   });
 
   it("follows the translated placeholder order in Korean", () => {
-    const parts = translateWithSlots(i18nFor("ko"), copy.layoutTagline, {
+    const parts = translateWithSlots(i18nFor("ko"), copy.registerBotAlt, {
       handle: "H",
       command: "C",
     });
     expect(parts.join("")).toBe(
-      "페디버스에서 RSS/Atom 피드를 팔로우하세요. H 계정에 C 명령을 멘션하거나 아래 양식을 이용하세요.",
+      "페디버스가 더 편하다면 H 계정에 C 명령을 멘션하세요.",
     );
   });
 
   it("keeps slot values by reference so rendered elements survive", () => {
     const handle = { element: "chip" };
-    const parts = translateWithSlots(
-      i18nFor("ko"),
-      copy.registerResultCreated,
-      { handle },
-    );
+    const parts = translateWithSlots(i18nFor("ko"), copy.layoutFooterBot, {
+      handle,
+    });
     expect(parts).toContain(handle);
   });
 

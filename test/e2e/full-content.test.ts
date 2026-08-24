@@ -149,7 +149,7 @@ describe("full-content extraction e2e (ADR-0009)", () => {
     });
     expect(teaserRes.status).toBe(200);
     const teaserHtml = await teaserRes.text();
-    expect(teaserHtml).toContain("Registered!");
+    expect(teaserHtml).toContain("Feed registered");
     expect(teaserHtml).toContain(`@${teaserHandle}@${host}`);
 
     const fullRes = await fetch(`${base}/register`, {
@@ -158,7 +158,7 @@ describe("full-content extraction e2e (ADR-0009)", () => {
     });
     expect(fullRes.status).toBe(200);
     const fullHtml = await fullRes.text();
-    expect(fullHtml).toContain("Registered!");
+    expect(fullHtml).toContain("Feed registered");
     expect(fullHtml).toContain(`@${fullHandle}@${host}`);
 
     await app.scheduler.tick();
