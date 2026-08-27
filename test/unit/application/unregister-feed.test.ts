@@ -15,7 +15,12 @@ async function setup() {
   const feed = makeFeed();
   await feeds.save(feed);
   await items.markPublished(feed.id, [
-    { key: "guid:1" as ItemKey, publishedAt: T0 },
+    {
+      key: "guid:1" as ItemKey,
+      publishedAt: T0,
+      contentFingerprint: "fp",
+      messageUri: null,
+    },
   ]);
   const unregister = createUnregisterFeed({ feeds, items, federation });
   return { feeds, items, federation, feed, unregister };
@@ -43,15 +48,16 @@ describe("UnregisterFeed", () => {
     expect(result.deletionPropagated).toBe(true);
     expect(federation.deletedActors.map((f) => f.id)).toEqual([feed.id]);
     expect(await feeds.findById(feed.id)).toBeNull();
-    expect(await items.filterNew(feed.id, ["guid:1" as ItemKey])).toEqual([
-      "guid:1",
-    ]);
+    expect(await items.findExisting(feed.id, ["guid:1" as ItemKey])).toEqual(
+      [],
+    );
   });
 
   it("still removes local state when Delete propagation fails", async () => {
     const { feeds, feed, federation } = await setup();
     const failing: FederationGateway = {
       publish: federation.publish,
+      update: federation.update,
       deleteActor: async (f) =>
         err({
           type: "FederationDeliveryFailed",

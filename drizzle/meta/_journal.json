@@ -29,6 +29,13 @@
       "when": 1787484986333,
       "tag": "0003_friendly_la_nuit",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787873148173,
+      "tag": "0004_lovely_vindicator",
+      "breakpoints": true
     }
   ]
 }

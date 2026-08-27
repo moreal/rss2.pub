@@ -3,7 +3,7 @@ import {
   decidePostContent,
 } from "../domain/content/content-policy.js";
 import { Feed, type FeedId, FeedTitle } from "../domain/feed/feed.js";
-import { FeedItem } from "../domain/feed/feed-item.js";
+import { contentFingerprint, FeedItem } from "../domain/feed/feed-item.js";
 import { FeedLanguage } from "../domain/feed/feed-language.js";
 import { IconUrl } from "../domain/feed/icon-url.js";
 import {
@@ -27,7 +27,9 @@ export type PollFeedReport = {
   readonly feedId: FeedId;
   readonly status: "polled" | "not-modified" | "fetch-failed";
   readonly published: number;
-  /** Per-item publish failures; failed items stay unmarked and retry next poll. */
+  /** Items whose content changed and were re-published via an Update activity. */
+  readonly updated: number;
+  /** Per-item publish/update failures; failed items stay unmarked and retry next poll. */
   readonly publishErrors: readonly string[];
   readonly fetchError: string | null;
 };
@@ -85,6 +87,26 @@ function languageFrom(raw: string | null): FeedLanguage | null {
   return isOk(result) ? result.value : null;
 }
 
+/** Builds the post content for one item, applying full-content extraction
+ * and language resolution identically for both new and changed items. */
+async function buildContent(
+  item: FeedItem,
+  ctx: {
+    readonly feed: Feed;
+    readonly currentLanguage: FeedLanguage | null;
+    readonly contentExtractor: ContentExtractor;
+    readonly contentPolicy: ContentPolicy;
+  },
+) {
+  const enriched = ctx.feed.fullContentEnabled
+    ? await withFullContent(item, ctx.contentExtractor)
+    : item;
+  return decidePostContent(
+    withLanguage(enriched, ctx.currentLanguage),
+    ctx.contentPolicy,
+  );
+}
+
 /**
  * Resolves the actor avatar from the channel link's favicon (ADR-0010).
  * Only attempted while the feed has no icon yet — once found it is never
@@ -135,6 +157,7 @@ export function createPollFeed(deps: {
           feedId: feed.id,
           status: "fetch-failed",
           published: 0,
+          updated: 0,
           publishErrors: [],
           fetchError: fetched.error.message,
         });
@@ -152,6 +175,7 @@ export function createPollFeed(deps: {
           feedId: feed.id,
           status: "not-modified",
           published: 0,
+          updated: 0,
           publishErrors: [],
           fetchError: null,
         });
@@ -160,38 +184,79 @@ export function createPollFeed(deps: {
       const items = parseItems(fetched.value.feed);
       const currentLanguage =
         languageFrom(fetched.value.feed.language) ?? feed.language;
-      const newKeys = new Set(
-        await deps.items.filterNew(
-          feed.id,
-          items.map((item) => item.key),
-        ),
+
+      const existing = new Map(
+        (
+          await deps.items.findExisting(
+            feed.id,
+            items.map((item) => item.key),
+          )
+        ).map((record) => [record.key, record]),
       );
+
       const toPublish = items
-        .filter((item) => newKeys.has(item.key))
+        .filter((item) => !existing.has(item.key))
         .sort(
           (a, b) =>
             (a.publishedAt?.getTime() ?? 0) - (b.publishedAt?.getTime() ?? 0),
         );
+      const toUpdate = items.flatMap((item) => {
+        const record = existing.get(item.key);
+        if (record === undefined) return [];
+        const fingerprint = contentFingerprint(item);
+        return fingerprint === record.contentFingerprint
+          ? []
+          : [{ item, record, fingerprint }];
+      });
+
+      const buildCtx = {
+        feed,
+        currentLanguage,
+        contentExtractor: deps.contentExtractor,
+        contentPolicy: deps.contentPolicy,
+      };
 
       const publishedRecords: PublishedItemRecord[] = [];
       const publishErrors: string[] = [];
       for (const item of toPublish) {
-        const enriched = feed.fullContentEnabled
-          ? await withFullContent(item, deps.contentExtractor)
-          : item;
-        const content = decidePostContent(
-          withLanguage(enriched, currentLanguage),
-          deps.contentPolicy,
-        );
+        const content = await buildContent(item, buildCtx);
         const result = await deps.federation.publish(feed, content);
         if (result.ok) {
-          publishedRecords.push({ key: item.key, publishedAt: now });
+          publishedRecords.push({
+            key: item.key,
+            publishedAt: now,
+            contentFingerprint: contentFingerprint(item),
+            messageUri: result.value.messageUri,
+          });
         } else {
           publishErrors.push(result.error.message);
         }
       }
       if (publishedRecords.length > 0) {
         await deps.items.markPublished(feed.id, publishedRecords);
+      }
+
+      let updatedCount = 0;
+      for (const { item, record, fingerprint } of toUpdate) {
+        if (record.messageUri === null) {
+          // Pre-migration row: no way to locate the federated object to
+          // edit it. Adopt the new baseline silently rather than treating
+          // an untracked change as one we could have acted on.
+          await deps.items.markUpdated(feed.id, item.key, fingerprint);
+          continue;
+        }
+        const content = await buildContent(item, buildCtx);
+        const result = await deps.federation.update(
+          feed,
+          record.messageUri,
+          content,
+        );
+        if (result.ok) {
+          await deps.items.markUpdated(feed.id, item.key, fingerprint);
+          updatedCount++;
+        } else {
+          publishErrors.push(result.error.message);
+        }
       }
 
       const metadataTitle =
@@ -224,6 +289,7 @@ export function createPollFeed(deps: {
         feedId: feed.id,
         status: "polled",
         published: publishedRecords.length,
+        updated: updatedCount,
         publishErrors,
         fetchError: null,
       });

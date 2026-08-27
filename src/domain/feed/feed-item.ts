@@ -46,6 +46,25 @@ function parseLanguage(raw: string | null): FeedLanguage | null {
   return isOk(result) ? result.value : null;
 }
 
+/**
+ * Fingerprint of the feed-provided fields of an item, used to detect when a
+ * feed re-serves an already-known item (same `ItemKey`) with different
+ * content. Computed from the feed's own fields only — never from extracted
+ * full-content HTML, which can vary poll to poll independent of the feed.
+ */
+export function contentFingerprint(item: FeedItem): string {
+  return sha256Hex(
+    [
+      item.title ?? "",
+      item.contentHtml,
+      item.summaryHtml ?? "",
+      item.link ?? "",
+      item.publishedAt?.toISOString() ?? "",
+      item.language ?? "",
+    ].join(" "),
+  );
+}
+
 export const FeedItem = {
   fromRaw(raw: RawFeedItem): Result<FeedItem, UnidentifiableItem> {
     const guid = normalize(raw.guid);

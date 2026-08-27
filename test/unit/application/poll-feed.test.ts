@@ -5,6 +5,7 @@ import {
 } from "../../../src/application/poll-feed.js";
 import { ContentPolicy } from "../../../src/domain/content/content-policy.js";
 import { FeedId } from "../../../src/domain/feed/feed.js";
+import type { ItemKey } from "../../../src/domain/feed/feed-item.js";
 import { PollPolicy } from "../../../src/domain/feed/poll-policy.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
 import { createInMemoryItemRepository } from "../../../src/infrastructure/persistence/in-memory-item-repository.js";
@@ -129,6 +130,7 @@ describe("PollFeed", () => {
 
     const second = unwrap(await pollFeed.execute(feed.id));
     expect(second.published).toBe(0);
+    expect(second.updated).toBe(0);
     expect(federation.published).toHaveLength(2);
   });
 
@@ -391,6 +393,82 @@ describe("PollFeed language (ADR-0011)", () => {
 
     await pollFeed.execute(feed.id);
     expect((await feeds.findById(feed.id))?.language).toBe("ko");
+  });
+});
+
+describe("PollFeed content updates", () => {
+  it("publishes an Update when a previously-published item's content changes", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "x", title: "v1" })] })),
+    );
+    const first = unwrap(await pollFeed.execute(feed.id));
+    expect(first).toMatchObject({ published: 1, updated: 0 });
+    const messageUri = federation.published[0]?.messageUri;
+
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "x", title: "v2" })] })),
+    );
+    const second = unwrap(await pollFeed.execute(feed.id));
+    expect(second).toMatchObject({ published: 0, updated: 1, publishErrors: [] });
+    expect(federation.published).toHaveLength(1);
+    expect(federation.updated).toHaveLength(1);
+    expect(federation.updated[0]?.messageUri).toBe(messageUri);
+    const content = federation.updated[0]?.content;
+    expect(content?.kind === "note" && content.title).toBe("v2");
+  });
+
+  it("retries a failed update without losing the pending change", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "x", title: "v1" })] })),
+    );
+    await pollFeed.execute(feed.id);
+
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "x", title: "v2" })] })),
+    );
+    federation.failNextUpdatesWith("inbox unreachable");
+    const failed = unwrap(await pollFeed.execute(feed.id));
+    expect(failed).toMatchObject({ updated: 0, publishErrors: ["inbox unreachable"] });
+
+    federation.failNextUpdatesWith(null);
+    const retried = unwrap(await pollFeed.execute(feed.id));
+    expect(retried.updated).toBe(1);
+    expect(federation.updated).toHaveLength(1);
+  });
+
+  it("does not fire an Update for a pre-migration row with no stored message URI", async () => {
+    const { feed, feeds, items, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    await items.markPublished(feed.id, [
+      {
+        key: "guid:x" as ItemKey,
+        publishedAt: T0,
+        contentFingerprint: "stale-fingerprint-from-before-this-feature",
+        messageUri: null,
+      },
+    ]);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "x", title: "v1" })] })),
+    );
+
+    const first = unwrap(await pollFeed.execute(feed.id));
+    expect(first).toMatchObject({ published: 0, updated: 0 });
+    expect(federation.published).toHaveLength(0);
+    expect(federation.updated).toHaveLength(0);
+
+    // Fingerprint is now backfilled, so an unchanged re-poll stays quiet.
+    const second = unwrap(await pollFeed.execute(feed.id));
+    expect(second).toMatchObject({ published: 0, updated: 0 });
+    expect(federation.updated).toHaveLength(0);
   });
 });
 

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import type { ItemKey } from "../../src/domain/feed/feed-item.js";
+import type { MessageUri } from "../../src/domain/ports/federation-gateway.js";
 import { createDrizzleFeedRepository } from "../../src/infrastructure/persistence/drizzle-feed-repository.js";
 import { createDrizzleItemRepository } from "../../src/infrastructure/persistence/drizzle-item-repository.js";
 import { makeFeed, T0 as now } from "../helpers/fakes.js";
@@ -99,36 +100,49 @@ describe("DrizzleFeedRepository", () => {
     const doomed = makeFeed({ url: "https://doomed.example/rss" });
     await feeds.save(doomed);
     await items.markPublished(doomed.id, [
-      { key: "guid:1" as ItemKey, publishedAt: now },
+      {
+        key: "guid:1" as ItemKey,
+        publishedAt: now,
+        contentFingerprint: "fp",
+        messageUri: null,
+      },
     ]);
 
     await feeds.remove(doomed.id);
     expect(await feeds.findById(doomed.id)).toBeNull();
     // Cascade means the key is new again if the feed were re-registered.
-    const fresh = await items.filterNew(doomed.id, ["guid:1" as ItemKey]);
-    expect(fresh).toEqual(["guid:1"]);
+    const fresh = await items.findExisting(doomed.id, ["guid:1" as ItemKey]);
+    expect(fresh).toEqual([]);
   });
 });
 
 describe("DrizzleItemRepository", () => {
-  it("filters new keys preserving order and collapsing batch duplicates", async () => {
+  it("finds existing records and treats absent keys as new", async () => {
     const feeds = createDrizzleFeedRepository(database.db);
     const items = createDrizzleItemRepository(database.db);
     const feed = makeFeed({ url: "https://items.example/rss" });
     await feeds.save(feed);
 
-    const keys = ["guid:a", "guid:b", "guid:a", "guid:c"] as ItemKey[];
-    expect(await items.filterNew(feed.id, keys)).toEqual([
-      "guid:a",
-      "guid:b",
-      "guid:c",
-    ]);
+    const keys = ["guid:a", "guid:b", "guid:c"] as ItemKey[];
+    expect(await items.findExisting(feed.id, keys)).toEqual([]);
 
     await items.markPublished(feed.id, [
-      { key: "guid:a" as ItemKey, publishedAt: now },
+      {
+        key: "guid:a" as ItemKey,
+        publishedAt: now,
+        contentFingerprint: "fp-a",
+        messageUri: "urn:msg:a" as MessageUri,
+      },
     ]);
-    expect(await items.filterNew(feed.id, keys)).toEqual(["guid:b", "guid:c"]);
-    expect(await items.filterNew(feed.id, [])).toEqual([]);
+    expect(await items.findExisting(feed.id, keys)).toEqual([
+      {
+        key: "guid:a",
+        publishedAt: now,
+        contentFingerprint: "fp-a",
+        messageUri: "urn:msg:a",
+      },
+    ]);
+    expect(await items.findExisting(feed.id, [])).toEqual([]);
   });
 
   it("marks idempotently and forgets a feed on removeAllOf", async () => {
@@ -137,12 +151,37 @@ describe("DrizzleItemRepository", () => {
     const feed = makeFeed({ url: "https://items2.example/rss" });
     await feeds.save(feed);
 
-    const record = { key: "guid:x" as ItemKey, publishedAt: now };
+    const record = {
+      key: "guid:x" as ItemKey,
+      publishedAt: now,
+      contentFingerprint: "fp-x",
+      messageUri: "urn:msg:x" as MessageUri,
+    };
     await items.markPublished(feed.id, [record]);
     await items.markPublished(feed.id, [record]);
-    expect(await items.filterNew(feed.id, [record.key])).toEqual([]);
+    expect(await items.findExisting(feed.id, [record.key])).toEqual([record]);
 
     await items.removeAllOf(feed.id);
-    expect(await items.filterNew(feed.id, [record.key])).toEqual([record.key]);
+    expect(await items.findExisting(feed.id, [record.key])).toEqual([]);
+  });
+
+  it("markUpdated changes only the content fingerprint", async () => {
+    const feeds = createDrizzleFeedRepository(database.db);
+    const items = createDrizzleItemRepository(database.db);
+    const feed = makeFeed({ url: "https://items3.example/rss" });
+    await feeds.save(feed);
+
+    const record = {
+      key: "guid:y" as ItemKey,
+      publishedAt: now,
+      contentFingerprint: "fp-old",
+      messageUri: "urn:msg:y" as MessageUri,
+    };
+    await items.markPublished(feed.id, [record]);
+    await items.markUpdated(feed.id, record.key, "fp-new");
+
+    expect(await items.findExisting(feed.id, [record.key])).toEqual([
+      { ...record, contentFingerprint: "fp-new" },
+    ]);
   });
 });

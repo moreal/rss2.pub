@@ -28,6 +28,7 @@ import type {
 import type {
   FederationError,
   FederationGateway,
+  MessageUri,
 } from "../../src/domain/ports/federation-gateway.js";
 import { err, ok, type Result } from "../../src/shared/result.js";
 import { unwrap } from "./result.js";
@@ -164,30 +165,54 @@ export function fakeFetcher(): FakeFetcher {
 }
 
 export type CapturingFederation = FederationGateway & {
-  readonly published: { feed: Feed; content: PostContent }[];
+  readonly published: { feed: Feed; content: PostContent; messageUri: MessageUri }[];
+  readonly updated: { feed: Feed; messageUri: MessageUri; content: PostContent }[];
   readonly deletedActors: Feed[];
   failNextPublishesWith(message: string | null): void;
+  failNextUpdatesWith(message: string | null): void;
 };
 
 export function capturingFederation(): CapturingFederation {
-  const published: { feed: Feed; content: PostContent }[] = [];
+  const published: { feed: Feed; content: PostContent; messageUri: MessageUri }[] = [];
+  const updated: { feed: Feed; messageUri: MessageUri; content: PostContent }[] = [];
   const deletedActors: Feed[] = [];
-  let failure: string | null = null;
+  let publishFailure: string | null = null;
+  let updateFailure: string | null = null;
+  let counter = 0;
   return {
     published,
+    updated,
     deletedActors,
     failNextPublishesWith(message) {
-      failure = message;
+      publishFailure = message;
     },
-    async publish(feed, content): Promise<Result<void, FederationError>> {
-      if (failure !== null) {
+    failNextUpdatesWith(message) {
+      updateFailure = message;
+    },
+    async publish(
+      feed,
+      content,
+    ): Promise<Result<{ messageUri: MessageUri }, FederationError>> {
+      if (publishFailure !== null) {
         return err({
           type: "FederationDeliveryFailed",
           feedId: feed.id,
-          message: failure,
+          message: publishFailure,
         });
       }
-      published.push({ feed, content });
+      const messageUri = `urn:fake-message:${++counter}` as MessageUri;
+      published.push({ feed, content, messageUri });
+      return ok({ messageUri });
+    },
+    async update(feed, messageUri, content): Promise<Result<void, FederationError>> {
+      if (updateFailure !== null) {
+        return err({
+          type: "FederationDeliveryFailed",
+          feedId: feed.id,
+          message: updateFailure,
+        });
+      }
+      updated.push({ feed, messageUri, content });
       return ok(undefined);
     },
     async deleteActor(feed): Promise<Result<void, FederationError>> {

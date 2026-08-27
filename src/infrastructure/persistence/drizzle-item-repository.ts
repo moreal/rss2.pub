@@ -1,15 +1,21 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { ItemKey } from "../../domain/feed/feed-item.js";
+import type { MessageUri } from "../../domain/ports/federation-gateway.js";
 import type { ItemRepository } from "../../domain/ports/item-repository.js";
 import type { Database } from "./drizzle-feed-repository.js";
 import { publishedItems } from "./schema.js";
 
 export function createDrizzleItemRepository(db: Database): ItemRepository {
   return {
-    async filterNew(feedId, keys) {
+    async findExisting(feedId, keys) {
       if (keys.length === 0) return [];
-      const existing = await db
-        .select({ key: publishedItems.key })
+      const rows = await db
+        .select({
+          key: publishedItems.key,
+          publishedAt: publishedItems.publishedAt,
+          contentFingerprint: publishedItems.contentFingerprint,
+          messageUri: publishedItems.messageUri,
+        })
         .from(publishedItems)
         .where(
           and(
@@ -17,16 +23,12 @@ export function createDrizzleItemRepository(db: Database): ItemRepository {
             inArray(publishedItems.key, [...keys]),
           ),
         );
-      const known = new Set(existing.map((row) => row.key));
-      const fresh: ItemKey[] = [];
-      const inBatch = new Set<ItemKey>();
-      for (const key of keys) {
-        if (!known.has(key) && !inBatch.has(key)) {
-          fresh.push(key);
-          inBatch.add(key);
-        }
-      }
-      return fresh;
+      return rows.map((row) => ({
+        key: row.key as ItemKey,
+        publishedAt: row.publishedAt,
+        contentFingerprint: row.contentFingerprint ?? "",
+        messageUri: row.messageUri as MessageUri | null,
+      }));
     },
 
     async markPublished(feedId, records) {
@@ -38,9 +40,18 @@ export function createDrizzleItemRepository(db: Database): ItemRepository {
             feedId,
             key: record.key,
             publishedAt: record.publishedAt,
+            contentFingerprint: record.contentFingerprint,
+            messageUri: record.messageUri,
           })),
         )
         .onConflictDoNothing();
+    },
+
+    async markUpdated(feedId, key, contentFingerprint) {
+      await db
+        .update(publishedItems)
+        .set({ contentFingerprint })
+        .where(and(eq(publishedItems.feedId, feedId), eq(publishedItems.key, key)));
     },
 
     async removeAllOf(feedId) {

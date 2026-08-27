@@ -7,32 +7,42 @@ import type {
 
 /** Reference implementation of ItemRepository (unit-test double). */
 export function createInMemoryItemRepository(): ItemRepository {
-  const seen = new Map<FeedId, Set<ItemKey>>();
+  const seen = new Map<FeedId, Map<ItemKey, PublishedItemRecord>>();
 
   return {
-    async filterNew(
+    async findExisting(
       feedId: FeedId,
       keys: readonly ItemKey[],
-    ): Promise<ItemKey[]> {
-      const known = seen.get(feedId) ?? new Set<ItemKey>();
-      const result: ItemKey[] = [];
-      const inBatch = new Set<ItemKey>();
+    ): Promise<PublishedItemRecord[]> {
+      const known = seen.get(feedId) ?? new Map<ItemKey, PublishedItemRecord>();
+      const found: PublishedItemRecord[] = [];
       for (const key of keys) {
-        if (!known.has(key) && !inBatch.has(key)) {
-          result.push(key);
-          inBatch.add(key);
-        }
+        const record = known.get(key);
+        if (record !== undefined) found.push(record);
       }
-      return result;
+      return found;
     },
 
     async markPublished(
       feedId: FeedId,
       records: readonly PublishedItemRecord[],
     ): Promise<void> {
-      const known = seen.get(feedId) ?? new Set<ItemKey>();
-      for (const record of records) known.add(record.key);
+      const known = seen.get(feedId) ?? new Map<ItemKey, PublishedItemRecord>();
+      for (const record of records) {
+        if (!known.has(record.key)) known.set(record.key, record);
+      }
       seen.set(feedId, known);
+    },
+
+    async markUpdated(
+      feedId: FeedId,
+      key: ItemKey,
+      contentFingerprint: string,
+    ): Promise<void> {
+      const known = seen.get(feedId);
+      const record = known?.get(key);
+      if (known === undefined || record === undefined) return;
+      known.set(key, { ...record, contentFingerprint });
     },
 
     async removeAllOf(feedId: FeedId): Promise<void> {

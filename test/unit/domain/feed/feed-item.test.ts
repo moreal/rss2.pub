@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  contentFingerprint,
   FeedItem,
   type RawFeedItem,
 } from "../../../../src/domain/feed/feed-item.js";
@@ -107,5 +108,34 @@ describe("FeedItem.fromRaw normalization", () => {
       FeedItem.fromRaw({ ...EMPTY, guid: "g", language: "not a lang" }),
     );
     expect(item.language).toBeNull();
+  });
+});
+
+describe("contentFingerprint", () => {
+  const base = { ...EMPTY, guid: "g", title: "T", contentHtml: "<p>c</p>" };
+
+  it("is stable for identical items", () => {
+    const a = unwrap(FeedItem.fromRaw(base));
+    const b = unwrap(FeedItem.fromRaw(base));
+    expect(contentFingerprint(a)).toBe(contentFingerprint(b));
+  });
+
+  it("is unaffected by whitespace already collapsed by normalization", () => {
+    const a = unwrap(FeedItem.fromRaw(base));
+    const b = unwrap(FeedItem.fromRaw({ ...base, title: "  T  " }));
+    expect(contentFingerprint(a)).toBe(contentFingerprint(b));
+  });
+
+  it.each([
+    ["title", { title: "Other" }],
+    ["contentHtml", { contentHtml: "<p>other</p>" }],
+    ["summaryHtml", { summaryHtml: "<p>summary</p>" }],
+    ["link", { link: "https://example.com/other" }],
+    ["publishedAt", { publishedAt: new Date("2026-07-01T00:00:00Z") }],
+    ["language", { language: "en" }],
+  ])("changes when %s changes", (_field, override) => {
+    const a = unwrap(FeedItem.fromRaw(base));
+    const b = unwrap(FeedItem.fromRaw({ ...base, ...override }));
+    expect(contentFingerprint(a)).not.toBe(contentFingerprint(b));
   });
 });

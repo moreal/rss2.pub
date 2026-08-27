@@ -53,6 +53,9 @@ export const publishedItems = pgTable(
       .references(() => feeds.id, { onDelete: "cascade" }),
     key: text("key").notNull(),
     publishedAt: timestamp("published_at", { withTimezone: true }).notNull(),
+    // Null only for rows written before content-change tracking existed.
+    contentFingerprint: text("content_fingerprint"),
+    messageUri: text("message_uri"),
   },
   (table) => [primaryKey({ columns: [table.feedId, table.key] })],
 );

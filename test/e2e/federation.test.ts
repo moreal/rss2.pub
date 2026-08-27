@@ -422,6 +422,65 @@ describe("federation e2e", () => {
     expect(note["contentMap"]).not.toHaveProperty("en");
   });
 
+  it("publishes an Update activity when a feed entry's content changes", async () => {
+    fixtures.setFixture(
+      "/blog/mutable-feed.xml",
+      rssFixture({
+        title: "Mutable Blog",
+        items: [
+          {
+            guid: "urn:e2e:mutable",
+            link: "https://blog.example/mutable",
+            title: "Original Title",
+            description: "<p>original body</p>",
+            pubDate: "Sat, 04 Jul 2026 00:00:00 GMT",
+          },
+        ],
+      }),
+    );
+    const feedUrl = fixtures.url("/blog/mutable-feed.xml");
+    const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+
+    await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl }),
+    });
+    await app.scheduler.tick();
+
+    const actor = await fetchAp(`${base}/ap/actor/${handle}`);
+    const before = await collectOutbox(actor["outbox"] as string);
+    expect(before).toHaveLength(1);
+    const originalNote = await resolveItem(before[0]?.["object"]);
+    expect(originalNote["content"]).toContain("Original Title");
+    const noteId = originalNote["id"] as string;
+
+    // Wait past the poll interval so the feed is due again, then edit it.
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    fixtures.setFixture(
+      "/blog/mutable-feed.xml",
+      rssFixture({
+        title: "Mutable Blog",
+        items: [
+          {
+            guid: "urn:e2e:mutable",
+            link: "https://blog.example/mutable",
+            title: "Edited Title",
+            description: "<p>edited body</p>",
+            pubDate: "Sat, 04 Jul 2026 00:00:00 GMT",
+          },
+        ],
+      }),
+    );
+    await app.scheduler.tick();
+
+    const after = await collectOutbox(actor["outbox"] as string);
+    expect(after, "no duplicate post for the same entry").toHaveLength(1);
+
+    const editedNote = await fetchAp(noteId);
+    expect(editedNote["content"]).toContain("Edited Title");
+    expect(editedNote["content"]).toContain("edited body");
+  });
+
   it("exposes NodeInfo", async () => {
     const response = await fetch(`${base}/nodeinfo/2.1`);
     expect(response.status).toBe(200);
