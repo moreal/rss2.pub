@@ -125,9 +125,11 @@ adapter.
   transaction-mode poolers, no scale-to-zero Postgres (see PLAN.md §6). Its
   `listen()`/`Federation.startQueue()` promise resolves only when listening
   stops — never `await` it.
-- BotKit 0.6.0-dev.345 is patched via `.yarn/patches/` (adds
-  `federationOptions` passthrough — ADR-0007; the exact dev version is
-  preapproved in .yarnrc.yml past the npm minimal-age gate). Outgoing HTML is
+- BotKit 0.6.0-dev.348 is used unpatched — its `federationOptions` field
+  (natively typed `FederationInfrastructureOptions`, upstreamed in response to
+  fedify-dev/botkit#41) replaced the `.yarn/patches/` passthrough we carried
+  through 0.6.0-dev.345 (ADR-0007, superseded). The exact dev version is
+  preapproved in .yarnrc.yml past the npm minimal-age gate. Outgoing HTML is
   published through `RawHtmlText` after our own sanitization (render.ts);
   BotKit does not sanitize outgoing content. Since 0.6, `session.publish()`
   takes `name`/`summary`/`url` directly (ADR-0007 amendment) — pass Article

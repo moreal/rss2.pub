@@ -31,8 +31,8 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
-    "@fedify/botkit": "patch:@fedify/botkit@npm%3A0.6.0-dev.345#~/.yarn/patches/@fedify-botkit-npm-0.6.0-dev.345-7aeb1fdd53.patch",
-    "@fedify/botkit-postgres": "0.6.0-dev.345",
+    "@fedify/botkit": "0.6.0-dev.348",
+    "@fedify/botkit-postgres": "0.6.0-dev.348",
     "@fedify/fedify": "~2.3.5",
     "@fedify/postgres": "^2.3.3",
     "@fedify/vocab": "~2.3.5",

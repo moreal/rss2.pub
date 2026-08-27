@@ -53,7 +53,10 @@
                 ./package.json
                 ./yarn.lock
                 ./.yarnrc.yml
-                ./.yarn
+                # .yarn/* is gitignored except a few subpaths (patches,
+                # plugins, ...); when none of those currently hold a tracked
+                # file, git has nothing to check out under ./.yarn at all.
+                (lib.fileset.maybeMissing ./.yarn)
                 ./tsconfig.json
                 ./tsconfig.build.json
                 ./src
@@ -72,7 +75,7 @@
             missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
               inherit (finalAttrs) src missingHashes;
-              hash = "sha256-fGHbc+POGMcjoZmkO/+tbEP+O22nvtjnbgMfqOke9zs=";
+              hash = "sha256-Z9IwaS3ugLoJpQdBIqdkAJW19mG2nU9JBPLeol0YS8E=";
             };
 
             nativeBuildInputs = [

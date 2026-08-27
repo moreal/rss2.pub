@@ -94,11 +94,7 @@ export function createFederationStack(deps: {
   readonly allowPrivateAddress?: boolean;
 }): FederationStack {
   const repository = new PostgresRepository({ sql: deps.sql });
-  // `federationOptions` is added by our .yarn/patches patch of BotKit
-  // (spread into Fedify's createFederation) — hence the widened type.
-  const options: CreateInstanceOptions & {
-    federationOptions?: { allowPrivateAddress: boolean };
-  } = {
+  const options: CreateInstanceOptions = {
     kv: new PostgresKvStore(deps.sql),
     queue: new PostgresMessageQueue(deps.sql),
     repository,

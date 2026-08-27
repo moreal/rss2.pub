@@ -784,9 +784,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fedify/botkit-postgres@npm:0.6.0-dev.345":
-  version: 0.6.0-dev.345
-  resolution: "@fedify/botkit-postgres@npm:0.6.0-dev.345"
+"@fedify/botkit-postgres@npm:0.6.0-dev.348":
+  version: 0.6.0-dev.348
+  resolution: "@fedify/botkit-postgres@npm:0.6.0-dev.348"
   dependencies:
     "@fedify/fedify": "npm:~2.3.5"
     "@fedify/vocab": "npm:~2.3.5"
@@ -794,14 +794,14 @@ __metadata:
     "@logtape/logtape": "npm:^2.2.3"
     postgres: "npm:^3.4.9"
   peerDependencies:
-    "@fedify/botkit": ^0.6.0-dev.345+20d0a60b
-  checksum: 10c0/03124814e871dee1745e1386a46c3fff1c1884299a793840cd86a8867894fb2ab5414293c30feeef2e5eec0b1f70bd45371a7be152b617f974fb97eeae593009
+    "@fedify/botkit": ^0.6.0-dev.348+664bf5e1
+  checksum: 10c0/a42e83d49eeda8a36d75d739d17c7711e5ad71b5b977c4171519152c9513c4d9404bedf76e62c4d3111383677a94a4250da73c5207ac8347fdafdcc93ef7a4f4
   languageName: node
   linkType: hard
 
-"@fedify/botkit@npm:0.6.0-dev.345":
-  version: 0.6.0-dev.345
-  resolution: "@fedify/botkit@npm:0.6.0-dev.345"
+"@fedify/botkit@npm:0.6.0-dev.348":
+  version: 0.6.0-dev.348
+  resolution: "@fedify/botkit@npm:0.6.0-dev.348"
   dependencies:
     "@fedify/fedify": "npm:~2.3.5"
     "@fedify/markdown-it-hashtag": "npm:^0.3.0"
@@ -810,6 +810,7 @@ __metadata:
     "@fedify/vocab-runtime": "npm:~2.3.5"
     "@js-temporal/polyfill": "npm:^0.5.1"
     "@logtape/logtape": "npm:^2.2.3"
+    "@opentelemetry/api": "npm:^1.9.1"
     hono: "npm:^4.12.27"
     html-entities: "npm:^2.6.0"
     markdown-it: "npm:^14.3.0"
@@ -818,30 +819,7 @@ __metadata:
     uuid: "npm:^11.1.0"
     x-forwarded-fetch: "npm:^0.2.0"
     xss: "npm:^1.0.15"
-  checksum: 10c0/491bc9ec8bf6b66e13ab8b51ca317999ba0849997e8793497729ec9ba2f950bae19068f91837dd0d0b8a0de031221d776c74d4364c5f4d046c019029e1bd8efe
-  languageName: node
-  linkType: hard
-
-"@fedify/botkit@patch:@fedify/botkit@npm%3A0.6.0-dev.345#~/.yarn/patches/@fedify-botkit-npm-0.6.0-dev.345-7aeb1fdd53.patch":
-  version: 0.6.0-dev.345
-  resolution: "@fedify/botkit@patch:@fedify/botkit@npm%3A0.6.0-dev.345#~/.yarn/patches/@fedify-botkit-npm-0.6.0-dev.345-7aeb1fdd53.patch::version=0.6.0-dev.345&hash=9aae24"
-  dependencies:
-    "@fedify/fedify": "npm:~2.3.5"
-    "@fedify/markdown-it-hashtag": "npm:^0.3.0"
-    "@fedify/markdown-it-mention": "npm:^0.3.0"
-    "@fedify/vocab": "npm:~2.3.5"
-    "@fedify/vocab-runtime": "npm:~2.3.5"
-    "@js-temporal/polyfill": "npm:^0.5.1"
-    "@logtape/logtape": "npm:^2.2.3"
-    hono: "npm:^4.12.27"
-    html-entities: "npm:^2.6.0"
-    markdown-it: "npm:^14.3.0"
-    mime-db: "npm:^1.54.0"
-    url-template: "npm:^3.1.1"
-    uuid: "npm:^11.1.0"
-    x-forwarded-fetch: "npm:^0.2.0"
-    xss: "npm:^1.0.15"
-  checksum: 10c0/5954cdadd957212d30ae42f1e360f5f6b6c57d3bb864e6ba9c4db074685bc06400532f80b1f6031c0a7be835cd3ca9fff469a83bf2889c372445d3508bf5eb6a
+  checksum: 10c0/ff120ddb2feaa3725c3bb5e665b8f464e7b22d48d9e6935f5ec8fb042df6e9a68d37800626fa0f699742bae5c7e4a9a736a6c7b7ebb74e1d41a63d32973f86d5
   languageName: node
   linkType: hard
 
@@ -4860,8 +4838,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "rss2pub@workspace:."
   dependencies:
-    "@fedify/botkit": "patch:@fedify/botkit@npm%3A0.6.0-dev.345#~/.yarn/patches/@fedify-botkit-npm-0.6.0-dev.345-7aeb1fdd53.patch"
-    "@fedify/botkit-postgres": "npm:0.6.0-dev.345"
+    "@fedify/botkit": "npm:0.6.0-dev.348"
+    "@fedify/botkit-postgres": "npm:0.6.0-dev.348"
     "@fedify/fedify": "npm:~2.3.5"
     "@fedify/postgres": "npm:^2.3.3"
     "@fedify/vocab": "npm:~2.3.5"
