@@ -12,7 +12,7 @@ import {
   startFixtureFeedServer,
   type FixtureFeedServer,
 } from "./helpers/fixture-feed-server.js";
-import { rssFixture } from "./helpers/fixtures.js";
+import { atomFixture } from "./helpers/fixtures.js";
 
 async function getFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -82,7 +82,10 @@ describe("actor icon from channel favicon e2e (ADR-0010)", () => {
       `<!doctype html><html><head><link rel="icon" href="/icon.png"></head><body></body></html>`,
       { contentType: "text/html" },
     );
-    fixtures.setFixture("/feed.xml", rssFixture({ title: "Iconic Blog", link: fixtures.url("/"), items: [] }));
+    fixtures.setFixture(
+      "/feed.xml",
+      atomFixture({ title: "Iconic Blog", link: fixtures.url("/"), entries: [] }),
+    );
 
     const feedUrl = fixtures.url("/feed.xml");
     const canonicalUrl = unwrap(FeedUrl.create(feedUrl));
@@ -115,7 +118,11 @@ describe("actor icon from channel favicon e2e (ADR-0010)", () => {
     });
     fixtures.setFixture(
       "/plain-feed.xml",
-      rssFixture({ title: "Plain Blog", link: fixtures.url("/plain/"), items: [] }),
+      atomFixture({
+        title: "Plain Blog",
+        link: fixtures.url("/plain/"),
+        entries: [],
+      }),
     );
 
     const feedUrl = fixtures.url("/plain-feed.xml");

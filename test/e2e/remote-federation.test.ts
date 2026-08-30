@@ -18,7 +18,7 @@ import {
   startFixtureFeedServer,
   type FixtureFeedServer,
 } from "./helpers/fixture-feed-server.js";
-import { rssFixture } from "./helpers/fixtures.js";
+import { atomFixture } from "./helpers/fixtures.js";
 
 async function getFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -148,14 +148,14 @@ describe("signed federation round trip", () => {
   it("registers a feed and publishes its backlog", async () => {
     fixtures.setFixture(
       "/signed/feed.xml",
-      rssFixture({
+      atomFixture({
         title: "Signed Blog",
-        items: [
+        entries: [
           {
-            guid: "urn:signed:1",
+            id: "urn:signed:1",
             title: "First Post",
-            description: "<p>hello fediverse</p>",
-            pubDate: "Wed, 01 Jul 2026 00:00:00 GMT",
+            summary: "<p>hello fediverse</p>",
+            published: new Date("Wed, 01 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),
@@ -198,20 +198,20 @@ describe("signed federation round trip", () => {
   it("delivers new items to the follower's inbox as signed Create activities", async () => {
     fixtures.setFixture(
       "/signed/feed.xml",
-      rssFixture({
+      atomFixture({
         title: "Signed Blog",
-        items: [
+        entries: [
           {
-            guid: "urn:signed:2",
+            id: "urn:signed:2",
             title: "Second Post",
-            description: "<p>delivered over http signatures</p>",
-            pubDate: "Thu, 02 Jul 2026 00:00:00 GMT",
+            summary: "<p>delivered over http signatures</p>",
+            published: new Date("Thu, 02 Jul 2026 00:00:00 GMT").toISOString(),
           },
           {
-            guid: "urn:signed:1",
+            id: "urn:signed:1",
             title: "First Post",
-            description: "<p>hello fediverse</p>",
-            pubDate: "Wed, 01 Jul 2026 00:00:00 GMT",
+            summary: "<p>hello fediverse</p>",
+            published: new Date("Wed, 01 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),

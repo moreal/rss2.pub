@@ -19,7 +19,7 @@ export type FixtureFeedServer = {
   close(): Promise<void>;
 };
 
-/** Local HTTP server standing in for remote RSS/Atom origins in e2e tests. */
+/** Local HTTP server standing in for remote Atom origins in e2e tests. */
 export async function startFixtureFeedServer(): Promise<FixtureFeedServer> {
   const fixtures = new Map<string, Fixture>();
   const requests: { path: string; headers: IncomingHttpHeaders }[] = [];
@@ -55,7 +55,7 @@ export async function startFixtureFeedServer(): Promise<FixtureFeedServer> {
     setFixture(path, body, options) {
       fixtures.set(path, {
         body,
-        contentType: options?.contentType ?? "application/rss+xml",
+        contentType: options?.contentType ?? "application/atom+xml",
         etag: options?.etag ?? null,
       });
     },
