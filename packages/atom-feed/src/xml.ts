@@ -2,6 +2,8 @@ import { SaxesParser, type SaxesAttributeNS, type SaxesTagNS } from "saxes";
 
 import type { AtomParseError, AtomParserLimits } from "./model.js";
 
+const XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
+
 export type XmlNode = XmlElement | { readonly type: "text"; readonly value: string };
 
 export type XmlElement = {
@@ -139,6 +141,9 @@ function mutableElement(tag: SaxesTagNS): MutableXmlElement {
 }
 
 function attributeKey(attribute: SaxesAttributeNS): string {
+  if (attribute.uri === XML_NAMESPACE) {
+    return `{${XML_NAMESPACE}}${attribute.local}`;
+  }
   return attribute.uri === "" ? attribute.name : `{${attribute.uri}}${attribute.local}`;
 }
 

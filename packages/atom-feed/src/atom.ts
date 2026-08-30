@@ -1,4 +1,9 @@
-import type { AtomEntryDto, AtomFeedDto, AtomTextDto } from "./model.js";
+import type {
+  AtomAuthorDto,
+  AtomEntryDto,
+  AtomFeedDto,
+  AtomTextDto,
+} from "./model.js";
 import type { XmlElement, XmlNode } from "./xml.js";
 
 const ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
@@ -8,19 +13,33 @@ const XMLNS_NAMESPACE = "http://www.w3.org/2000/xmlns/";
 const XML_LANGUAGE_ATTRIBUTE = `{${XML_NAMESPACE}}lang`;
 
 export function parseAtomFeed(feed: XmlElement): AtomFeedDto {
+  const language = effectiveLanguage(feed, null);
+  const authors = authorsOf(feed);
   return {
     id: directChildText(feed, "id"),
     title: textConstruct(directChild(feed, "title")),
     subtitle: textConstruct(directChild(feed, "subtitle")),
     link: alternateLink(feed),
-    language: feed.attributes.get(XML_LANGUAGE_ATTRIBUTE) ?? null,
-    authors: [],
-    entries: directChildren(feed, "entry").map(parseEntry),
+    language,
+    authors,
+    entries: directChildren(feed, "entry").map((entry) => parseEntry(entry, language, authors)),
   };
 }
 
-function parseEntry(entry: XmlElement): AtomEntryDto {
+function parseEntry(
+  entry: XmlElement,
+  feedLanguage: string | null,
+  feedAuthors: readonly AtomAuthorDto[],
+): AtomEntryDto {
   const content = directChild(entry, "content");
+  const entryAuthors = authorsOf(entry);
+  const source = directChild(entry, "source");
+  const sourceAuthors = source === null ? [] : authorsOf(source);
+  const effectiveAuthors = entryAuthors.length > 0
+    ? entryAuthors
+    : sourceAuthors.length > 0
+      ? sourceAuthors
+      : feedAuthors;
   return {
     id: directChildText(entry, "id"),
     link: alternateLink(entry),
@@ -29,9 +48,31 @@ function parseEntry(entry: XmlElement): AtomEntryDto {
     content: content === null || content.attributes.has("src") ? null : textConstruct(content),
     published: directChildText(entry, "published"),
     updated: directChildText(entry, "updated"),
-    language: null,
-    authors: [],
+    language: effectiveLanguage(entry, feedLanguage),
+    authors: copyAuthors(effectiveAuthors),
   };
+}
+
+function effectiveLanguage(element: XmlElement, inherited: string | null): string | null {
+  const language = element.attributes.get(XML_LANGUAGE_ATTRIBUTE);
+  if (language === undefined) {
+    return inherited;
+  }
+
+  const trimmed = language.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+function authorsOf(parent: XmlElement): readonly AtomAuthorDto[] {
+  return directChildren(parent, "author").map((author) => ({
+    name: directChildText(author, "name"),
+    uri: directChildText(author, "uri"),
+    email: directChildText(author, "email"),
+  }));
+}
+
+function copyAuthors(authors: readonly AtomAuthorDto[]): readonly AtomAuthorDto[] {
+  return authors.map((author) => ({ ...author }));
 }
 
 function directChild(parent: XmlElement, localName: string): XmlElement | null {

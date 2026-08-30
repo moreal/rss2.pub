@@ -159,4 +159,45 @@ describe("parseAtom metadata and text constructs", () => {
       null,
     ]);
   });
+
+  it("inherits authors entry -> source -> feed and preserves order", () => {
+    const result = parseAtom(`<feed xmlns="${NS}" xml:lang="en">
+      <title>F</title>
+      <author><name>Feed A</name><uri>https://actors.test/feed-a</uri></author>
+      <author><name>Feed B</name><uri>https://actors.test/feed-b</uri></author>
+      <entry xml:lang="ko"><id>1</id><title>1</title><updated>2026-08-30T00:00:00Z</updated>
+        <author><name>Entry A</name><uri>https://actors.test/entry</uri><email>a@example.test</email></author>
+      </entry>
+      <entry><id>2</id><title>2</title><updated>2026-08-30T00:00:00Z</updated>
+        <source><author><name>Source A</name><uri>https://actors.test/source</uri></author></source>
+      </entry>
+      <entry><id>3</id><title>3</title><updated>2026-08-30T00:00:00Z</updated></entry>
+    </feed>`);
+    if (!result.ok) throw new Error(result.error.type);
+    expect(result.value.entries.map((entry) => ({ language: entry.language, authors: entry.authors })))
+      .toEqual([
+        { language: "ko", authors: [{ name: "Entry A", uri: "https://actors.test/entry", email: "a@example.test" }] },
+        { language: "en", authors: [{ name: "Source A", uri: "https://actors.test/source", email: null }] },
+        { language: "en", authors: [
+          { name: "Feed A", uri: "https://actors.test/feed-a", email: null },
+          { name: "Feed B", uri: "https://actors.test/feed-b", email: null },
+        ] },
+      ]);
+  });
+
+  it("clears inherited language and prefers entry authors over source authors", () => {
+    const result = parseAtom(`<feed xmlns="${NS}" xml:lang="en">
+      <author><name>Feed A</name></author>
+      <entry xml:lang=""><id>1</id><title>1</title><updated>2026-08-30T00:00:00Z</updated>
+        <author><name>Entry A</name></author>
+        <source><author><name>Source A</name></author></source>
+      </entry>
+    </feed>`);
+    if (!result.ok) throw new Error(result.error.type);
+
+    expect(result.value.entries[0]).toMatchObject({
+      language: null,
+      authors: [{ name: "Entry A", uri: null, email: null }],
+    });
+  });
 });
