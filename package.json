@@ -8,14 +8,17 @@
   "engines": {
     "node": ">=24"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
+    "dev": "yarn workspace @rss2pub/atom-feed build && node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
     "db:reset": "./scripts/db-reset.sh",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run",
-    "test:unit": "vitest run --project unit",
-    "test:e2e": "vitest run --project e2e",
+    "typecheck": "yarn workspace @rss2pub/atom-feed typecheck && tsc --noEmit",
+    "build": "yarn workspace @rss2pub/atom-feed build && tsc -p tsconfig.build.json",
+    "test": "yarn workspace @rss2pub/atom-feed build && vitest run",
+    "test:unit": "yarn workspace @rss2pub/atom-feed build && vitest run --project unit",
+    "test:e2e": "yarn workspace @rss2pub/atom-feed build && vitest run --project e2e",
     "test:watch": "vitest --project unit",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile"
@@ -45,6 +48,7 @@
     "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
     "@opentelemetry/sdk-metrics": "^2.10.0",
     "@opentelemetry/sdk-node": "^0.221.0",
+    "@rss2pub/atom-feed": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.32",
     "linkedom": "^0.18.13",

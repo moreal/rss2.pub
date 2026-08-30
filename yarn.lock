@@ -1904,6 +1904,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rss2pub/atom-feed@workspace:*, @rss2pub/atom-feed@workspace:packages/atom-feed":
+  version: 0.0.0-use.local
+  resolution: "@rss2pub/atom-feed@workspace:packages/atom-feed"
+  dependencies:
+    saxes: "npm:^6.0.0"
+    typescript: "npm:^7.0.2"
+    vitest: "npm:^4.1.10"
+  languageName: unknown
+  linkType: soft
+
 "@sinclair/typebox@npm:^0.27.8":
   version: 0.27.12
   resolution: "@sinclair/typebox@npm:0.27.12"
@@ -4853,6 +4863,7 @@ __metadata:
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.221.0"
     "@opentelemetry/sdk-metrics": "npm:^2.10.0"
     "@opentelemetry/sdk-node": "npm:^0.221.0"
+    "@rss2pub/atom-feed": "workspace:*"
     "@testcontainers/postgresql": "npm:^12.0.4"
     "@types/node": "npm:^24"
     "@types/sanitize-html": "npm:^2.16.1"
@@ -4909,6 +4920,15 @@ __metadata:
   version: 1.6.1
   resolution: "sax@npm:1.6.1"
   checksum: 10c0/c91a71043d60da50fdf1e2cee936fc7ad4c9376afb8d1022aef5655f279433640859ec06b3b49abfcbe578fc7da2828cc1661e45aaedf835f5393496193437fa
+  languageName: node
+  linkType: hard
+
+"saxes@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "saxes@npm:6.0.0"
+  dependencies:
+    xmlchars: "npm:^2.2.0"
+  checksum: 10c0/3847b839f060ef3476eb8623d099aa502ad658f5c40fd60c105ebce86d244389b0d76fcae30f4d0c728d7705ceb2f7e9b34bb54717b6a7dbedaf5dad2d9a4b74
   languageName: node
   linkType: hard
 
@@ -5790,6 +5810,13 @@ __metadata:
   version: 11.0.1
   resolution: "xmlbuilder@npm:11.0.1"
   checksum: 10c0/74b979f89a0a129926bc786b913459bdbcefa809afaa551c5ab83f89b1915bdaea14c11c759284bb9b931e3b53004dbc2181e21d3ca9553eeb0b2a7b4e40c35b
+  languageName: node
+  linkType: hard
+
+"xmlchars@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "xmlchars@npm:2.2.0"
+  checksum: 10c0/b64b535861a6f310c5d9bfa10834cf49127c71922c297da9d4d1b45eeaae40bf9b4363275876088fbe2667e5db028d2cd4f8ee72eed9bede840a67d57dab7593
   languageName: node
   linkType: hard
 
