@@ -176,10 +176,10 @@ describe("localized page chrome", () => {
     expect(html).toContain(`<title>${title}</title>`);
   });
 
-  it("localizes the meta description", async () => {
+  it("localizes the Atom-only meta description", async () => {
     const html = await bodyOf(webApp().request("/?lang=ko"));
     expect(html).toContain(
-      '<meta name="description" content="페디버스에서 RSS/Atom 피드를 팔로우하세요."/>',
+      '<meta name="description" content="페디버스에서 Atom 피드를 팔로우하세요."/>',
     );
   });
 
@@ -200,6 +200,16 @@ describe("localized page chrome", () => {
 });
 
 describe("localized content", () => {
+  it.each([
+    { path: "/", expected: "Follow any Atom feed from the fediverse" },
+    { path: "/?lang=ko", expected: "페디버스에서 어떤 Atom 피드든 팔로우하세요" },
+  ])("renders Atom-only product copy at $path", async ({ path, expected }) => {
+    const html = await bodyOf(webApp().request(path));
+    expect(html).toContain(expected);
+    expect(html).not.toContain("RSS feed");
+    expect(html).not.toContain("RSS or Atom");
+  });
+
   it("renders Korean home copy", async () => {
     const html = await bodyOf(webApp().request("/?lang=ko"));
     expect(html).toContain("피드 등록");
@@ -481,7 +491,7 @@ describe("registration outcomes", () => {
       failure: "FeedUnreachable",
       error: { type: "FeedUnreachable", url: FEED.url, message: "boom" },
       // Only {message} reaches the copy; url is here to satisfy the union.
-      expected: "해당 주소에서 피드를 읽지 못했습니다: boom",
+      expected: "해당 주소에서 Atom 피드를 읽을 수 없습니다: boom",
     },
   ] as const)("localizes the $failure failure", async ({ error, expected }) => {
     const registerFeed: RegisterFeed = { execute: async () => err(error) };

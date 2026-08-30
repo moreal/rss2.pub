@@ -1,7 +1,12 @@
 # rss2.pub
 
-RSS/Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스
+Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스
 계정 하나가 되어, 마스토돈 등에서 팔로우하면 새 글이 게시물로 전달됩니다.
+
+입력은 Atom 전용입니다. 자세한 범위와 RSS 지원을 제공하지 않는 이유는
+[ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)를 참고하세요. M6는
+아직 BotKit을 사용하며, raw Fedify 전환은 [ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md)에
+따라 다음 마일스톤에서 진행합니다.
 
 - 메인 액터 `@rss2pub`: 멘션/DM으로 `register <url>`, `search <keyword>` 명령 처리
 - 웹 UI: 인기 피드 추천 · 검색 · 등록

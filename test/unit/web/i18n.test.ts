@@ -44,6 +44,38 @@ describe("translate", () => {
       translate(i18nFor("ko"), copy.registerErrorNotAUrl, { url: "nope" }),
     ).toBe("URL 형식이 아닌 것 같습니다: nope");
   });
+
+  it.each([
+    {
+      locale: "en",
+      expected: [
+        "Follow Atom feeds from the fediverse.",
+        "Follow any Atom feed from the fediverse",
+        "rss2.pub turns an Atom feed into a fediverse account anyone can follow.",
+        "The address of the Atom feed itself, not the website — it often ends in /atom or .xml.",
+        "Couldn’t read an Atom feed there: boom",
+      ],
+    },
+    {
+      locale: "ko",
+      expected: [
+        "페디버스에서 Atom 피드를 팔로우하세요.",
+        "페디버스에서 어떤 Atom 피드든 팔로우하세요",
+        "rss2.pub은 Atom 피드를 누구나 팔로우할 수 있는 페디버스 계정으로 바꿉니다.",
+        "웹사이트가 아니라 Atom 피드 자체의 주소를 입력하세요. 보통 /atom 또는 .xml로 끝납니다.",
+        "해당 주소에서 Atom 피드를 읽을 수 없습니다: boom",
+      ],
+    },
+  ] as const)("renders Atom-only product copy in $locale", ({ locale, expected }) => {
+    const i18n = i18nFor(locale);
+    expect([
+      translate(i18n, copy.layoutMetaDescription),
+      translate(i18n, copy.homeHeading),
+      translate(i18n, copy.layoutFooterSummary),
+      translate(i18n, copy.registerUrlHelp),
+      translate(i18n, copy.registerErrorFeedUnreachable, { message: "boom" }),
+    ]).toEqual(expected);
+  });
 });
 
 describe("translateWithSlots", () => {

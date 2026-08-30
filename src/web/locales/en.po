@@ -15,85 +15,85 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:208
+#: src/web/ui/messages.ts:207
 msgid "search.results-count"
 msgstr "{count, plural, one {# feed matches “{query}”} other {# feeds match “{query}”}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:242
+#: src/web/ui/messages.ts:241
 msgid "feed.followers"
 msgstr "{count, plural, one {# follower} other {# followers}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:148
+#: src/web/ui/messages.ts:147
 msgid "register.result-exists-title"
 msgstr "Already registered"
 
 #. {handle} renders as a link to the @rss2pub account page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:50
+#: src/web/ui/messages.ts:49
 msgid "layout.footer-bot"
 msgstr "Bot account: {handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:173
+#: src/web/ui/messages.ts:172
 msgid "register.copied"
 msgstr "Copied"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:169
+#: src/web/ui/messages.ts:168
 msgid "register.copy-button"
 msgstr "Copy"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:160
+#: src/web/ui/messages.ts:159
 msgid "register.next-copy"
 msgstr "Copy this account name."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:132
+#: src/web/ui/messages.ts:131
 msgid "register.error-feed-unreachable"
-msgstr "Couldn’t read a feed there: {message}"
+msgstr "Couldn’t read an Atom feed there: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:140
+#: src/web/ui/messages.ts:139
 msgid "register.result-created-title"
 msgstr "Feed registered"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:136
+#: src/web/ui/messages.ts:135
 msgid "register.result-heading"
 msgstr "Feed registration"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:76
+#: src/web/ui/messages.ts:75
 msgid "register.url-label"
 msgstr "Feed URL"
 
 #. Checkbox label on the registration form (ADR-0009).
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:95
+#: src/web/ui/messages.ts:94
 msgid "register.full-content-label"
 msgstr "Fetch full articles"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:59
+#: src/web/ui/messages.ts:58
 msgid "home.heading"
-msgstr "Follow any RSS feed from the fediverse"
-
-#. js-lingui-explicit-id
-#: src/web/ui/messages.ts:156
-msgid "register.next-heading"
-msgstr "Follow it from your fediverse account"
+msgstr "Follow any Atom feed from the fediverse"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:18
 msgid "layout.meta-description"
-msgstr "Follow RSS and Atom feeds from the fediverse."
+msgstr "Follow Atom feeds from the fediverse."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:155
+msgid "register.next-heading"
+msgstr "Follow it from your fediverse account"
 
 #. Badge on a feed card whose account posts full articles (ADR-0009).
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:246
+#: src/web/ui/messages.ts:245
 msgid "feed.full-content-badge"
 msgstr "Full content"
 
@@ -109,106 +109,106 @@ msgid "layout.language-label"
 msgstr "Language"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:120
+#: src/web/ui/messages.ts:119
 msgid "register.error-missing-url"
 msgstr "Missing feed URL."
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:227
+#: src/web/ui/messages.ts:226
 msgid "feed.popular-heading"
 msgstr "Most followed feeds"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:214
+#: src/web/ui/messages.ts:213
 msgid "search.empty-title"
 msgstr "No feeds matched “{query}”"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:232
+#: src/web/ui/messages.ts:231
 msgid "feed.popular-empty"
 msgstr "No feeds registered yet"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:218
+#: src/web/ui/messages.ts:217
 msgid "search.empty-hint"
 msgstr "Only feeds someone has already registered are searchable. Try a shorter keyword, or register this one yourself."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:128
+#: src/web/ui/messages.ts:127
 msgid "register.error-unsupported-protocol"
 msgstr "Only http(s) feeds are supported (got {protocol})."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:177
+#: src/web/ui/messages.ts:176
 msgid "register.open-profile"
 msgstr "Open the account page"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:115
+#: src/web/ui/messages.ts:114
 msgid "register.error-hint"
 msgstr "Open the address in a browser to check it returns a feed rather than a web page, then try again."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:164
+#: src/web/ui/messages.ts:163
 msgid "register.next-follow"
 msgstr "Paste it into the search box of Mastodon — or whichever app you use — and press Follow."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:100
+#: src/web/ui/messages.ts:99
 msgid "register.full-content-help"
 msgstr "Posts carry the whole article instead of the feed's summary. This creates a second, separate account for the same feed."
 
 #. {handle} renders as the @rss2pub@host chip; {command} renders as the `register <url>` chip.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:105
+#: src/web/ui/messages.ts:104
 msgid "register.bot-alt"
 msgstr "Prefer the fediverse? Mention {handle} with {command}."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:72
+#: src/web/ui/messages.ts:71
 msgid "register.heading"
 msgstr "Register a feed"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:223
+#: src/web/ui/messages.ts:222
 msgid "search.empty-action"
 msgstr "Register a feed"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:63
+#: src/web/ui/messages.ts:62
 msgid "home.lede"
 msgstr "Register a feed and it becomes a fediverse account. Follow that account from Mastodon or any other app and every new post arrives in your timeline."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:181
+#: src/web/ui/messages.ts:180
 msgid "register.another"
 msgstr "Register another feed"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:85
+#: src/web/ui/messages.ts:84
 msgid "register.button"
 msgstr "Register feed"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:68
+#: src/web/ui/messages.ts:67
 msgid "home.popular-empty-hint"
 msgstr "Register the first one with the form above."
 
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:89
+#: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "Registering…"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:45
 msgid "layout.footer-summary"
-msgstr "rss2.pub turns an RSS or Atom feed into a fediverse account anyone can follow."
+msgstr "rss2.pub turns an Atom feed into a fediverse account anyone can follow."
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:192
 msgid "search.placeholder"
 msgstr "rust, weather, example.com"
 
@@ -218,23 +218,23 @@ msgid "layout.nav-search"
 msgstr "Search"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:185
+#: src/web/ui/messages.ts:184
 msgid "search.heading"
 msgstr "Search"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:204
+#: src/web/ui/messages.ts:203
 msgid "search.button"
 msgstr "Search"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:189
+#: src/web/ui/messages.ts:188
 msgid "search.label"
 msgstr "Search registered feeds"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:236
+#: src/web/ui/messages.ts:235
 msgid "feed.popular-more"
 msgstr "See more feeds"
 
@@ -251,37 +251,37 @@ msgid "layout.skip-link"
 msgstr "Skip to main content"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:55
+#: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "Source code"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:124
+#: src/web/ui/messages.ts:123
 msgid "register.error-not-a-url"
 msgstr "That doesn’t look like a URL: {url}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:111
+#: src/web/ui/messages.ts:110
 msgid "register.error-heading"
 msgstr "That feed could not be registered"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:80
+#: src/web/ui/messages.ts:79
 msgid "register.url-help"
-msgstr "The address of the feed itself, not of the website — it usually ends in /feed, /rss or .xml."
+msgstr "The address of the Atom feed itself, not the website — it often ends in /atom or .xml."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:152
+#: src/web/ui/messages.ts:151
 msgid "register.result-exists"
 msgstr "This feed already publishes as its own fediverse account."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:144
+#: src/web/ui/messages.ts:143
 msgid "register.result-created"
 msgstr "This feed now publishes as its own fediverse account."
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:199
+#: src/web/ui/messages.ts:198
 msgid "search.help"
 msgstr "Type part of a feed’s name, description, or address."

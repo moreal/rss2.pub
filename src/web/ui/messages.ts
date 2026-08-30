@@ -17,7 +17,7 @@ import type { MessageDescriptor } from "@lingui/core";
 export const copy = {
   layoutMetaDescription: /*i18n*/ {
     id: "layout.meta-description",
-    message: "Follow RSS and Atom feeds from the fediverse.",
+    message: "Follow Atom feeds from the fediverse.",
   },
   layoutLanguageLabel: /*i18n*/ {
     id: "layout.language-label",
@@ -44,8 +44,7 @@ export const copy = {
   },
   layoutFooterSummary: /*i18n*/ {
     id: "layout.footer-summary",
-    message:
-      "rss2.pub turns an RSS or Atom feed into a fediverse account anyone can follow.",
+    message: "rss2.pub turns an Atom feed into a fediverse account anyone can follow.",
   },
   layoutFooterBot: /*i18n*/ {
     id: "layout.footer-bot",
@@ -58,7 +57,7 @@ export const copy = {
   },
   homeHeading: /*i18n*/ {
     id: "home.heading",
-    message: "Follow any RSS feed from the fediverse",
+    message: "Follow any Atom feed from the fediverse",
   },
   homeLede: /*i18n*/ {
     id: "home.lede",
@@ -80,7 +79,7 @@ export const copy = {
   registerUrlHelp: /*i18n*/ {
     id: "register.url-help",
     message:
-      "The address of the feed itself, not of the website — it usually ends in /feed, /rss or .xml.",
+      "The address of the Atom feed itself, not the website — it often ends in /atom or .xml.",
   },
   registerButton: /*i18n*/ {
     id: "register.button",
@@ -131,7 +130,7 @@ export const copy = {
   },
   registerErrorFeedUnreachable: /*i18n*/ {
     id: "register.error-feed-unreachable",
-    message: "Couldn’t read a feed there: {message}",
+    message: "Couldn’t read an Atom feed there: {message}",
   },
   registerResultHeading: /*i18n*/ {
     id: "register.result-heading",
