@@ -50,7 +50,7 @@ function languageFrom(raw: string | null): FeedLanguage | null {
 
 /**
  * Registers a feed as a new actor. The URL is canonicalized, fetched once to
- * prove it is a working RSS/Atom document (and to seed title/description),
+ * prove it is a working Atom document (and to seed title/description),
  * and the handle is derived deterministically from the canonical URL
  * (ADR-0004 — always hash-suffixed, so different URLs never collide). Item
  * backlog is left to the first poll — one publishing code path.
