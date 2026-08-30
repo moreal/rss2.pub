@@ -17,8 +17,7 @@ export type RawFeedItem = {
   readonly contentHtml: string | null;
   readonly summaryHtml: string | null;
   readonly publishedAt: Date | null;
-  /** Raw BCP-47 tag from the entry's own `xml:lang` (Atom only — ADR-0011).
-   * RSS items never carry one; the feed-level language applies instead. */
+  /** Raw BCP-47 tag from the entry's effective `xml:lang` (ADR-0011). */
   readonly language: string | null;
 };
 

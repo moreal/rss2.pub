@@ -23,7 +23,7 @@ import { PollPolicy } from "../domain/feed/poll-policy.js";
 import type { Clock } from "../domain/ports/clock.js";
 import { createReadabilityContentExtractor } from "../infrastructure/content/readability-extractor.js";
 import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favicon-resolver.js";
-import { createRssParserFetcher } from "../infrastructure/feedfetch/rss-parser-fetcher.js";
+import { createAtomFeedFetcher } from "../infrastructure/feedfetch/atom-feed-fetcher.js";
 import { createBotKitFederationGateway } from "../infrastructure/federation/botkit-gateway.js";
 import { createFederationStack } from "../infrastructure/federation/botkit-stack.js";
 import { createDrizzleFeedRepository } from "../infrastructure/persistence/drizzle-feed-repository.js";
@@ -74,7 +74,7 @@ export async function createApp(config: AppConfig): Promise<App> {
 
   const feeds = createDrizzleFeedRepository(db);
   const items = createDrizzleItemRepository(db);
-  const fetcher = createRssParserFetcher();
+  const fetcher = createAtomFeedFetcher();
   const contentExtractor = createReadabilityContentExtractor();
   const faviconResolver = createHtmlFaviconResolver();
   const clock: Clock = { now: () => new Date() };

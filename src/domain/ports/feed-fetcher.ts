@@ -6,11 +6,11 @@ import type { FeedUrl } from "../feed/feed-url.js";
 export type FetchedFeed = {
   readonly title: string | null;
   readonly description: string | null;
-  /** The channel's own homepage link (RSS `channel.link` / Atom `alternate`),
-   * not the feed document's own URL — the source for ADR-0010 favicon lookup. */
+  /** The feed's own homepage link (Atom `alternate`), not the feed document's
+   * own URL — the source for ADR-0010 favicon lookup. */
   readonly link: string | null;
-  /** Raw BCP-47 tag: RSS channel `<language>` or Atom feed-root `xml:lang`
-   * (ADR-0011). Unvalidated — see `FeedLanguage.create`. */
+  /** Raw BCP-47 tag from the Atom feed-root `xml:lang` (ADR-0011).
+   * Unvalidated — see `FeedLanguage.create`. */
   readonly language: string | null;
   readonly items: readonly RawFeedItem[];
 };
@@ -36,8 +36,8 @@ export type FetchFeedSuccess =
     };
 
 /**
- * Retrieves and parses an RSS 2.0 / Atom document. Passing the previous
- * poll's validators enables conditional GET (`not-modified`).
+ * Retrieves and parses an Atom 1.0 document. Passing the previous poll's
+ * validators enables conditional GET (`not-modified`).
  */
 export type FeedFetcher = {
   fetch(

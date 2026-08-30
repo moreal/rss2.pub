@@ -70,8 +70,8 @@ export type Feed = {
   readonly fullContentEnabled: boolean;
   /** Actor avatar, resolved from the channel link's favicon (ADR-0010). */
   readonly iconUrl: IconUrl | null;
-  /** RSS channel `<language>` or Atom feed-root `xml:lang` (ADR-0011). Falls
-   * back for items that carry no `xml:lang` of their own. */
+  /** Atom feed-root `xml:lang` (ADR-0011). Falls back for items that carry no
+   * `xml:lang` of their own. */
   readonly language: FeedLanguage | null;
   readonly registeredAt: Date;
   readonly validators: CacheValidators;
