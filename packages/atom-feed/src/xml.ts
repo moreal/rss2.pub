@@ -63,6 +63,16 @@ export function parseXml(xml: string, limits: AtomParserLimits): XmlParseResult 
       nodes += 1;
     }, nodes, limits.maxNodes);
   });
+  parser.on("comment", () => {
+    countNode(() => {
+      nodes += 1;
+    }, nodes, limits.maxNodes);
+  });
+  parser.on("processinginstruction", () => {
+    countNode(() => {
+      nodes += 1;
+    }, nodes, limits.maxNodes);
+  });
   parser.on("closetag", () => {
     const frame = frames.pop();
     if (frame === undefined) {

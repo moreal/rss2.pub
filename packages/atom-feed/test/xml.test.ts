@@ -34,4 +34,14 @@ describe("parseAtom XML boundary", () => {
     expect(parseAtom(`<feed xmlns="${NS}"><a/><b/></feed>`, { maxNodes: 2 }))
       .toMatchObject({ ok: false, error: { type: "LimitExceeded", limit: "nodes" } });
   });
+
+  it("counts comments toward node limits", () => {
+    expect(parseAtom(`<feed xmlns="${NS}"><!-- node --></feed>`, { maxNodes: 1 }))
+      .toMatchObject({ ok: false, error: { type: "LimitExceeded", limit: "nodes" } });
+  });
+
+  it("counts processing instructions toward node limits", () => {
+    expect(parseAtom(`<feed xmlns="${NS}"><?node value?></feed>`, { maxNodes: 1 }))
+      .toMatchObject({ ok: false, error: { type: "LimitExceeded", limit: "nodes" } });
+  });
 });
