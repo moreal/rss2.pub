@@ -350,7 +350,7 @@ describe("PollFeed icon resolution (ADR-0010)", () => {
 });
 
 describe("PollFeed language (ADR-0011)", () => {
-  it("refreshes the feed's language from the poll and applies it to items with none of their own", async () => {
+  it("refreshes the feed language and publishes the parser's effective item language", async () => {
     const { feed, feeds, fetcher, federation, pollFeed } = setup();
     await feeds.save(feed);
     fetcher.respondWith(
@@ -358,7 +358,7 @@ describe("PollFeed language (ADR-0011)", () => {
       ok(
         fetchedFeed({
           language: "ko",
-          items: [rawItem({ guid: "x", title: "post" })],
+          items: [rawItem({ guid: "x", title: "post", language: "ko" })],
         }),
       ),
     );
@@ -366,6 +366,25 @@ describe("PollFeed language (ADR-0011)", () => {
     await pollFeed.execute(feed.id);
     expect((await feeds.findById(feed.id))?.language).toBe("ko");
     expect(federation.published[0]?.content.language).toBe("ko");
+  });
+
+  it("keeps an explicit empty entry language override untagged", async () => {
+    const { feed, feeds, fetcher, federation, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(
+        fetchedFeed({
+          language: "en",
+          items: [rawItem({ guid: "x", title: "post", language: null })],
+        }),
+      ),
+    );
+
+    await pollFeed.execute(feed.id);
+
+    expect((await feeds.findById(feed.id))?.language).toBe("en");
+    expect(federation.published[0]?.content.language).toBeNull();
   });
 
   it("prefers an item's own language over the feed's", async () => {

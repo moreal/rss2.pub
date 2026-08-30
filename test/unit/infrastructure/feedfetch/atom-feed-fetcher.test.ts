@@ -173,6 +173,28 @@ describe("createAtomFeedFetcher", () => {
     });
   });
 
+  it("preserves an empty entry language override as an effective null", async () => {
+    const body = `<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+      <entry xml:lang=""><id>urn:untagged</id><title>Untagged</title></entry>
+    </feed>`;
+    fetchMock.mockResolvedValue(new Response(body));
+
+    const result = await createAtomFeedFetcher().fetch(feedUrl, {
+      etag: null,
+      lastModified: null,
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        feed: {
+          language: "en",
+          items: [{ guid: "urn:untagged", language: null }],
+        },
+      },
+    });
+  });
+
   it("sends conditional headers and handles not-modified", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 304 }));
 
