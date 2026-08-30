@@ -9,8 +9,8 @@
 
 Give `@rss2pub/atom-feed` a reproducible, cited standards test layer based on the W3C Feed
 Validator corpus. Every upstream Atom case in the selected snapshot must be accounted for, and every
-case applicable to rss2.pub's consumer contract must run in CI without network access, skips, xfails,
-or silent exclusions.
+case applicable to rss2.pub's consumer contract must run in CI without network access after submodule
+checkout, skips, xfails, or silent exclusions.
 
 This profile does not claim that rss2.pub is a complete Atom validator. The W3C Feed Validator
 checks every RFC 4287 validity rule, extension vocabulary, warning, and security recommendation.
@@ -28,13 +28,16 @@ Use the W3C-customized Feed Validator repository:
 
 The upstream license permits using, copying, modifying, merging, publishing, distributing,
 sublicensing, and selling copies, provided its copyright and permission notice remain with copied
-substantial portions. The vendored fixture root therefore includes an unmodified copy of the
-upstream `LICENSE` and an `UPSTREAM.md` recording the repository, commit, selection rule, retrieval
-date, and local modifications. No W3C logo or claim of W3C endorsement is made.
+substantial portions. The repository is included unmodified as a Git submodule, so its original
+`LICENSE` remains at `vendor/w3c-feedvalidator/LICENSE`. A root-owned attribution document records
+the repository, pinned commit, selection rule, and the fact that no upstream fixture is modified.
+No W3C logo or claim of W3C endorsement is made.
 
 ## Corpus Selection
 
-Vendor every XML fixture below a numbered Atom directory:
+Add `https://github.com/w3c/feedvalidator.git` as the Git submodule
+`vendor/w3c-feedvalidator`, pinned by the superproject gitlink to the full snapshot commit. Select
+every XML fixture below a numbered Atom directory:
 
 ```text
 testcases/atom/[0-9]*/**/*.xml
@@ -43,15 +46,16 @@ testcases/atom/[0-9]*/**/*.xml
 At the pinned commit this selects 381 files. It includes the RFC 4287 section-oriented suites such
 as `3.1.1.3`, `4.1.2`, and `4.2.7.2`.
 
-Do not vendor these paths:
+Do not select these paths for the profile:
 
 - `testcases/atom/must` and `testcases/atom/should`: legacy pre-1.0 draft cases whose element names
   include `modified`, `issued`, `tagline`, and `info` rather than final RFC 4287 vocabulary.
 - directory indexes, `.htaccess`, headers, and footers: Feed Validator web presentation rather than
   conformance input.
 
-The selected file count and each relative path are pinned in the manifest. Adding, removing, or
-renaming a vendored file without updating its manifest row fails the suite.
+The selected file count and each relative path are pinned in the manifest. Moving the submodule
+gitlink, or adding, removing, or renaming a selected upstream file without updating its manifest row
+fails the suite.
 
 ## Consumer Profile
 
@@ -121,42 +125,53 @@ row and reason. Reclassifying a case requires a reviewed manifest diff.
 ## Repository Layout
 
 ```text
+.gitmodules
+vendor/
+  w3c-feedvalidator/                 # Git submodule pinned to the reviewed commit
 packages/atom-feed/test/conformance/
   w3c-feedvalidator.test.ts
   w3c-feedvalidator-cases.ts
-packages/atom-feed/test/fixtures/w3c-feedvalidator/
-  LICENSE
-  UPSTREAM.md
-  testcases/atom/<numbered RFC directories only>
+  W3C-FEEDVALIDATOR.md               # attribution, profile scope, pinned commit
 scripts/
-  update-w3c-atom-corpus.mjs
+  update-w3c-atom-manifest.mjs
 ```
 
 Production files in `packages/atom-feed/src` remain free of Node built-ins. Test code may use
-`node:fs` and `node:path` to enumerate the vendored corpus. The root update script is developer
-tooling and is not included in the runtime package output.
+`node:fs` and `node:path` to enumerate the corpus inside the initialized submodule. The root update
+script is developer tooling and is not included in the runtime package output. Nix and Container
+runtime packages do not copy `vendor/`; it is test input only.
 
 ## Deterministic Update Workflow
 
-`scripts/update-w3c-atom-corpus.mjs` takes an explicit upstream checkout path and commit SHA. It does
-not fetch the network itself. It:
+The normal checkout command is:
 
-1. verifies that the checkout HEAD equals the requested full SHA;
+```sh
+git submodule update --init --depth 1 vendor/w3c-feedvalidator
+```
+
+GitHub Actions configures `actions/checkout` with `submodules: true`. No test contacts the public W3C
+validator or GitHub after checkout. A missing submodule fails with an actionable message naming the
+initialization command rather than reporting hundreds of missing fixtures.
+
+`scripts/update-w3c-atom-manifest.mjs` reads the initialized submodule and an explicit full commit
+SHA. It:
+
+1. verifies that the submodule HEAD equals the requested full SHA;
 2. selects only `testcases/atom/[0-9]*/**/*.xml`;
-3. copies files in byte-sorted relative-path order;
-4. copies the upstream license unchanged;
-5. writes snapshot metadata and SHA-256 checksums to `UPSTREAM.md`;
+3. enumerates files in byte-sorted relative-path order;
+4. verifies the upstream `LICENSE` is present;
+5. updates snapshot metadata and SHA-256 checksums in `W3C-FEEDVALIDATOR.md`;
 6. refuses to finish when a selected path has no manifest row or the manifest names a missing path.
 
-CI consumes only checked-in files and never contacts GitHub or the public validator. Upstream updates
-are explicit reviewable commits rather than floating dependencies.
+Updating upstream is an explicit two-part review: move the submodule gitlink to a named commit, then
+regenerate and review the manifest/checksum diff. The submodule never tracks a floating branch.
 
 ## Test Execution
 
 `w3c-feedvalidator.test.ts` performs four gates:
 
-1. **Snapshot integrity:** license, upstream commit, 381 selected paths, manifest coverage, and file
-   checksums agree.
+1. **Snapshot integrity:** initialized submodule, license, pinned commit metadata, 381 selected paths,
+   manifest coverage, and file checksums agree.
 2. **Accepted documents:** every `accept` case returns `ok`.
 3. **Rejected boundaries:** every `reject` case returns the declared parser error.
 4. **Projection semantics:** every `project` case returns the declared DTO values.
@@ -186,7 +201,10 @@ complete Feed Validator. The RFC is normative; the W3C corpus is the cited regre
 
 ## Acceptance Criteria
 
-- The exact upstream license and attribution are checked in beside the fixtures.
+- `.gitmodules` uses the HTTPS W3C repository URL and the superproject gitlink pins the reviewed full
+  commit.
+- The initialized submodule contains the exact upstream license; root documentation records
+  attribution, profile scope, and the pin.
 - All 381 selected upstream files have one manifest row and an explicit classification.
 - Every `accept`, `reject`, and `project` case executes with zero skips, todos, or xfails.
 - Every `not-applicable` case has one allowed reason; there are no free-form blanket exclusions.
