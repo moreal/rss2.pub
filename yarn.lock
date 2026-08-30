@@ -3220,13 +3220,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^2.0.3":
-  version: 2.2.0
-  resolution: "entities@npm:2.2.0"
-  checksum: 10c0/7fba6af1f116300d2ba1c5673fc218af1961b20908638391b4e1e6d5850314ee2ac3ec22d741b3a8060479911c99305164aed19b6254bde75e7e6b1b2c3f3aa3
-  languageName: node
-  linkType: hard
-
 "entities@npm:^4.2.0, entities@npm:^4.5.0":
   version: 4.5.0
   resolution: "entities@npm:4.5.0"
@@ -4834,16 +4827,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rss-parser@npm:^3.13.0":
-  version: 3.13.0
-  resolution: "rss-parser@npm:3.13.0"
-  dependencies:
-    entities: "npm:^2.0.3"
-    xml2js: "npm:^0.5.0"
-  checksum: 10c0/d3912c9971b81630aedb39bf57d44767d6e35e1e040fbb3602725eb8d1b17867f7f7db6c3377722c3daeff90c02ee2b3a14725fee723e2375611a56d75ea2159
-  languageName: node
-  linkType: hard
-
 "rss2pub@workspace:.":
   version: 0.0.0-use.local
   resolution: "rss2pub@workspace:."
@@ -4872,7 +4855,6 @@ __metadata:
     hono: "npm:^4.12.32"
     linkedom: "npm:^0.18.13"
     postgres: "npm:^3.4.9"
-    rss-parser: "npm:^3.13.0"
     sanitize-html: "npm:^2.17.6"
     tsx: "npm:^4.23.1"
     typescript: "npm:^7.0.2"
@@ -4913,13 +4895,6 @@ __metadata:
     parse-srcset: "npm:^1.0.2"
     postcss: "npm:^8.3.11"
   checksum: 10c0/a78efe6aef93819c00c36252a07d26c8cd11ed418a403cc91aabcbc0af1dc98441d411ea68452ccbff1939f92e84571d97eb6bf69be96ed54f8769b25a10aa36
-  languageName: node
-  linkType: hard
-
-"sax@npm:>=0.6.0":
-  version: 1.6.1
-  resolution: "sax@npm:1.6.1"
-  checksum: 10c0/c91a71043d60da50fdf1e2cee936fc7ad4c9376afb8d1022aef5655f279433640859ec06b3b49abfcbe578fc7da2828cc1661e45aaedf835f5393496193437fa
   languageName: node
   linkType: hard
 
@@ -5793,23 +5768,6 @@ __metadata:
   version: 0.2.0
   resolution: "x-forwarded-fetch@npm:0.2.0"
   checksum: 10c0/04df4fe1429bb9e527515e13360cbb20ea824dccd9f21fe4220c57d854068d48c9fd54be10a94c4f64627e2a42c65651279dc95bf8528881aefe05f13c40aa71
-  languageName: node
-  linkType: hard
-
-"xml2js@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "xml2js@npm:0.5.0"
-  dependencies:
-    sax: "npm:>=0.6.0"
-    xmlbuilder: "npm:~11.0.0"
-  checksum: 10c0/c9cd07cd19c5e41c740913bbbf16999a37a204488e11f86eddc2999707d43967197e257014d7ed72c8fc4348c192fa47eb352d1d9d05637cefd0d2e24e9aa4c8
-  languageName: node
-  linkType: hard
-
-"xmlbuilder@npm:~11.0.0":
-  version: 11.0.1
-  resolution: "xmlbuilder@npm:11.0.1"
-  checksum: 10c0/74b979f89a0a129926bc786b913459bdbcefa809afaa551c5ab83f89b1915bdaea14c11c759284bb9b931e3b53004dbc2181e21d3ca9553eeb0b2a7b4e40c35b
   languageName: node
   linkType: hard
 

@@ -116,7 +116,7 @@ describe("federation e2e", () => {
 
     expect(response.status).toBe(422);
     expect(await response.text()).toContain(
-      "Couldn’t read a feed there: document is not an Atom 1.0 feed",
+      "Couldn’t read an Atom feed there: document is not an Atom 1.0 feed",
     );
 
     const webfinger = await fetch(
