@@ -1,6 +1,7 @@
 # ADR-0011: 피드 언어(Language) 태깅 — RSS `<language>` / Atom `xml:lang`
 
-- Status: accepted (2026-08-23)
+- Status: partially superseded by ADR-0012 (2026-08-30)
+  (Atom language policy remains accepted; RSS support and regex extraction do not)
 - Context: "Atom의 xml:lang이 Note/Article 생성 시 적용되고 있는지" 질문 및
   후속 논의 (2026-08-23 대화)
 
