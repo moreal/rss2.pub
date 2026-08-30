@@ -251,6 +251,29 @@ describe("createAtomFeedFetcher", () => {
     });
   });
 
+  it("rejects malformed UTF-8 response bytes before parsing", async () => {
+    const prefix = new TextEncoder().encode(
+      '<feed xmlns="http://www.w3.org/2005/Atom"><title>',
+    );
+    const suffix = new TextEncoder().encode("</title></feed>");
+    const body = new Uint8Array(prefix.byteLength + 1 + suffix.byteLength);
+    body.set(prefix);
+    body[prefix.byteLength] = 0xff;
+    body.set(suffix, prefix.byteLength + 1);
+    fetchMock.mockResolvedValue(new Response(body));
+
+    const result = await createAtomFeedFetcher().fetch(feedUrl, {
+      etag: null,
+      lastModified: null,
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { type: "InvalidFeedFormat", url: feedUrl },
+    });
+    expect(parseAtomMock).not.toHaveBeenCalled();
+  });
+
   it("reports non-success HTTP status as a request failure", async () => {
     fetchMock.mockResolvedValue(new Response("unavailable", { status: 503 }));
 

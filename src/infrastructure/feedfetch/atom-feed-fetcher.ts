@@ -20,6 +20,7 @@ const DEFAULT_MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 
 type ReadBodyResult =
   | { readonly status: "complete"; readonly body: string }
+  | { readonly status: "invalid-encoding" }
   | { readonly status: "too-large" };
 
 function messageOf(cause: unknown): string {
@@ -96,10 +97,16 @@ async function readBody(
     chunks.push(result.value);
   }
 
-  return {
-    status: "complete",
-    body: new TextDecoder().decode(concatenate(chunks, byteLength)),
-  };
+  try {
+    return {
+      status: "complete",
+      body: new TextDecoder("utf-8", { fatal: true }).decode(
+        concatenate(chunks, byteLength),
+      ),
+    };
+  } catch {
+    return { status: "invalid-encoding" };
+  }
 }
 
 /** Atom 1.0 FeedFetcher adapter with conditional HTTP and bounded streaming. */
@@ -155,6 +162,13 @@ export function createAtomFeedFetcher(options?: {
           type: "InvalidFeedFormat",
           url,
           message: `response exceeds ${maxResponseBytes} bytes`,
+        });
+      }
+      if (bodyResult.status === "invalid-encoding") {
+        return err({
+          type: "InvalidFeedFormat",
+          url,
+          message: "response is not valid UTF-8",
         });
       }
 
