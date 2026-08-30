@@ -42,7 +42,7 @@ describe("parseAtom metadata and text constructs", () => {
 
   it("decodes text and HTML entities while treating unknown types as text", () => {
     const result = parseAtom(`<feed xmlns="${NS}">
-      <id>urn:feed</id><title>Fish &amp; Chips</title>
+      <id>urn:feed</id><title>Fish &amp; Chips</title><subtitle type="html">2 &lt; 3</subtitle>
       <entry><id>urn:one</id><title type="unknown">A &lt;b&gt;literal&lt;/b&gt;</title>
         <summary type="html">A &lt;em&gt;fish&lt;/em&gt; &amp;amp; chips</summary>
       </entry>
@@ -52,6 +52,7 @@ describe("parseAtom metadata and text constructs", () => {
       ok: true,
       value: {
         title: { type: "text", value: "Fish & Chips", plainText: "Fish & Chips" },
+        subtitle: { type: "html", value: "2 < 3", plainText: "2 < 3" },
         entries: [{
           title: {
             type: "text",
@@ -92,12 +93,12 @@ describe("parseAtom metadata and text constructs", () => {
     ]);
   });
 
-  it("selects the first alternate link and preserves published and updated values", () => {
+  it("selects explicit and default alternate links and preserves published and updated values", () => {
     const result = parseAtom(`<feed xmlns="${NS}">
       <link rel="alternate" href="https://example.test/first"/>
       <link rel="alternate" href="https://example.test/second"/>
       <entry><id>urn:one</id>
-        <link rel="alternate" href="https://example.test/one"/>
+        <link href="https://example.test/one"/>
         <link rel="alternate" href="https://example.test/one-other"/>
         <published>2026-08-01T00:00:00Z</published>
         <updated>2026-08-02T00:00:00Z</updated>
@@ -139,5 +140,23 @@ describe("parseAtom metadata and text constructs", () => {
       ok: true,
       value: { entries: [{ content: null }] },
     });
+  });
+
+  it("permits whitespace but rejects other content beside an XHTML div", () => {
+    const result = parseAtom(`<feed xmlns="${NS}">
+      <entry><id>whitespace</id><content type="xhtml">
+        <div xmlns="${XHTML_NS}">Accepted</div>
+      </content></entry>
+      <entry><id>stray</id><content type="xhtml">stray text<div xmlns="${XHTML_NS}">Rejected</div></content></entry>
+    </feed>`);
+
+    if (!result.ok) {
+      throw new Error(result.error.type);
+    }
+
+    expect(result.value.entries.map((entry) => entry.content)).toEqual([
+      { type: "xhtml", value: "Accepted", plainText: "Accepted" },
+      null,
+    ]);
   });
 });

@@ -60,7 +60,8 @@ function directChildText(parent: XmlElement, localName: string): string | null {
 
 function alternateLink(parent: XmlElement): string | null {
   for (const link of directChildren(parent, "link")) {
-    if (link.attributes.get("rel") === "alternate") {
+    const relation = link.attributes.get("rel");
+    if (relation === undefined || relation === "alternate") {
       return link.attributes.get("href") ?? null;
     }
   }
@@ -92,7 +93,7 @@ function textType(element: XmlElement): "text" | "html" | "xhtml" {
 
 function xhtmlTextConstruct(element: XmlElement): AtomTextDto | null {
   const elementChildren = element.children.filter(isElement);
-  if (elementChildren.length !== 1) {
+  if (elementChildren.length !== 1 || element.children.some(isNonWhitespaceText)) {
     return null;
   }
 
@@ -112,6 +113,10 @@ function isElement(node: XmlNode): node is XmlElement {
   return node.type === "element";
 }
 
+function isNonWhitespaceText(node: XmlNode): boolean {
+  return node.type === "text" && node.value.trim() !== "";
+}
+
 function textValue(element: XmlElement): string {
   return element.children.map(textFromNode).join("");
 }
@@ -122,34 +127,55 @@ function textFromNode(node: XmlNode): string {
 
 function stripHtmlTags(value: string): string {
   let plainText = "";
-  let inTag = false;
-  let quote: '"' | "'" | null = null;
+  let index = 0;
 
-  for (const character of value) {
-    if (!inTag) {
-      if (character === "<") {
-        inTag = true;
-      } else {
-        plainText += character;
-      }
+  while (index < value.length) {
+    if (value.charAt(index) !== "<" || !isHtmlTagStart(value, index)) {
+      plainText += value.charAt(index);
+      index += 1;
       continue;
     }
 
+    const end = htmlTagEnd(value, index);
+    if (end === null) {
+      plainText += "<";
+      index += 1;
+      continue;
+    }
+
+    index = end + 1;
+  }
+
+  return plainText;
+}
+
+function isHtmlTagStart(value: string, index: number): boolean {
+  const next = value.charAt(index + 1);
+  if (next === "/") {
+    return isHtmlNameStart(value.charAt(index + 2));
+  }
+  return next === "!" || next === "?" || isHtmlNameStart(next);
+}
+
+function isHtmlNameStart(character: string): boolean {
+  return (character >= "A" && character <= "Z") || (character >= "a" && character <= "z");
+}
+
+function htmlTagEnd(value: string, start: number): number | null {
+  let quote: '"' | "'" | null = null;
+  for (let index = start + 1; index < value.length; index += 1) {
+    const character = value.charAt(index);
     if (quote !== null) {
       if (character === quote) {
         quote = null;
       }
-      continue;
-    }
-
-    if (character === '"' || character === "'") {
+    } else if (character === '"' || character === "'") {
       quote = character;
     } else if (character === ">") {
-      inTag = false;
+      return index;
     }
   }
-
-  return plainText;
+  return null;
 }
 
 function serializeXmlNode(node: XmlNode): string {
