@@ -66,6 +66,7 @@ type W3cAtomCase = {
   readonly path: string;
   readonly rfcSection: string;
   readonly upstreamExpectation: string;
+  readonly sha256: string;
   readonly classification: "accept" | "reject" | "project" | "not-applicable";
   readonly reason: W3cAtomCaseReason;
 };
@@ -76,6 +77,10 @@ type W3cAtomCase = {
 An Atom Feed Document that the upstream case explicitly expects to have no validation `Error` must
 return `ok` from `parseAtom()`. W3C warnings do not make a document unparsable. Atom Entry Documents
 are exercised under `reject` because rss2.pub registers feeds, not standalone entries.
+
+At the pinned snapshot, 64 selected fixtures declare `Expect: !Error`: 62 Atom Feed Documents and
+two standalone Atom Entry Documents. All 62 feeds must be classified `accept` or `project`; both
+entries must be classified `reject` with `NotAtomFeed`.
 
 ### `reject`
 
@@ -160,7 +165,8 @@ SHA. It:
 2. selects only `testcases/atom/[0-9]*/**/*.xml`;
 3. enumerates files in byte-sorted relative-path order;
 4. verifies the upstream `LICENSE` is present;
-5. updates snapshot metadata and SHA-256 checksums in `W3C-FEEDVALIDATOR.md`;
+5. writes every fixture SHA-256 into the generated manifest and updates aggregate snapshot metadata
+   in `W3C-FEEDVALIDATOR.md`;
 6. refuses to finish when a selected path has no manifest row or the manifest names a missing path.
 
 Updating upstream is an explicit two-part review: move the submodule gitlink to a named commit, then
@@ -206,6 +212,8 @@ complete Feed Validator. The RFC is normative; the W3C corpus is the cited regre
 - The initialized submodule contains the exact upstream license; root documentation records
   attribution, profile scope, and the pin.
 - All 381 selected upstream files have one manifest row and an explicit classification.
+- All 62 `Expect: !Error` Atom Feed Documents execute as `accept` or `project`; both `!Error` Atom
+  Entry Documents execute as `reject`.
 - Every `accept`, `reject`, and `project` case executes with zero skips, todos, or xfails.
 - Every `not-applicable` case has one allowed reason; there are no free-form blanket exclusions.
 - The conformance test passes offline and names W3C path/RFC section on failure.
