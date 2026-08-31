@@ -7,9 +7,12 @@ import {
 import { Article, Create, Note } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import { Feed } from "../../domain/feed/feed.js";
+import type { FollowerTracker } from "../../application/follower-tracker.js";
 import { Handle } from "../../domain/feed/handle.js";
 import type { FeedRepository } from "../../domain/ports/feed-repository.js";
 import { isErr } from "../../shared/result.js";
+import { MAIN_ACTOR_HANDLE } from "./identity.js";
+import { registerInboxListeners } from "./inbox.js";
 import { getActorKeyPairs } from "./keys.js";
 import type { FederationRepository } from "./model.js";
 import { renderFeedProfileHtml } from "./render.js";
@@ -24,7 +27,7 @@ const logger = getLogger(["rss2pub", "federation"]);
 const COLLECTION_PAGE_SIZE = 20;
 const NODEINFO_ENUMERATION_LIMIT = 1_000_000;
 
-export const MAIN_ACTOR_HANDLE = "rss2pub";
+export { MAIN_ACTOR_HANDLE } from "./identity.js";
 
 export type FedifyStack = {
   readonly federation: Federation<void>;
@@ -37,6 +40,7 @@ export function createFedifyStack(deps: {
   readonly kv: KvStore;
   readonly queue?: MessageQueue;
   readonly feeds: FeedRepository;
+  readonly followerTracker: FollowerTracker;
   readonly repository: FederationRepository;
   readonly softwareVersion: string;
   readonly allowPrivateAddress?: boolean;
@@ -175,10 +179,11 @@ export function createFedifyStack(deps: {
         ? null
         : deps.repository.countFollowers(identifier));
 
-  federation.setInboxListeners(
-    "/ap/actor/{identifier}/inbox",
-    "/ap/inbox",
-  );
+  registerInboxListeners(federation, {
+    feeds: deps.feeds,
+    repository: deps.repository,
+    followerTracker: deps.followerTracker,
+  });
 
   federation.setNodeInfoDispatcher("/nodeinfo/2.1", async () => {
     const feeds = await deps.feeds.listPopular(NODEINFO_ENUMERATION_LIMIT);

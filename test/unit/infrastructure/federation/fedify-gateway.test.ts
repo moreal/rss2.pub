@@ -1,6 +1,7 @@
 import { MemoryKvStore } from "@fedify/fedify";
 import { type Activity, Delete, Update } from "@fedify/vocab";
 import { describe, expect, it } from "vitest";
+import { createFollowerTracker } from "../../../../src/application/follower-tracker.js";
 import { FeedItem } from "../../../../src/domain/feed/feed-item.js";
 import { createFedifyGateway } from "../../../../src/infrastructure/federation/fedify-gateway.js";
 import { createFedifyStack } from "../../../../src/infrastructure/federation/fedify-stack.js";
@@ -18,6 +19,7 @@ describe("createFedifyGateway", () => {
     const stack = createFedifyStack({
       kv: new MemoryKvStore(),
       feeds,
+      followerTracker: createFollowerTracker({ feeds }),
       repository,
       softwareVersion: "0.1.0",
       allowPrivateAddress: true,
@@ -74,6 +76,7 @@ describe("createFedifyGateway", () => {
     const stack = createFedifyStack({
       kv: new MemoryKvStore(),
       feeds,
+      followerTracker: createFollowerTracker({ feeds }),
       repository,
       softwareVersion: "0.1.0",
       allowPrivateAddress: true,
@@ -164,6 +167,7 @@ describe("createFedifyGateway", () => {
     const stack = createFedifyStack({
       kv: new MemoryKvStore(),
       feeds,
+      followerTracker: createFollowerTracker({ feeds }),
       repository,
       softwareVersion: "0.1.0",
       allowPrivateAddress: true,

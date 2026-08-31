@@ -1,5 +1,6 @@
 import { MemoryKvStore } from "@fedify/fedify";
 import { describe, expect, it } from "vitest";
+import { createFollowerTracker } from "../../../../src/application/follower-tracker.js";
 import { createFedifyStack } from "../../../../src/infrastructure/federation/fedify-stack.js";
 import type { StoredFederationObject } from "../../../../src/infrastructure/federation/model.js";
 import { createInMemoryFederationRepository } from "../../../../src/infrastructure/persistence/in-memory-federation-repository.js";
@@ -54,6 +55,7 @@ async function fixtureStack() {
   return createFedifyStack({
     kv: new MemoryKvStore(),
     feeds,
+    followerTracker: createFollowerTracker({ feeds }),
     repository: federationObjects,
     softwareVersion: "0.1.0",
     allowPrivateAddress: true,
