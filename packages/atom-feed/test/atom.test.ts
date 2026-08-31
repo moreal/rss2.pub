@@ -93,6 +93,19 @@ describe("parseAtom metadata and text constructs", () => {
     ]);
   });
 
+  it("rejects descendants outside the XHTML namespace", () => {
+    const result = parseAtom(`<feed xmlns="${NS}">
+      <entry><id>urn:one</id><summary type="xhtml"><div xmlns="${XHTML_NS}">
+        This is <span><b xmlns="">XHTML</b></span> content.
+      </div></summary></entry>
+    </feed>`);
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: { entries: [{ summary: null }] },
+    });
+  });
+
   it("selects explicit and default alternate links and preserves published and updated values", () => {
     const result = parseAtom(`<feed xmlns="${NS}">
       <link rel="alternate" href="https://example.test/first"/>

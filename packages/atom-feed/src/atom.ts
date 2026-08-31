@@ -139,7 +139,10 @@ function xhtmlTextConstruct(element: XmlElement): AtomTextDto | null {
   }
 
   const div = elementChildren[0];
-  if (div === undefined || div.namespace !== XHTML_NAMESPACE || div.localName !== "div") {
+  if (div === undefined
+    || div.namespace !== XHTML_NAMESPACE
+    || div.localName !== "div"
+    || hasNonXhtmlDescendant(div)) {
     return null;
   }
 
@@ -148,6 +151,11 @@ function xhtmlTextConstruct(element: XmlElement): AtomTextDto | null {
     value: div.children.map(serializeXmlNode).join(""),
     plainText: textValue(div),
   };
+}
+
+function hasNonXhtmlDescendant(element: XmlElement): boolean {
+  return element.children.some((child) => child.type === "element"
+    && (child.namespace !== XHTML_NAMESPACE || hasNonXhtmlDescendant(child)));
 }
 
 function isElement(node: XmlNode): node is XmlElement {
