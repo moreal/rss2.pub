@@ -50,6 +50,7 @@ export type FederationRepository = {
   saveKeyPairsIfAbsent(keyPairs: readonly StoredKeyPair[]): Promise<boolean>;
   addFollower(follower: StoredFollower): Promise<boolean>;
   removeFollower(localHandle: string, actorUri: string): Promise<boolean>;
+  removeFollowersOfActor(localHandle: string): Promise<void>;
   countFollowers(localHandle: string): Promise<number>;
   listFollowers(
     localHandle: string,

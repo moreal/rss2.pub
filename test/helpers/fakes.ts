@@ -4,7 +4,7 @@ import {
   Feed,
   FeedTitle,
 } from "../../src/domain/feed/feed.js";
-import type { RawFeedItem } from "../../src/domain/feed/feed-item.js";
+import type { ItemKey, RawFeedItem } from "../../src/domain/feed/feed-item.js";
 import { FeedLanguage } from "../../src/domain/feed/feed-language.js";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import { Handle } from "../../src/domain/feed/handle.js";
@@ -165,7 +165,13 @@ export function fakeFetcher(): FakeFetcher {
 }
 
 export type CapturingFederation = FederationGateway & {
-  readonly published: { feed: Feed; content: PostContent; messageUri: MessageUri }[];
+  readonly publishAttempts: { feed: Feed; itemKey: ItemKey; content: PostContent }[];
+  readonly published: {
+    feed: Feed;
+    itemKey: ItemKey;
+    content: PostContent;
+    messageUri: MessageUri;
+  }[];
   readonly updated: { feed: Feed; messageUri: MessageUri; content: PostContent }[];
   readonly deletedActors: Feed[];
   failNextPublishesWith(message: string | null): void;
@@ -173,13 +179,20 @@ export type CapturingFederation = FederationGateway & {
 };
 
 export function capturingFederation(): CapturingFederation {
-  const published: { feed: Feed; content: PostContent; messageUri: MessageUri }[] = [];
+  const publishAttempts: { feed: Feed; itemKey: ItemKey; content: PostContent }[] = [];
+  const published: {
+    feed: Feed;
+    itemKey: ItemKey;
+    content: PostContent;
+    messageUri: MessageUri;
+  }[] = [];
   const updated: { feed: Feed; messageUri: MessageUri; content: PostContent }[] = [];
   const deletedActors: Feed[] = [];
   let publishFailure: string | null = null;
   let updateFailure: string | null = null;
   let counter = 0;
   return {
+    publishAttempts,
     published,
     updated,
     deletedActors,
@@ -191,8 +204,10 @@ export function capturingFederation(): CapturingFederation {
     },
     async publish(
       feed,
+      itemKey,
       content,
     ): Promise<Result<{ messageUri: MessageUri }, FederationError>> {
+      publishAttempts.push({ feed, itemKey, content });
       if (publishFailure !== null) {
         return err({
           type: "FederationDeliveryFailed",
@@ -201,7 +216,7 @@ export function capturingFederation(): CapturingFederation {
         });
       }
       const messageUri = `urn:fake-message:${++counter}` as MessageUri;
-      published.push({ feed, content, messageUri });
+      published.push({ feed, itemKey, content, messageUri });
       return ok({ messageUri });
     },
     async update(feed, messageUri, content): Promise<Result<void, FederationError>> {

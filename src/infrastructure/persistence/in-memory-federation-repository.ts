@@ -95,6 +95,10 @@ export function createInMemoryFederationRepository(): FederationRepository {
       return followers.get(localHandle)?.delete(actorUri) ?? false;
     },
 
+    async removeFollowersOfActor(localHandle) {
+      followers.delete(localHandle);
+    },
+
     async countFollowers(localHandle) {
       return followers.get(localHandle)?.size ?? 0;
     },

@@ -203,7 +203,7 @@ export function createPollFeed(deps: {
       const publishErrors: string[] = [];
       for (const item of toPublish) {
         const content = await buildContent(item, buildCtx);
-        const result = await deps.federation.publish(feed, content);
+        const result = await deps.federation.publish(feed, item.key, content);
         if (result.ok) {
           publishedRecords.push({
             key: item.key,

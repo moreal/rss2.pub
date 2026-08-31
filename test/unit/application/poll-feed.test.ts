@@ -167,6 +167,10 @@ describe("PollFeed", () => {
     const retried = unwrap(await pollFeed.execute(feed.id));
     expect(retried.published).toBe(1);
     expect(federation.published).toHaveLength(1);
+    expect(federation.publishAttempts.map((attempt) => attempt.itemKey)).toEqual([
+      "guid:x",
+      "guid:x",
+    ]);
   });
 
   it("collapses duplicate keys within one fetch and skips unidentifiable items", async () => {

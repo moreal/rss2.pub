@@ -4,6 +4,7 @@ import { Delete, Tombstone } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { PostContent } from "../../domain/content/content-policy.js";
 import type { Feed } from "../../domain/feed/feed.js";
+import type { ItemKey } from "../../domain/feed/feed-item.js";
 import type {
   FederationError,
   FederationGateway,
@@ -59,6 +60,7 @@ export function createBotKitFederationGateway(deps: {
   return {
     async publish(
       feed: Feed,
+      _itemKey: ItemKey,
       content: PostContent,
     ): Promise<Result<PublishedMessage, FederationError>> {
       try {

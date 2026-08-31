@@ -124,6 +124,12 @@ export function createDrizzleFederationRepository(
       return rows.length === 1;
     },
 
+    async removeFollowersOfActor(localHandle) {
+      await db
+        .delete(federationFollowers)
+        .where(eq(federationFollowers.localHandle, localHandle));
+    },
+
     async countFollowers(localHandle) {
       const rows = await db
         .select({ value: count() })
