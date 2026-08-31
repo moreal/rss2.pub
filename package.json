@@ -12,6 +12,7 @@
     "packages/*"
   ],
   "scripts": {
+    "atom:conformance:update": "node scripts/update-w3c-atom-manifest.mjs vendor/w3c-feedvalidator 9ce274c9db93796b8ab2a44952b9da80811bf765",
     "dev": "yarn workspace @rss2pub/atom-feed build && node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
     "db:reset": "./scripts/db-reset.sh",
     "typecheck": "yarn workspace @rss2pub/atom-feed typecheck && tsc --noEmit",
