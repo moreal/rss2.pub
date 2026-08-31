@@ -72,7 +72,29 @@ function expectUpdaterToRejectDirtyCorpus(): void {
   expect(result.stderr).toContain("dirty W3C Feed Validator corpus");
 }
 
-function withPreservedCorpusMutation(mutate: () => void): void {
+function unstageDirtyFixture(): void {
+  execFileSync(
+    "git",
+    ["-C", W3C_FEEDVALIDATOR_ROOT, "restore", "--staged", "--", DIRTY_FIXTURE_PATH],
+  );
+}
+
+function runCleanupOperations(operations: readonly (() => void)[]): void {
+  let firstFailure: { readonly error: unknown } | undefined;
+  for (const operation of operations) {
+    try {
+      operation();
+    } catch (error) {
+      if (firstFailure === undefined) firstFailure = { error };
+    }
+  }
+  if (firstFailure !== undefined) throw firstFailure.error;
+}
+
+function withPreservedCorpusMutation(
+  mutate: () => void,
+  unstage: () => void = unstageDirtyFixture,
+): void {
   const initialStatus = scopedCorpusStatus();
   if (initialStatus.length > 0) {
     throw new Error(`W3C Feed Validator corpus must be clean:\n${initialStatus}`);
@@ -84,16 +106,24 @@ function withPreservedCorpusMutation(mutate: () => void): void {
   try {
     mutate();
   } finally {
-    execFileSync(
-      "git",
-      ["-C", W3C_FEEDVALIDATOR_ROOT, "restore", "--staged", "--", DIRTY_FIXTURE_PATH],
-    );
-    writeFileSync(DIRTY_FIXTURE, initialFixture);
-    if (existsSync(UNTRACKED_FIXTURE)) unlinkSync(UNTRACKED_FIXTURE);
-    writeFileSync(GENERATED_MANIFEST, initialManifest);
-
-    expect(scopedCorpusStatus()).toBe(initialStatus);
-    expect(readFileSync(GENERATED_MANIFEST)).toEqual(initialManifest);
+    runCleanupOperations([
+      unstage,
+      () => {
+        writeFileSync(DIRTY_FIXTURE, initialFixture);
+      },
+      () => {
+        if (existsSync(UNTRACKED_FIXTURE)) unlinkSync(UNTRACKED_FIXTURE);
+      },
+      () => {
+        writeFileSync(GENERATED_MANIFEST, initialManifest);
+      },
+      () => {
+        expect(scopedCorpusStatus()).toBe(initialStatus);
+      },
+      () => {
+        expect(readFileSync(GENERATED_MANIFEST)).toEqual(initialManifest);
+      },
+    ]);
   }
 }
 
@@ -176,6 +206,51 @@ describe("W3C Feed Validator Atom corpus", () => {
     } finally {
       if (existsSync(existingProbe)) unlinkSync(existingProbe);
       rmdirSync(temporaryDirectory);
+    }
+  });
+
+  it("restores owned state and surfaces a failing unstage operation", () => {
+    const initialStatus = scopedCorpusStatus();
+    expect(initialStatus).toBe("");
+    assertPathAbsent(UNTRACKED_FIXTURE);
+    const initialFixture = readFileSync(DIRTY_FIXTURE);
+    const initialManifest = readFileSync(GENERATED_MANIFEST);
+    const unstageFailure = new Error("injected unstage failure");
+
+    try {
+      let thrown: unknown;
+      try {
+        withPreservedCorpusMutation(
+          () => {
+            appendFileSync(DIRTY_FIXTURE, "\n");
+            appendFileSync(GENERATED_MANIFEST, "\n");
+            writeFileSync(UNTRACKED_FIXTURE, initialFixture);
+          },
+          () => {
+            throw unstageFailure;
+          },
+        );
+      } catch (error) {
+        thrown = error;
+      }
+
+      expect(thrown).toBe(unstageFailure);
+      expect(readFileSync(DIRTY_FIXTURE)).toEqual(initialFixture);
+      expect(readFileSync(GENERATED_MANIFEST)).toEqual(initialManifest);
+      expect(existsSync(UNTRACKED_FIXTURE)).toBe(false);
+      expect(scopedCorpusStatus()).toBe(initialStatus);
+    } finally {
+      runCleanupOperations([
+        () => {
+          writeFileSync(DIRTY_FIXTURE, initialFixture);
+        },
+        () => {
+          writeFileSync(GENERATED_MANIFEST, initialManifest);
+        },
+        () => {
+          if (existsSync(UNTRACKED_FIXTURE)) unlinkSync(UNTRACKED_FIXTURE);
+        },
+      ]);
     }
   });
 });
