@@ -1,15 +1,25 @@
 import type { Context, Federation } from "@fedify/fedify";
 import {
   Accept,
+  Article,
   type Actor,
+  Create,
   Follow,
+  Mention,
+  Note,
+  PUBLIC_COLLECTION,
   Undo,
 } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
+import type { CommandHandler, ReplyPart } from "../../application/handle-command.js";
+import { escapeHtml, stripHtml } from "../../domain/content/html.js";
 import { Handle } from "../../domain/feed/handle.js";
+import type { Clock } from "../../domain/ports/clock.js";
 import type { FeedRepository } from "../../domain/ports/feed-repository.js";
 import { isErr } from "../../shared/result.js";
+import { sha256Hex } from "../../shared/sha256.js";
+import { buildCreate } from "./vocab-builders.js";
 import { MAIN_ACTOR_HANDLE } from "./identity.js";
 import type { FederationRepository } from "./model.js";
 
@@ -26,12 +36,28 @@ type SendAccept = (
   activity: Accept,
 ) => Promise<void>;
 
+type ResolveCreateActor = (
+  ctx: Context<void>,
+  create: Create,
+) => Promise<Actor | null>;
+
+type SendReply = (
+  senderHandle: string,
+  recipient: Actor,
+  activity: Create,
+) => Promise<void>;
+
 type InboxHandlerDependencies = {
   readonly feeds: FeedRepository;
   readonly repository: FederationRepository;
   readonly followerTracker: FollowerTracker;
+  readonly commandHandler?: CommandHandler;
+  readonly host?: string;
+  readonly clock?: Clock;
   readonly resolveFollowActor?: ResolveFollowActor;
   readonly sendAccept?: SendAccept;
+  readonly resolveCreateActor?: ResolveCreateActor;
+  readonly sendReply?: SendReply;
 };
 
 async function defaultResolveFollowActor(
@@ -43,6 +69,54 @@ async function defaultResolveFollowActor(
     documentLoader: ctx.documentLoader,
     suppressError: true,
   });
+}
+
+async function defaultResolveCreateActor(
+  ctx: Context<void>,
+  create: Create,
+): Promise<Actor | null> {
+  return create.getActor({
+    contextLoader: ctx.contextLoader,
+    documentLoader: ctx.documentLoader,
+    suppressError: true,
+  });
+}
+
+function escapePattern(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+async function renderReply(
+  ctx: Context<void>,
+  parts: readonly ReplyPart[],
+  host: string,
+  feeds: FeedRepository,
+): Promise<{ readonly html: string; readonly mentions: readonly {
+  readonly name: string;
+  readonly href: string;
+}[] }> {
+  const mentionPattern = new RegExp(`^@([a-z0-9_]+)@${escapePattern(host)}$`);
+  const html: string[] = [];
+  const mentions: { name: string; href: string }[] = [];
+  for (const part of parts) {
+    if (part.type === "text") {
+      html.push(escapeHtml(part.value).replace(/\n/g, "<br>"));
+      continue;
+    }
+    const match = mentionPattern.exec(part.handle);
+    const handle = match?.[1] === undefined ? null : Handle.create(match[1]);
+    const feed = handle === null || isErr(handle)
+      ? null
+      : await feeds.findByHandle(handle.value);
+    if (feed === null) {
+      html.push(escapeHtml(part.handle));
+      continue;
+    }
+    const href = ctx.getActorUri(feed.handle).href;
+    html.push(escapeHtml(part.handle));
+    mentions.push({ name: part.handle, href });
+  }
+  return { html: `<p>${html.join("")}</p>`, mentions };
 }
 
 async function localActorExists(
@@ -70,6 +144,7 @@ async function targetIdentifier(
 
 export function createInboxHandlers(deps: InboxHandlerDependencies) {
   const resolveFollowActor = deps.resolveFollowActor ?? defaultResolveFollowActor;
+  const resolveCreateActor = deps.resolveCreateActor ?? defaultResolveCreateActor;
 
   return {
     async follow(
@@ -148,6 +223,66 @@ export function createInboxHandlers(deps: InboxHandlerDependencies) {
         }
       }
     },
+
+    async create(
+      ctx: Context<void>,
+      recipient: string | null,
+      create: Create,
+    ): Promise<void> {
+      if (recipient !== MAIN_ACTOR_HANDLE
+        || deps.commandHandler === undefined
+        || deps.host === undefined
+        || deps.clock === undefined
+        || create.id === null
+        || create.actorId === null) return;
+      const object = await create.getObject(ctx);
+      if (!(object instanceof Note) && !(object instanceof Article)) return;
+
+      const mainActor = ctx.getActorUri(MAIN_ACTOR_HANDLE);
+      const audience = [...object.toIds, ...object.ccIds];
+      const direct = audience.some((uri) => uri.href === mainActor.href)
+        && !audience.some((uri) => uri.href === PUBLIC_COLLECTION.href);
+      let mentioned = false;
+      for await (const tag of object.getTags()) {
+        if (tag instanceof Mention && tag.href?.href === mainActor.href) {
+          mentioned = true;
+          break;
+        }
+      }
+      if (!direct && !mentioned) return;
+
+      const sender = await resolveCreateActor(ctx, create);
+      if (sender === null || sender.id === null || sender.inboxId === null) return;
+      const id = sha256Hex(`reply\u0000${create.id.href}`);
+      if (await deps.repository.findObject(MAIN_ACTOR_HANDLE, id) !== null) return;
+
+      const command = stripHtml(String(object.content ?? ""));
+      const parts = await deps.commandHandler.handle(command);
+      const rendered = await renderReply(ctx, parts, deps.host, deps.feeds);
+      const record = {
+        id,
+        actorHandle: MAIN_ACTOR_HANDLE,
+        kind: "note" as const,
+        contentHtml: rendered.html,
+        name: null,
+        summaryHtml: null,
+        sourceUrl: null,
+        language: null,
+        toUris: direct ? [sender.id.href] : [PUBLIC_COLLECTION.href],
+        ccUris: direct ? [] : [sender.id.href],
+        attributedToUris: [mainActor.href],
+        mentions: rendered.mentions,
+        publishedAt: deps.clock.now(),
+        updatedAt: null,
+      };
+      await deps.repository.upsertObject(record);
+      const activity = buildCreate(ctx, record);
+      if (deps.sendReply !== undefined) {
+        await deps.sendReply(MAIN_ACTOR_HANDLE, sender, activity);
+      } else {
+        await ctx.sendActivity({ identifier: MAIN_ACTOR_HANDLE }, sender, activity);
+      }
+    },
   };
 }
 
@@ -160,6 +295,7 @@ export function registerInboxListeners(
     .setInboxListeners("/ap/actor/{identifier}/inbox", "/ap/inbox")
     .on(Follow, (ctx, follow) => handlers.follow(ctx, ctx.recipient, follow))
     .on(Undo, (ctx, undo) => handlers.undo(ctx, ctx.recipient, undo))
+    .on(Create, (ctx, create) => handlers.create(ctx, ctx.recipient, create))
     .setSharedKeyDispatcher(() => ({ identifier: MAIN_ACTOR_HANDLE }))
     .withIdempotency("per-inbox");
 }

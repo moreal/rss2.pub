@@ -1,15 +1,36 @@
 import { createFederation, MemoryKvStore } from "@fedify/fedify";
-import { Accept, Endpoints, Follow, Person, Undo } from "@fedify/vocab";
+import {
+  Accept,
+  Create,
+  Endpoints,
+  Follow,
+  Mention,
+  Note,
+  Person,
+  PUBLIC_COLLECTION,
+  Undo,
+} from "@fedify/vocab";
 import { describe, expect, it } from "vitest";
 import { createFollowerTracker } from "../../../../src/application/follower-tracker.js";
+import { MAIN_ACTOR_HANDLE } from "../../../../src/infrastructure/federation/identity.js";
 import { createInboxHandlers } from "../../../../src/infrastructure/federation/inbox.js";
 import { createInMemoryFederationRepository } from "../../../../src/infrastructure/persistence/in-memory-federation-repository.js";
 import { createInMemoryFeedRepository } from "../../../../src/infrastructure/persistence/in-memory-feed-repository.js";
-import { makeFeed } from "../../../helpers/fakes.js";
+import { fixedClock, makeFeed } from "../../../helpers/fakes.js";
 
 function context() {
   const federation = createFederation<void>({ kv: new MemoryKvStore() });
   federation.setActorDispatcher("/ap/actor/{identifier}", () => null);
+  federation.setObjectDispatcher(
+    Note,
+    "/ap/actor/{identifier}/note/{id}",
+    () => null,
+  );
+  federation.setObjectDispatcher(
+    Create,
+    "/ap/actor/{identifier}/create/{id}",
+    () => null,
+  );
   return federation.createContext(new URL("https://local.test"), undefined);
 }
 
@@ -120,5 +141,124 @@ describe("raw Fedify Follow/Undo handlers", () => {
 
     expect(await repository.countFollowers("unknown")).toBe(0);
     expect(accepts).toBe(0);
+  });
+
+  it("handles one direct command, escapes text, and stores real local mentions", async () => {
+    const ctx = context();
+    const feeds = createInMemoryFeedRepository();
+    const feed = makeFeed({ handle: "feed_a" });
+    await feeds.save(feed);
+    const repository = createInMemoryFederationRepository();
+    const remote = new Person({
+      id: new URL("https://remote.test/users/alice"),
+      inbox: new URL("https://remote.test/users/alice/inbox"),
+    });
+    let commandCalls = 0;
+    const sent: Create[] = [];
+    const handlers = createInboxHandlers({
+      feeds,
+      repository,
+      followerTracker: createFollowerTracker({ feeds }),
+      commandHandler: {
+        async handle() {
+          commandCalls++;
+          return [
+            { type: "text", value: "Registered <unsafe> " },
+            { type: "mention", handle: "@feed_a@local.test" },
+          ];
+        },
+      },
+      host: "local.test",
+      clock: fixedClock(new Date("2026-08-30T00:00:00Z")),
+      resolveCreateActor: async () => remote,
+      sendReply: async (_sender, _recipient, activity) => {
+        sent.push(activity);
+      },
+      resolveFollowActor: async () => remote,
+      sendAccept: async () => undefined,
+    });
+    const inbound = new Create({
+      id: new URL("https://remote.test/activities/direct-1"),
+      actor: remote.id,
+      object: new Note({
+        content: "register https://source.test/feed.xml",
+        tos: [ctx.getActorUri(MAIN_ACTOR_HANDLE)],
+      }),
+    });
+
+    await handlers.create(ctx, MAIN_ACTOR_HANDLE, inbound);
+    await handlers.create(ctx, MAIN_ACTOR_HANDLE, inbound);
+
+    expect(commandCalls).toBe(1);
+    expect(await repository.countObjects(MAIN_ACTOR_HANDLE)).toBe(1);
+    const page = await repository.listObjects(MAIN_ACTOR_HANDLE, null, 20);
+    expect(page.items[0]).toMatchObject({
+      actorHandle: MAIN_ACTOR_HANDLE,
+      contentHtml: expect.stringContaining("Registered &lt;unsafe&gt; @feed_a@local.test"),
+      toUris: ["https://remote.test/users/alice"],
+      ccUris: [],
+      attributedToUris: ["https://local.test/ap/actor/rss2pub"],
+      mentions: [{
+        name: "@feed_a@local.test",
+        href: "https://local.test/ap/actor/feed_a",
+      }],
+    });
+    expect(sent).toHaveLength(1);
+    expect(sent[0]?.actorId?.href).toBe("https://local.test/ap/actor/rss2pub");
+  });
+
+  it("accepts a public Mention command as unlisted and ignores public text without a tag", async () => {
+    const ctx = context();
+    const feeds = createInMemoryFeedRepository();
+    const repository = createInMemoryFederationRepository();
+    const remote = new Person({
+      id: new URL("https://remote.test/users/alice"),
+      inbox: new URL("https://remote.test/users/alice/inbox"),
+    });
+    let commandCalls = 0;
+    const handlers = createInboxHandlers({
+      feeds,
+      repository,
+      followerTracker: createFollowerTracker({ feeds }),
+      commandHandler: {
+        async handle() {
+          commandCalls++;
+          return [{ type: "text", value: "Found nothing" }];
+        },
+      },
+      host: "local.test",
+      clock: fixedClock(new Date("2026-08-30T00:00:00Z")),
+      resolveCreateActor: async () => remote,
+      sendReply: async () => undefined,
+      resolveFollowActor: async () => remote,
+      sendAccept: async () => undefined,
+    });
+    const mentioned = new Create({
+      id: new URL("https://remote.test/activities/mention-1"),
+      actor: remote.id,
+      object: new Note({
+        content: "search rust",
+        tos: [PUBLIC_COLLECTION],
+        tags: [new Mention({
+          name: "@rss2pub@local.test",
+          href: ctx.getActorUri(MAIN_ACTOR_HANDLE),
+        })],
+      }),
+    });
+    const unmentioned = new Create({
+      id: new URL("https://remote.test/activities/public-1"),
+      actor: remote.id,
+      object: new Note({ content: "search rust", tos: [PUBLIC_COLLECTION] }),
+    });
+
+    await handlers.create(ctx, MAIN_ACTOR_HANDLE, mentioned);
+    await handlers.create(ctx, MAIN_ACTOR_HANDLE, unmentioned);
+
+    expect(commandCalls).toBe(1);
+    const page = await repository.listObjects(MAIN_ACTOR_HANDLE, null, 20);
+    expect(page.items[0]).toMatchObject({
+      toUris: [PUBLIC_COLLECTION.href],
+      ccUris: ["https://remote.test/users/alice"],
+    });
   });
 });

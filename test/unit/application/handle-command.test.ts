@@ -158,9 +158,18 @@ describe("CommandHandler", () => {
     );
     await handler.handle("register https://rust.blog/rss");
 
-    const reply = flatten(await handler.handle("search rust"));
+    const parts = await handler.handle("search rust");
+    const reply = flatten(parts);
     expect(reply).toContain("Found:");
     expect(reply).toMatch(/@rust_blog_rss_[a-z0-9]{7}@rss2\.test — Rust Blog/);
+    expect(parts).toEqual([
+      { type: "text", value: "Found:\n" },
+      {
+        type: "mention",
+        handle: expect.stringMatching(/@rust_blog_rss_[a-z0-9]{7}@rss2\.test/),
+      },
+      { type: "text", value: " — Rust Blog" },
+    ]);
   });
 
   it("suggests registering when a search finds nothing", async () => {

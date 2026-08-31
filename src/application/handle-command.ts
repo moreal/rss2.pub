@@ -40,8 +40,8 @@ export function parseCommand(text: string): Command {
 }
 
 /**
- * A reply is a sequence of parts so infrastructure (which owns the BotKit
- * dependency) can render a `mention` part as a real ActivityPub `Mention`
+ * A reply is a sequence of parts so federation infrastructure can render a
+ * `mention` part as a real ActivityPub `Mention`
  * (clickable, followable) instead of inert text — see ADR note in
  * botkit-stack.ts. `handle` is a fediverse handle already in `@user@host`
  * form (see `account` below).
@@ -128,10 +128,15 @@ export function createCommandHandler(deps: {
               ),
             ];
           }
-          const lines = result.value.map(
-            (feed) => `${account(feed.handle)} — ${Feed.displayName(feed)}`,
-          );
-          return [t(["Found:", ...lines].join("\n"))];
+          const parts: ReplyPart[] = [t("Found:\n")];
+          for (const [index, feed] of result.value.entries()) {
+            if (index > 0) parts.push(t("\n"));
+            parts.push(
+              m(account(feed.handle)),
+              t(` — ${Feed.displayName(feed)}`),
+            );
+          }
+          return parts;
         }
         case "help":
           return [t(HELP_TEXT)];

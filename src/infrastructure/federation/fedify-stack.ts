@@ -8,8 +8,10 @@ import { Article, Create, Note } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import { Feed } from "../../domain/feed/feed.js";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
+import type { CommandHandler } from "../../application/handle-command.js";
 import { Handle } from "../../domain/feed/handle.js";
 import type { FeedRepository } from "../../domain/ports/feed-repository.js";
+import type { Clock } from "../../domain/ports/clock.js";
 import { isErr } from "../../shared/result.js";
 import { MAIN_ACTOR_HANDLE } from "./identity.js";
 import { registerInboxListeners } from "./inbox.js";
@@ -41,6 +43,9 @@ export function createFedifyStack(deps: {
   readonly queue?: MessageQueue;
   readonly feeds: FeedRepository;
   readonly followerTracker: FollowerTracker;
+  readonly commandHandler?: CommandHandler;
+  readonly host?: string;
+  readonly clock?: Clock;
   readonly repository: FederationRepository;
   readonly softwareVersion: string;
   readonly allowPrivateAddress?: boolean;
@@ -183,6 +188,11 @@ export function createFedifyStack(deps: {
     feeds: deps.feeds,
     repository: deps.repository,
     followerTracker: deps.followerTracker,
+    ...(deps.commandHandler === undefined
+      ? {}
+      : { commandHandler: deps.commandHandler }),
+    ...(deps.host === undefined ? {} : { host: deps.host }),
+    ...(deps.clock === undefined ? {} : { clock: deps.clock }),
   });
 
   federation.setNodeInfoDispatcher("/nodeinfo/2.1", async () => {
