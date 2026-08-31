@@ -139,6 +139,7 @@ adapter.
 | Full-content extraction is opt-in per registration (`register <url> full`); teaser and full-content are separate actors, one handle/id per (url, mode) | ADR-0009 (handle/id derivation: ADR-0004) |
 | Actor avatar resolved from the channel link's favicon on the first poll (not at registration); resolved once, never re-fetched | ADR-0010 |
 | Post language tagging: Atom `xml:lang` at feed root *and* per-entry override | ADR-0011, amended by ADR-0012 |
+| Atom author URI → metadata-only plural `attributedTo` | ADR-0014 |
 
 ## Gotchas
 
@@ -162,6 +163,14 @@ adapter.
   `federation_actor_keys`, `federation_followers`, and `federation_objects`.
   Never regenerate an existing actor's keys or derive object IDs from mutable
   content; restart E2E coverage pins both requirements.
+- Atom effective authors follow entry → source → feed precedence. Domain parsing
+  keeps canonical absolute HTTP(S) URIs in first-seen order, deduplicates before
+  the limit of 8, and resolves only items that need publish/update. `PollFeed`
+  memoizes URI Promises for one execution only; lookup failures and non-Actors
+  are omitted without entering `publishErrors`. Final `attributedTo` is the
+  local feed actor first plus at most 8 unique external Actor IDs (maximum 9).
+  Author-only changes send Update but never alter body HTML, Mention tags,
+  `to`, or `cc`.
 - `@fedify/vocab` and `@fedify/fedify` stay version-locked to the tested
   ~2.3.5 line so vocab `instanceof` checks operate on one package copy.
 - **The web UI has one design system: `src/web/ui/styles.ts`.** Every colour,

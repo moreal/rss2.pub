@@ -9,8 +9,8 @@ Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 �
 
 ## 기술 스택 (2026-08-30 승인된 목표 구조)
 
-아래 표는 ADR-0012~0014가 정의한 구조다. M6의 Atom-only foundation과 M7의 raw Fedify
-parity는 구현되었고, M8의 author attribution을 이어서 구현한다.
+아래 표는 ADR-0012~0014가 정의한 현재 구조다. M6의 Atom-only foundation, M7의 raw
+Fedify parity, M8의 author attribution이 모두 구현되었다.
 
 | 영역 | 선택 | 근거 |
 |---|---|---|
@@ -275,7 +275,7 @@ packages/
   Atom fixture 전환, UI/i18n/docs/Nix 갱신(ADR-0012).
 - ✅ **M7 — raw Fedify parity**: BotKit 제거, first-party federation tables와 dispatcher,
   Follow/command/pages parity, restart와 signature E2E(ADR-0013).
-- ⏳ **M8 — Atom author attribution**: ActorResolver, poll-local memo, 최대 8명 lookup,
+- ✅ **M8 — Atom author attribution**: ActorResolver, poll-local memo, 최대 8명 lookup,
   복수 `attributedTo`, author-only Update(ADR-0014).
 
 ## 후속 과제 (계획 범위 밖)

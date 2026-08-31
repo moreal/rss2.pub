@@ -22,6 +22,13 @@ Tested against the rss2.pub Atom consumer conformance profile derived from the W
 - 메인 액터 `@rss2pub`: 멘션/DM으로 `register <url>`, `search <keyword>` 명령 처리
 - 웹 UI: 인기 피드 추천 · 검색 · 등록
 
+Atom 저자는 entry → source → feed 순으로 상속된 URI를 사용합니다. 절대 HTTP(S) URI만
+canonicalize·중복 제거한 뒤 최대 8개를 ActivityPub Actor로 확인하며, 게시물의
+`attributedTo`에는 로컬 피드 액터를 먼저 두고 확인된 외부 액터를 최대 8개 추가합니다.
+lookup 실패, 비-Actor, ID 없는 객체는 게시를 막지 않고 생략합니다. 저자만 바뀌면 같은
+게시물에 Update를 보내되 본문, Mention, `to`, `cc`는 바꾸지 않습니다. 자세한 계약은
+[ADR-0014](docs/adr/0014-atom-authors-as-multiple-attributions.md)를 참고하세요.
+
 ## 개발
 
 ```sh
