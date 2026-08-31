@@ -22,12 +22,35 @@ yarn typecheck                     # tsc --noEmit over src + test
 yarn test:unit                     # fast, no I/O
 yarn test:e2e                      # real server + containers (M3+)
 yarn test                          # everything
+yarn atom:conformance:update       # regenerate the pinned W3C Atom manifest
 yarn i18n:extract                  # update src/web/locales/*.po from source
 yarn i18n:compile                  # compile .po → checked-in .ts catalogs
 yarn db:reset                      # wipe the local dev database (asks first;
                                    #   `mise run db:reset` is the same script)
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
+
+## W3C Atom consumer conformance profile
+
+RFC 4287 is the normative Atom format specification. The pinned W3C Feed
+Validator corpus is a regression oracle for rss2.pub's consumer conformance
+profile, not a claim of full Feed Validator parity or W3C endorsement. It
+accounts for all 381 selected paths: the 62 upstream no-error Atom Feed
+Documents are accepted or projected, while standalone Atom Entries are
+rejected by product policy.
+
+After cloning, initialize the test-only corpus exactly once:
+
+```sh
+git submodule update --init --depth 1 vendor/w3c-feedvalidator
+```
+
+When changing the reviewed submodule pin, move the gitlink, run
+`yarn atom:conformance:update`, review every classification and checksum
+change, and run the complete repository gate. Do not edit the generated
+manifest by hand. The corpus is not a runtime or Nix package input. Attribution,
+license location, and the exact pin are in
+`packages/atom-feed/test/conformance/W3C-FEEDVALIDATOR.md`.
 
 After ANY yarn.lock change, both `nix/missing-hashes.json` and
 `yarnOfflineCache.hash` in flake.nix must be refreshed, or `nix build` fails:

@@ -144,6 +144,24 @@ describe("W3C Feed Validator Atom corpus", () => {
     expect(listSelectedW3cAtomPaths()).toHaveLength(381);
   });
 
+  it("keeps the conformance claim scoped and attributed", () => {
+    const packageReadme = readFileSync(
+      new URL("../../README.md", import.meta.url),
+      "utf8",
+    );
+    const profile = readFileSync(
+      new URL("./W3C-FEEDVALIDATOR.md", import.meta.url),
+      "utf8",
+    );
+    expect(packageReadme).toContain(
+      "Tested against the rss2.pub Atom consumer conformance profile derived from the W3C Feed Validator RFC 4287 corpus.",
+    );
+    expect(profile).toContain("9ce274c9db93796b8ab2a44952b9da80811bf765");
+    expect(profile).toContain("vendor/w3c-feedvalidator/LICENSE");
+    expect(profile).toContain("consumer conformance profile");
+    expect(profile).not.toContain("W3C certified");
+  });
+
   it("accounts for every selected fixture exactly once", () => {
     const selected = listSelectedW3cAtomPaths();
     expect(W3C_ATOM_CASES.map((testCase) => testCase.path)).toEqual(selected);
