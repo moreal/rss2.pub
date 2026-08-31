@@ -295,7 +295,7 @@ describe("federation e2e", () => {
 
   it("keeps the language cookie off non-page responses", async () => {
     // Language detection is attached per HTML route precisely so that it does
-    // not reach BotKit's routes through the "/" mount (see routes.tsx).
+    // not reach federation routes through the "/" mount (see routes.tsx).
     for (const path of [
       "/healthz",
       "/readyz",

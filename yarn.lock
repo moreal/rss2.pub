@@ -784,45 +784,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fedify/botkit-postgres@npm:0.6.0-dev.348":
-  version: 0.6.0-dev.348
-  resolution: "@fedify/botkit-postgres@npm:0.6.0-dev.348"
-  dependencies:
-    "@fedify/fedify": "npm:~2.3.5"
-    "@fedify/vocab": "npm:~2.3.5"
-    "@js-temporal/polyfill": "npm:^0.5.1"
-    "@logtape/logtape": "npm:^2.2.3"
-    postgres: "npm:^3.4.9"
-  peerDependencies:
-    "@fedify/botkit": ^0.6.0-dev.348+664bf5e1
-  checksum: 10c0/a42e83d49eeda8a36d75d739d17c7711e5ad71b5b977c4171519152c9513c4d9404bedf76e62c4d3111383677a94a4250da73c5207ac8347fdafdcc93ef7a4f4
-  languageName: node
-  linkType: hard
-
-"@fedify/botkit@npm:0.6.0-dev.348":
-  version: 0.6.0-dev.348
-  resolution: "@fedify/botkit@npm:0.6.0-dev.348"
-  dependencies:
-    "@fedify/fedify": "npm:~2.3.5"
-    "@fedify/markdown-it-hashtag": "npm:^0.3.0"
-    "@fedify/markdown-it-mention": "npm:^0.3.0"
-    "@fedify/vocab": "npm:~2.3.5"
-    "@fedify/vocab-runtime": "npm:~2.3.5"
-    "@js-temporal/polyfill": "npm:^0.5.1"
-    "@logtape/logtape": "npm:^2.2.3"
-    "@opentelemetry/api": "npm:^1.9.1"
-    hono: "npm:^4.12.27"
-    html-entities: "npm:^2.6.0"
-    markdown-it: "npm:^14.3.0"
-    mime-db: "npm:^1.54.0"
-    url-template: "npm:^3.1.1"
-    uuid: "npm:^11.1.0"
-    x-forwarded-fetch: "npm:^0.2.0"
-    xss: "npm:^1.0.15"
-  checksum: 10c0/ff120ddb2feaa3725c3bb5e665b8f464e7b22d48d9e6935f5ec8fb042df6e9a68d37800626fa0f699742bae5c7e4a9a736a6c7b7ebb74e1d41a63d32973f86d5
-  languageName: node
-  linkType: hard
-
 "@fedify/fedify@npm:~2.3.5":
   version: 2.3.6
   resolution: "@fedify/fedify@npm:2.3.6"
@@ -848,24 +809,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fedify/markdown-it-hashtag@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@fedify/markdown-it-hashtag@npm:0.3.0"
-  dependencies:
-    markdown-it: "npm:^14.1.0"
-  checksum: 10c0/569c551bffde897c0f26cb89a78d4aea6e1dac4c4bae2e5087c72ea9d11ca4f2dc5cb4035f3bb7148f3f1f9c41d2b499a47338194be5fcb06b28c420662b85f8
-  languageName: node
-  linkType: hard
-
-"@fedify/markdown-it-mention@npm:^0.3.0":
-  version: 0.3.0
-  resolution: "@fedify/markdown-it-mention@npm:0.3.0"
-  dependencies:
-    markdown-it: "npm:^14.1.0"
-  checksum: 10c0/5a3aae4e1de2fd0c25c48b5553514867735d099673c0c236b3540a265b9ab49fac8d5f2b023c85a10bc20c7b89e41507ac01a46f34b3877102554ef737ba872f
-  languageName: node
-  linkType: hard
-
 "@fedify/postgres@npm:^2.3.3":
   version: 2.3.3
   resolution: "@fedify/postgres@npm:2.3.3"
@@ -886,7 +829,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@fedify/vocab-runtime@npm:2.3.6, @fedify/vocab-runtime@npm:~2.3.5":
+"@fedify/vocab-runtime@npm:2.3.6":
   version: 2.3.6
   resolution: "@fedify/vocab-runtime@npm:2.3.6"
   dependencies:
@@ -1222,7 +1165,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@logtape/logtape@npm:^2.2.0, @logtape/logtape@npm:^2.2.3, @logtape/logtape@npm:^2.2.4":
+"@logtape/logtape@npm:^2.2.0, @logtape/logtape@npm:^2.2.4":
   version: 2.2.4
   resolution: "@logtape/logtape@npm:2.2.4"
   checksum: 10c0/d0eebc414d836119af3e5f22996fa48df12392999ba3940e677d7c7865d97334222493488a108f4ca32a5c7975b230865074f7b233b311bccd04135800cdfb49
@@ -2401,13 +2344,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"argparse@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "argparse@npm:2.0.1"
-  checksum: 10c0/c5640c2d89045371c7cedd6a70212a04e360fd34d6edeae32f6952c63949e3525ea77dbec0289d8213a99bbaeab5abfa860b5c12cf88a2e6cf8106e90dd27a7e
-  languageName: node
-  linkType: hard
-
 "asn1@npm:^0.2.6":
   version: 0.2.6
   resolution: "asn1@npm:0.2.6"
@@ -2821,13 +2757,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^2.20.3":
-  version: 2.20.3
-  resolution: "commander@npm:2.20.3"
-  checksum: 10c0/74c781a5248c2402a0a3e966a0a2bba3c054aad144f5c023364be83265e796b20565aa9feff624132ff629aa64e16999fa40a743c10c12f7c61e96a794b99288
-  languageName: node
-  linkType: hard
-
 "compress-commons@npm:^6.0.2":
   version: 6.0.2
   resolution: "compress-commons@npm:6.0.2"
@@ -2913,13 +2842,6 @@ __metadata:
   version: 8.0.0
   resolution: "css-what@npm:8.0.0"
   checksum: 10c0/11053f3da58abda961bf3ddc9de28a1d84e2e072a7a6873e68bfce7d0796b55800a41e31c0857b632b71d1a3fc42d0dd1d8e96237e52f43d7cfd90510040bdd4
-  languageName: node
-  linkType: hard
-
-"cssfilter@npm:0.0.10":
-  version: 0.0.10
-  resolution: "cssfilter@npm:0.0.10"
-  checksum: 10c0/478a227a616fb6e9bb338eb95f690df141b86231ec737cbea574484f31a09a51db894b4921afc4987459dae08d584355fd689ff2a7a7c7a74de4bb4c072ce553
   languageName: node
   linkType: hard
 
@@ -3220,7 +3142,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^4.2.0, entities@npm:^4.5.0":
+"entities@npm:^4.2.0":
   version: 4.5.0
   resolution: "entities@npm:4.5.0"
   checksum: 10c0/5b039739f7621f5d1ad996715e53d964035f75ad3b9a4d38c6b3804bb226e282ffeae2443624d8fdd9c47d8e926ae9ac009c54671243f0c3294c26af7cc85250
@@ -3727,17 +3649,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hono@npm:^4.12.27, hono@npm:^4.12.32":
+"hono@npm:^4.12.32":
   version: 4.12.32
   resolution: "hono@npm:4.12.32"
   checksum: 10c0/3bb2fc0b042af87202e0cb0e5f77ee5b578684d868e1e321ed3de53e02f1ef02fe700811fa0d2fc765636a217bae7633d552d55934175f3dec6307a1f63f4ecb
-  languageName: node
-  linkType: hard
-
-"html-entities@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "html-entities@npm:2.6.0"
-  checksum: 10c0/7c8b15d9ea0cd00dc9279f61bab002ba6ca8a7a0f3c36ed2db3530a67a9621c017830d1d2c1c65beb9b8e3436ea663e9cf8b230472e0e413359399413b27c8b7
   languageName: node
   linkType: hard
 
@@ -4138,15 +4053,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"linkify-it@npm:^5.0.2":
-  version: 5.0.2
-  resolution: "linkify-it@npm:5.0.2"
-  dependencies:
-    uc.micro: "npm:^2.0.0"
-  checksum: 10c0/dd70b1735a13d41a2cff0a058ac3771166038f23f6aff004dd53873cf985c64b107902fe0b544a5b3d1ff6e63249cf9c648fb3ae9f285481db48f56887adb0d6
-  languageName: node
-  linkType: hard
-
 "lodash.camelcase@npm:^4.3.0":
   version: 4.3.0
   resolution: "lodash.camelcase@npm:4.3.0"
@@ -4212,29 +4118,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-it@npm:^14.1.0, markdown-it@npm:^14.3.0":
-  version: 14.3.0
-  resolution: "markdown-it@npm:14.3.0"
-  dependencies:
-    argparse: "npm:^2.0.1"
-    entities: "npm:^4.5.0"
-    linkify-it: "npm:^5.0.2"
-    mdurl: "npm:^2.0.0"
-    punycode.js: "npm:^2.3.1"
-    uc.micro: "npm:^2.1.0"
-  bin:
-    markdown-it: bin/markdown-it.mjs
-  checksum: 10c0/b2dea908968109d6e9088ac972254bca842157d85d2e6838d0eb263cd8106e7e6a72663b138366cc98f57441d9f3f2ebfb842bf7b2f9e1c13187ebe70e0af8f9
-  languageName: node
-  linkType: hard
-
-"mdurl@npm:^2.0.0":
-  version: 2.1.0
-  resolution: "mdurl@npm:2.1.0"
-  checksum: 10c0/aed11a75b791d596c7104fa6a3d84680e87cd2bfdb32ecfe512e795481d40a64b21d627b325ffd58aadcd15faf7498ac06130b8f198ebec437aceeead24bd1b1
-  languageName: node
-  linkType: hard
-
 "micromatch@npm:^4.0.7":
   version: 4.0.8
   resolution: "micromatch@npm:4.0.8"
@@ -4242,13 +4125,6 @@ __metadata:
     braces: "npm:^3.0.3"
     picomatch: "npm:^2.3.1"
   checksum: 10c0/166fa6eb926b9553f32ef81f5f531d27b4ce7da60e5baf8c021d043b27a388fb95e46a8038d5045877881e673f8134122b59624d5cecbd16eb50a42e7a6b5ca8
-  languageName: node
-  linkType: hard
-
-"mime-db@npm:^1.54.0":
-  version: 1.54.0
-  resolution: "mime-db@npm:1.54.0"
-  checksum: 10c0/8d907917bc2a90fa2df842cdf5dfeaf509adc15fe0531e07bb2f6ab15992416479015828d6a74200041c492e42cce3ebf78e5ce714388a0a538ea9c53eece284
   languageName: node
   linkType: hard
 
@@ -4634,13 +4510,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"punycode.js@npm:^2.3.1":
-  version: 2.3.1
-  resolution: "punycode.js@npm:2.3.1"
-  checksum: 10c0/1d12c1c0e06127fa5db56bd7fdf698daf9a78104456a6b67326877afc21feaa821257b171539caedd2f0524027fa38e67b13dd094159c8d70b6d26d2bea4dfdb
-  languageName: node
-  linkType: hard
-
 "pvtsutils@npm:^1.3.6":
   version: 1.3.6
   resolution: "pvtsutils@npm:1.3.6"
@@ -4831,8 +4700,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "rss2pub@workspace:."
   dependencies:
-    "@fedify/botkit": "npm:0.6.0-dev.348"
-    "@fedify/botkit-postgres": "npm:0.6.0-dev.348"
     "@fedify/fedify": "npm:~2.3.5"
     "@fedify/postgres": "npm:^2.3.3"
     "@fedify/vocab": "npm:~2.3.5"
@@ -5484,13 +5351,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uc.micro@npm:^2.0.0, uc.micro@npm:^2.1.0":
-  version: 2.1.0
-  resolution: "uc.micro@npm:2.1.0"
-  checksum: 10c0/8862eddb412dda76f15db8ad1c640ccc2f47cdf8252a4a30be908d535602c8d33f9855dfcccb8b8837855c1ce1eaa563f7fa7ebe3c98fd0794351aab9b9c55fa
-  languageName: node
-  linkType: hard
-
 "uhyphen@npm:^0.2.0":
   version: 0.2.0
   resolution: "uhyphen@npm:0.2.0"
@@ -5547,13 +5407,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"url-template@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "url-template@npm:3.1.1"
-  checksum: 10c0/0947f4978665ced04bb0fe456f8a60ca4e1db283ce36da15193ee52c4a5461633dc9b5116ef8cf34bae4a31285ac6e7079f309badf211fe8bd1428d6ac56d28a
-  languageName: node
-  linkType: hard
-
 "urlpattern-polyfill@npm:^10.1.0":
   version: 10.1.0
   resolution: "urlpattern-polyfill@npm:10.1.0"
@@ -5565,15 +5418,6 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 10c0/41a5bdd214df2f6c3ecf8622745e4a366c4adced864bc3c833739791aeeeb1838119af7daed4ba36428114b5c67dcda034a79c882e97e43c03e66a4dd7389942
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^11.1.0":
-  version: 11.1.1
-  resolution: "uuid@npm:11.1.1"
-  bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 10c0/9e3af58eba872ece5a5e76f4773a94fc78a0ef2c2444c38dbe6b42f41dadf76c01850fd783604f27986f6195e6286aef064d45987d401b2a33127b98ddf7c0c5
   languageName: node
   linkType: hard
 
@@ -5765,29 +5609,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"x-forwarded-fetch@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "x-forwarded-fetch@npm:0.2.0"
-  checksum: 10c0/04df4fe1429bb9e527515e13360cbb20ea824dccd9f21fe4220c57d854068d48c9fd54be10a94c4f64627e2a42c65651279dc95bf8528881aefe05f13c40aa71
-  languageName: node
-  linkType: hard
-
 "xmlchars@npm:^2.2.0":
   version: 2.2.0
   resolution: "xmlchars@npm:2.2.0"
   checksum: 10c0/b64b535861a6f310c5d9bfa10834cf49127c71922c297da9d4d1b45eeaae40bf9b4363275876088fbe2667e5db028d2cd4f8ee72eed9bede840a67d57dab7593
-  languageName: node
-  linkType: hard
-
-"xss@npm:^1.0.15":
-  version: 1.0.15
-  resolution: "xss@npm:1.0.15"
-  dependencies:
-    commander: "npm:^2.20.3"
-    cssfilter: "npm:0.0.10"
-  bin:
-    xss: bin/xss
-  checksum: 10c0/9b31bee62a208f78e2b7bc8154e3ee87d980f4661dc4ab850ce6f4de7bc50eb152f0bdc13fa759ff8ab6d9bfdf8c0d79cf9f6f86249872b92181912309bccd08
   languageName: node
   linkType: hard
 

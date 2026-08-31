@@ -49,7 +49,7 @@ export function renderNoteHtml(post: NotePost): string {
 /**
  * Article content: the title is ALSO embedded as <h1> for software that
  * renders `content` (Misskey family); the object-level `name`/`summary` are
- * applied separately (botkit-gateway.ts) for Mastodon's title+teaser+link view.
+ * applied separately by the vocab builder for Mastodon's title+teaser+link view.
  */
 export function renderArticleHtml(post: ArticlePost): string {
   const parts = [

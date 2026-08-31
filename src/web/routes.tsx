@@ -62,7 +62,7 @@ function pageContext(c: Context<Env>, deps: WebDeps): PageContext {
 /**
  * Applied per HTML route on purpose. An app-wide `use()` here would not stay
  * inside this app: app.ts mounts it with `app.route("/", web)`, which
- * re-registers the middleware as `/*` on the parent, so every BotKit route
+ * re-registers the middleware as `/*` on the parent, so every federation route
  * (WebFinger, /ap/*) would answer with a language Set-Cookie too. Verified,
  * not theoretical — don't "simplify" this into `app.use(detectLanguage)`.
  */

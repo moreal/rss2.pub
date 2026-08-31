@@ -8,7 +8,7 @@ import type {
   FederationRepository,
   StoredFederationObject,
 } from "../infrastructure/federation/model.js";
-import { BOTKIT_THEME_CSS } from "../infrastructure/federation/pages-theme.js";
+import { FEDERATION_PAGE_THEME_CSS } from "../infrastructure/federation/pages-theme.js";
 import {
   renderFeedProfileHtml,
   sanitizeFeedHtml,
@@ -17,14 +17,14 @@ import { isErr } from "../shared/result.js";
 
 const PAGE_CSS = `
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bk-bg); color: var(--bk-text); font-family: var(--bk-font); }
+  body { margin: 0; background: var(--fed-bg); color: var(--fed-text); font-family: var(--fed-font); }
   main { width: min(46rem, calc(100% - 2rem)); margin: 2rem auto; }
-  article, header { background: var(--bk-surface); border: 1px solid var(--bk-border); border-radius: var(--bk-radius); padding: 1.25rem; }
+  article, header { background: var(--fed-surface); border: 1px solid var(--fed-border); border-radius: var(--fed-radius); padding: 1.25rem; }
   header { margin-bottom: 1rem; }
   h1, h2 { margin-top: 0; }
-  a { color: var(--botkit-accent-ink); overflow-wrap: anywhere; }
-  .muted { color: var(--bk-muted); }
-  .avatar { width: 4rem; height: 4rem; border-radius: var(--bk-radius-sm); object-fit: cover; }
+  a { color: var(--fed-accent-ink); overflow-wrap: anywhere; }
+  .muted { color: var(--fed-muted); }
+  .avatar { width: 4rem; height: 4rem; border-radius: var(--fed-radius-sm); object-fit: cover; }
   .posts { display: grid; gap: 1rem; }
   .content { overflow-wrap: anywhere; }
 `;
@@ -36,7 +36,7 @@ function acceptsHtml(accept: string | undefined): boolean {
 }
 
 function layout(title: string, body: string): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><style>${BOTKIT_THEME_CSS}${PAGE_CSS}</style></head><body><main>${body}</main></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><style>${FEDERATION_PAGE_THEME_CSS}${PAGE_CSS}</style></head><body><main>${body}</main></body></html>`;
 }
 
 function absoluteUrl(raw: string | null): URL | null {

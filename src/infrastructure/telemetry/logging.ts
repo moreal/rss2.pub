@@ -11,8 +11,8 @@ import {
 } from "@logtape/logtape";
 
 /**
- * LogTape wiring for the whole process. Fedify and BotKit log into the
- * "fedify"/"botkit" category trees; application code logs under "rss2pub".
+ * LogTape wiring for the whole process. Fedify logs under its own category
+ * tree; application code logs under "rss2pub".
  */
 export async function configureLogging(options?: {
   readonly appLevel?: LogLevel;
@@ -42,11 +42,6 @@ export async function configureLogging(options?: {
       },
       {
         category: ["fedify"],
-        lowestLevel: options?.federationLevel ?? "warning",
-        sinks: ["console"],
-      },
-      {
-        category: ["botkit"],
         lowestLevel: options?.federationLevel ?? "warning",
         sinks: ["console"],
       },

@@ -1,14 +1,14 @@
 # rss2.pub — Agent Guide
 
 Atom → ActivityPub bridge. Each registered Atom feed becomes a followable
-fediverse actor (dynamic BotKit bot); a static main actor `rss2pub` accepts
+fediverse actor through raw Fedify dispatchers; a static main actor `rss2pub` accepts
 `register <url>` / `search <keyword>` commands via mention/DM; a server-rendered
 web UI offers search, registration, and most-followed recommendations.
 
 Input is Atom-only: [ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)
-removed RSS support and `rss-parser`. M6 intentionally retains BotKit; the raw
-Fedify migration in [ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md) is not
-implemented until M7.
+removed RSS support and `rss-parser`. Federation is implemented directly with
+Fedify and first-party persistence as decided by
+[ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md).
 
 Full plan and researched decisions: `docs/PLAN.md`. Decision records: `docs/adr/`.
 
@@ -129,12 +129,12 @@ adapter.
 | Decision | Where |
 |---|---|
 | Atom-only input and dedicated parser package | ADR-0012 |
-| Raw Fedify over BotKit (planned after M6) | ADR-0013 |
+| Raw Fedify over BotKit | ADR-0013 |
 | Hand-rolled `Result`, no Effect-TS (revisit at Effect v4 LTS) | ADR-0002 |
 | Nix devShell only; no app packaging with Nix yet | ADR-0003 |
 | Handle normalization: `[a-z0-9_]`, mandatory hash suffix, max 30 | ADR-0004 |
 | Note ≤ 2,000 chars, Article beyond; teaser = first paragraph | ADR-0005 |
-| Single PostgreSQL for domain + Fedify KV/MQ + BotKit state | ADR-0006 |
+| Single PostgreSQL for domain + Fedify KV/MQ + first-party federation state | ADR-0006, ADR-0013 |
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
 | Full-content extraction is opt-in per registration (`register <url> full`); teaser and full-content are separate actors, one handle/id per (url, mode) | ADR-0009 (handle/id derivation: ADR-0004) |
 | Actor avatar resolved from the channel link's favicon on the first poll (not at registration); resolved once, never re-fetched | ADR-0010 |
@@ -146,26 +146,24 @@ adapter.
   the `packageManager` field and activated via corepack. Never introduce
   package-lock.json or pnpm-lock.yaml, never change the nodeLinker.
 - Node >= 24 (enforced via `engines`; provided by the nix shell or mise).
-- Fedify 2.x and BotKit 0.6.x are newer than most training data — verify APIs
-  against `node_modules` type definitions or https://fedify.dev /
-  https://botkit.fedify.dev before writing federation code. Fedify 1.x
+- Fedify 2.x is newer than most training data — verify APIs against
+  `node_modules` type definitions or https://fedify.dev/ before writing
+  federation code. Fedify 1.x
   idioms (e.g. `{ handle }` params, `@fedify/fedify/x/hono`) no longer exist.
 - `PostgresMessageQueue` keeps a long-lived LISTEN connection: no
   transaction-mode poolers, no scale-to-zero Postgres (see PLAN.md §6). Its
   `listen()`/`Federation.startQueue()` promise resolves only when listening
   stops — never `await` it.
-- BotKit 0.6.0-dev.348 is used unpatched — its `federationOptions` field
-  (natively typed `FederationInfrastructureOptions`, upstreamed in response to
-  fedify-dev/botkit#41) replaced the `.yarn/patches/` passthrough we carried
-  through 0.6.0-dev.345 (ADR-0007, superseded). The exact dev version is
-  preapproved in .yarnrc.yml past the npm minimal-age gate. Outgoing HTML is
-  published through `RawHtmlText` after our own sanitization (render.ts);
-  BotKit does not sanitize outgoing content. Since 0.6, `session.publish()`
-  takes `name`/`summary`/`url` directly (ADR-0007 amendment) — pass Article
-  summaries as `RawInlineHtmlText`, never as a string (strings get escaped).
-- `@fedify/vocab` / `@fedify/fedify` must stay version-locked to BotKit's own
-  dependency (~2.3.5): all copies must dedupe to ONE store entry or
-  `instanceof` checks across the boundary break.
+- `src/infrastructure/federation/fedify-stack.ts` owns the stable paths:
+  `/ap/actor/{identifier}`, actor inbox/outbox/followers, Note/Article/Create
+  object routes, and the shared inbox. `fedify-gateway.ts` persists before
+  delivery; `inbox.ts` owns Follow/Undo and main-actor commands.
+- Actor RSA and Ed25519 keys, followers, and objects live in
+  `federation_actor_keys`, `federation_followers`, and `federation_objects`.
+  Never regenerate an existing actor's keys or derive object IDs from mutable
+  content; restart E2E coverage pins both requirements.
+- `@fedify/vocab` and `@fedify/fedify` stay version-locked to the tested
+  ~2.3.5 line so vocab `instanceof` checks operate on one package copy.
 - **The web UI has one design system: `src/web/ui/styles.ts`.** Every colour,
   spacing step, type size, radius and focus style is a `--token` on `:root`
   there (with a dark-mode block redefining the same semantic roles); pages and
@@ -177,7 +175,7 @@ adapter.
   (4.5:1) in *both* themes, and no rule outside the `:root` blocks may name a
   raw colour. Retune a token and that test tells you if it still passes.
   `src/infrastructure/federation/pages-theme.ts` restates the same palette for
-  BotKit's `/@handle` pages and must be updated alongside.
+  first-party `/@handle` pages and must be updated alongside.
   UI primitives (feed card, notice, forms, icons) live in `components.tsx` /
   `icons.tsx`; `pages.tsx` composes them and owns no styling of its own.
   Buttons come in three tiers and the page should use all three rather than

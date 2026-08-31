@@ -42,8 +42,7 @@ export function parseCommand(text: string): Command {
 /**
  * A reply is a sequence of parts so federation infrastructure can render a
  * `mention` part as a real ActivityPub `Mention`
- * (clickable, followable) instead of inert text — see ADR note in
- * botkit-stack.ts. `handle` is a fediverse handle already in `@user@host`
+ * (clickable, followable) instead of inert text. `handle` is a fediverse handle already in `@user@host`
  * form (see `account` below).
  */
 export type ReplyPart =

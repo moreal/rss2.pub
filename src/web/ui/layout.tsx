@@ -22,9 +22,9 @@ const SITE_NAME = "rss2.pub";
 const SOURCE_URL = "https://github.com/moreal/rss2.pub";
 
 /**
- * Username of the static command bot. Duplicated from
- * `botkit-stack.ts`'s `MAIN_ACTOR_HANDLE` rather than imported: the UI has no
- * business pulling BotKit into its module graph for one string.
+ * Username of the static command actor. Duplicated from federation identity
+ * rather than imported so this UI leaf does not pull infrastructure into its
+ * module graph for one string.
  */
 const MAIN_ACTOR_HANDLE = "rss2pub";
 

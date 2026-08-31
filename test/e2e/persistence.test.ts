@@ -1,6 +1,16 @@
+import {
+  createFederation,
+  generateCryptoKeyPair,
+  MemoryKvStore,
+} from "@fedify/fedify";
+import { Follow, Person } from "@fedify/vocab";
+import { serve, type ServerType } from "@hono/node-server";
+import { createServer } from "node:net";
+import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import type { ItemKey } from "../../src/domain/feed/feed-item.js";
+import { Handle } from "../../src/domain/feed/handle.js";
 import type { MessageUri } from "../../src/domain/ports/federation-gateway.js";
 import type {
   StoredFederationObject,
@@ -10,11 +20,65 @@ import type {
 import { createDrizzleFederationRepository } from "../../src/infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../../src/infrastructure/persistence/drizzle-feed-repository.js";
 import { createDrizzleItemRepository } from "../../src/infrastructure/persistence/drizzle-item-repository.js";
+import { createApp, type App } from "../../src/web/app.js";
+import type { AppConfig } from "../../src/web/config.js";
 import { makeFeed, T0 as now } from "../helpers/fakes.js";
 import { unwrap } from "../helpers/result.js";
 import { createTestDatabase, type TestDatabase } from "./helpers/database.js";
+import {
+  startFixtureFeedServer,
+  type FixtureFeedServer,
+} from "./helpers/fixture-feed-server.js";
+import { atomFixture } from "./helpers/fixtures.js";
 
 let database: TestDatabase;
+
+async function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const probe = createServer();
+    probe.once("error", reject);
+    probe.listen(0, "127.0.0.1", () => {
+      const { port } = probe.address() as AddressInfo;
+      probe.close(() => resolve(port));
+    });
+  });
+}
+
+async function closeServer(server: ServerType): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => error === undefined ? resolve() : reject(error));
+  });
+}
+
+async function fetchAp(url: string): Promise<Record<string, unknown>> {
+  const response = await fetch(url, {
+    headers: { accept: "application/activity+json" },
+  });
+  expect(response.status, `GET ${url}`).toBe(200);
+  return (await response.json()) as Record<string, unknown>;
+}
+
+async function collectionItems(url: string): Promise<unknown[]> {
+  const collection = await fetchAp(url);
+  if (Array.isArray(collection["orderedItems"])) {
+    return collection["orderedItems"];
+  }
+  const first = collection["first"];
+  expect(typeof first).toBe("string");
+  const page = await fetchAp(first as string);
+  const items = page["orderedItems"] ?? page["items"];
+  return Array.isArray(items) ? items : [];
+}
+
+async function waitForFollower(url: string): Promise<void> {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    const followers = await fetchAp(url);
+    if (followers["totalItems"] === 1) return;
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  throw new Error("timed out waiting for persisted follower");
+}
 
 beforeAll(async () => {
   database = await createTestDatabase(inject("databaseUrl"), "repo_contract");
@@ -271,4 +335,168 @@ describe("DrizzleFederationRepository", () => {
       storedFollower.actorUri,
     )).toBe(false);
   });
+});
+
+describe("application restart", () => {
+  it("keeps actor keys, posts, followers, collections, and HTML pages", async () => {
+    let fixtures: FixtureFeedServer | undefined;
+    let firstApp: App | undefined;
+    let secondApp: App | undefined;
+    let appServer: ServerType | undefined;
+    let remoteServer: ServerType | undefined;
+
+    try {
+      fixtures = await startFixtureFeedServer();
+      fixtures.setFixture(
+        "/restart/feed.xml",
+        atomFixture({
+          title: "Restart Blog",
+          entries: [{
+            id: "urn:restart:post",
+            title: "Persistent Post",
+            summary: "<p>survives a complete application restart</p>",
+            published: "2026-08-30T00:00:00Z",
+          }],
+        }),
+      );
+
+      const appPort = await getFreePort();
+      const base = `http://127.0.0.1:${appPort}`;
+      const config: AppConfig = {
+        origin: base,
+        host: `127.0.0.1:${appPort}`,
+        port: appPort,
+        databaseUrl: database.url,
+        pollIntervalSeconds: 60,
+        pollMaxBackoffSeconds: 86_400,
+        schedulerTickMs: 3_600_000,
+        noteMaxChars: 2000,
+        teaserMaxChars: 200,
+        behindProxy: false,
+        allowPrivateAddress: true,
+        logLevel: "warning",
+        logFormat: "console",
+      };
+
+      firstApp = await createApp(config);
+      appServer = serve({
+        fetch: firstApp.fetch,
+        port: appPort,
+        hostname: "127.0.0.1",
+      });
+
+      const feedUrl = fixtures.url("/restart/feed.xml");
+      const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+      const registration = await fetch(`${base}/register`, {
+        method: "POST",
+        body: new URLSearchParams({ url: feedUrl }),
+      });
+      expect(registration.status).toBe(200);
+      await firstApp.scheduler.tick();
+
+      const actorUrl = `${base}/ap/actor/${handle}`;
+      const firstActor = await fetchAp(actorUrl);
+      const firstPublicKey = firstActor["publicKey"];
+      expect(firstPublicKey).toMatchObject({
+        id: `${actorUrl}#main-key`,
+      });
+
+      const remotePort = await getFreePort();
+      const remoteBase = `http://127.0.0.1:${remotePort}`;
+      const remoteKey = await generateCryptoKeyPair("RSASSA-PKCS1-v1_5");
+      const remote = createFederation<void>({
+        kv: new MemoryKvStore(),
+        allowPrivateAddress: true,
+      });
+      remote
+        .setActorDispatcher("/users/{identifier}", async (ctx, identifier) => {
+          if (identifier !== "alice") return null;
+          return new Person({
+            id: ctx.getActorUri(identifier),
+            preferredUsername: identifier,
+            inbox: ctx.getInboxUri(identifier),
+            publicKeys: (await ctx.getActorKeyPairs(identifier)).map(
+              (pair) => pair.cryptographicKey,
+            ),
+          });
+        })
+        .setKeyPairsDispatcher(async (_ctx, identifier) =>
+          identifier === "alice" ? [remoteKey] : []
+        );
+      remote.setInboxListeners("/users/{identifier}/inbox", "/inbox");
+      remoteServer = serve({
+        fetch: (request) => remote.fetch(request, { contextData: undefined }),
+        port: remotePort,
+        hostname: "127.0.0.1",
+      });
+
+      const remoteContext = remote.createContext(new URL(remoteBase), undefined);
+      await remoteContext.sendActivity(
+        { identifier: "alice" },
+        {
+          id: new URL(actorUrl),
+          inboxId: new URL(`${actorUrl}/inbox`),
+        },
+        new Follow({
+          id: new URL(`${remoteBase}/follows/restart`),
+          actor: remoteContext.getActorUri("alice"),
+          object: new URL(actorUrl),
+        }),
+      );
+
+      const followersUrl = firstActor["followers"];
+      const outboxUrl = firstActor["outbox"];
+      expect(typeof followersUrl).toBe("string");
+      expect(typeof outboxUrl).toBe("string");
+      await waitForFollower(followersUrl as string);
+
+      const firstOutbox = await collectionItems(outboxUrl as string);
+      expect(firstOutbox).toHaveLength(1);
+      const firstActivity = typeof firstOutbox[0] === "string"
+        ? await fetchAp(firstOutbox[0])
+        : firstOutbox[0] as Record<string, unknown>;
+      const firstObject = firstActivity["object"];
+      const object = typeof firstObject === "string"
+        ? await fetchAp(firstObject)
+        : firstObject as Record<string, unknown>;
+      expect(typeof object["id"]).toBe("string");
+      const objectUrl = object["id"] as string;
+      const objectId = objectUrl.slice(objectUrl.lastIndexOf("/") + 1);
+
+      await closeServer(appServer);
+      appServer = undefined;
+      await firstApp.shutdown();
+      firstApp = undefined;
+
+      secondApp = await createApp(config);
+      appServer = serve({
+        fetch: secondApp.fetch,
+        port: appPort,
+        hostname: "127.0.0.1",
+      });
+
+      const restartedActor = await fetchAp(actorUrl);
+      expect(restartedActor["publicKey"]).toEqual(firstPublicKey);
+      expect(await fetchAp(objectUrl)).toMatchObject({
+        id: objectUrl,
+        type: "Note",
+      });
+      expect(await collectionItems(outboxUrl as string)).toHaveLength(1);
+      expect(await fetchAp(followersUrl as string)).toMatchObject({
+        totalItems: 1,
+      });
+
+      const page = await fetch(`${base}/@${handle}/${objectId}`, {
+        headers: { accept: "text/html" },
+      });
+      expect(page.status).toBe(200);
+      expect(await page.text()).toContain("Persistent Post");
+    } finally {
+      if (appServer !== undefined) await closeServer(appServer);
+      if (remoteServer !== undefined) await closeServer(remoteServer);
+      await firstApp?.shutdown();
+      await secondApp?.shutdown();
+      await fixtures?.close();
+    }
+  }, 60_000);
 });

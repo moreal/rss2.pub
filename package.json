@@ -35,8 +35,6 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
-    "@fedify/botkit": "0.6.0-dev.348",
-    "@fedify/botkit-postgres": "0.6.0-dev.348",
     "@fedify/fedify": "~2.3.5",
     "@fedify/postgres": "^2.3.3",
     "@fedify/vocab": "~2.3.5",

@@ -13,9 +13,8 @@ import {
 import type { StoredMention } from "../federation/model.js";
 
 /**
- * Domain and first-party federation tables. Fedify KV/queue and the
- * transitional BotKit repository tables live in the same database but are
- * created and owned by those libraries.
+ * Domain and first-party federation tables. Fedify KV/queue tables live in
+ * the same database but are created and owned by `@fedify/postgres`.
  */
 export const feeds = pgTable(
   "feeds",

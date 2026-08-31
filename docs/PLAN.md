@@ -9,8 +9,8 @@ Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 �
 
 ## 기술 스택 (2026-08-30 승인된 목표 구조)
 
-아래 표는 ADR-0012~0014 구현 후의 목표 구조다. 현재 코드는 아직 `rss-parser`와 BotKit을
-사용하며, "마일스톤"의 M6~M8 순서로 이행한다.
+아래 표는 ADR-0012~0014가 정의한 구조다. M6의 Atom-only foundation과 M7의 raw Fedify
+parity는 구현되었고, M8의 author attribution을 이어서 구현한다.
 
 | 영역 | 선택 | 근거 |
 |---|---|---|
@@ -271,9 +271,9 @@ packages/
   `remote-federation.test.ts`), Containerfile + docker-compose, 피드 삭제(Delete 전파),
   Nix 패키징(`packages.default` — `fetchYarnBerryDeps` + `yarnBerryConfigHook`,
   ADR-0003 개정. 최초 1회 `yarnOfflineCache.hash` TOFU 채우기 필요).
-- ⏳ **M6 — Atom-only foundation**: `@rss2pub/atom-feed` + saxes, RSS/rss-parser 제거,
+- ✅ **M6 — Atom-only foundation**: `@rss2pub/atom-feed` + saxes, RSS/rss-parser 제거,
   Atom fixture 전환, UI/i18n/docs/Nix 갱신(ADR-0012).
-- ⏳ **M7 — raw Fedify parity**: BotKit 제거, first-party federation tables와 dispatcher,
+- ✅ **M7 — raw Fedify parity**: BotKit 제거, first-party federation tables와 dispatcher,
   Follow/command/pages parity, restart와 signature E2E(ADR-0013).
 - ⏳ **M8 — Atom author attribution**: ActorResolver, poll-local memo, 최대 8명 lookup,
   복수 `attributedTo`, author-only Update(ADR-0014).
