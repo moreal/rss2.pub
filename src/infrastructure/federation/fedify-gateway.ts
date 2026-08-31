@@ -12,6 +12,7 @@ import type { PostContent } from "../../domain/content/content-policy.js";
 import type { Feed } from "../../domain/feed/feed.js";
 import type { ItemKey } from "../../domain/feed/feed-item.js";
 import type { Clock } from "../../domain/ports/clock.js";
+import type { ResolvedActorUri } from "../../domain/ports/actor-resolver.js";
 import {
   type FederationError,
   type FederationGateway,
@@ -43,11 +44,27 @@ function messageOf(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
+function attributionUris(
+  ctx: Context<void>,
+  feed: Feed,
+  additional: readonly ResolvedActorUri[],
+): readonly string[] {
+  const seen = new Set<string>();
+  const values: string[] = [];
+  for (const uri of [ctx.getActorUri(feed.handle).href, ...additional]) {
+    if (seen.has(uri)) continue;
+    seen.add(uri);
+    values.push(uri);
+  }
+  return values;
+}
+
 function initialObject(
   ctx: Context<void>,
   feed: Feed,
   itemKey: ItemKey,
   content: PostContent,
+  additionalAttributions: readonly ResolvedActorUri[],
   now: Date,
 ): StoredFederationObject {
   const id = stableObjectId(feed.id, itemKey);
@@ -66,7 +83,7 @@ function initialObject(
     language: content.language,
     toUris: [PUBLIC_COLLECTION.href],
     ccUris: [ctx.getFollowersUri(feed.handle).href],
-    attributedToUris: [ctx.getActorUri(feed.handle).href],
+    attributedToUris: attributionUris(ctx, feed, additionalAttributions),
     mentions: [],
     publishedAt: now,
     updatedAt: null,
@@ -75,6 +92,7 @@ function initialObject(
 
 function updatedObject(
   existing: StoredFederationObject,
+  attributedToUris: readonly string[],
   content: PostContent,
   now: Date,
 ): StoredFederationObject {
@@ -89,6 +107,7 @@ function updatedObject(
       summaryHtml: null,
       sourceUrl: content.linkUrl,
       language: content.language,
+      attributedToUris,
       updatedAt: now,
     };
   }
@@ -101,6 +120,7 @@ function updatedObject(
       : null,
     sourceUrl: content.linkUrl,
     language: content.language,
+    attributedToUris,
     updatedAt: now,
   };
 }
@@ -147,10 +167,17 @@ export function createFedifyGateway(deps: {
       feed: Feed,
       itemKey: ItemKey,
       content: PostContent,
-      _additionalAttributions,
+      additionalAttributions,
     ): Promise<Result<PublishedMessage, FederationError>> {
       try {
-        const record = initialObject(ctx, feed, itemKey, content, deps.clock.now());
+        const record = initialObject(
+          ctx,
+          feed,
+          itemKey,
+          content,
+          additionalAttributions,
+          deps.clock.now(),
+        );
         await deps.repository.upsertObject(record);
         await send(feed.handle, buildCreate(ctx, record));
         const uri = buildMessage(ctx, record).id;
@@ -161,7 +188,7 @@ export function createFedifyGateway(deps: {
       }
     },
 
-    async update(feed, messageUri, content, _additionalAttributions) {
+    async update(feed, messageUri, content, additionalAttributions) {
       try {
         const parsed = ctx.parseUri(new URL(messageUri));
         if (parsed?.type !== "object"
@@ -178,7 +205,12 @@ export function createFedifyGateway(deps: {
         if (existing === null) {
           throw new Error(`message not found: ${messageUri}`);
         }
-        const record = updatedObject(existing, content, deps.clock.now());
+        const record = updatedObject(
+          existing,
+          attributionUris(ctx, feed, additionalAttributions),
+          content,
+          deps.clock.now(),
+        );
         await deps.repository.upsertObject(record);
         const activityId = new URL(
           `/ap/actor/${encodeURIComponent(feed.handle)}/update/${crypto.randomUUID()}`,

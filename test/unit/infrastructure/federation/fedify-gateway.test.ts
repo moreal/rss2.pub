@@ -3,6 +3,7 @@ import { type Activity, Delete, Update } from "@fedify/vocab";
 import { describe, expect, it } from "vitest";
 import { createFollowerTracker } from "../../../../src/application/follower-tracker.js";
 import { FeedItem } from "../../../../src/domain/feed/feed-item.js";
+import { ResolvedActorUri } from "../../../../src/domain/ports/actor-resolver.js";
 import { createFedifyGateway } from "../../../../src/infrastructure/federation/fedify-gateway.js";
 import { createFedifyStack } from "../../../../src/infrastructure/federation/fedify-stack.js";
 import { createInMemoryFederationRepository } from "../../../../src/infrastructure/persistence/in-memory-federation-repository.js";
@@ -11,6 +12,8 @@ import { fixedClock, makeFeed, mutableClock } from "../../../helpers/fakes.js";
 import { unwrap } from "../../../helpers/result.js";
 
 describe("createFedifyGateway", () => {
+  const actorUri = (raw: string) => unwrap(ResolvedActorUri.create(raw));
+
   it("reuses one object and Create identity for repeated publish attempts", async () => {
     const feeds = createInMemoryFeedRepository();
     const repository = createInMemoryFederationRepository();
@@ -136,6 +139,78 @@ describe("createFedifyGateway", () => {
     expect(sent[1]).toBeInstanceOf(Update);
     expect((sent[1] instanceof Update ? sent[1].objectId?.href : null))
       .toBe(published.messageUri);
+  });
+
+  it("stores local-first unique actors and replaces only attribution on an author-only Update", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const repository = createInMemoryFederationRepository();
+    const feed = makeFeed({ handle: "feed_a" });
+    await feeds.save(feed);
+    const stack = createFedifyStack({
+      kv: new MemoryKvStore(),
+      feeds,
+      followerTracker: createFollowerTracker({ feeds }),
+      repository,
+      softwareVersion: "0.1.0",
+      allowPrivateAddress: true,
+    });
+    const sent: Activity[] = [];
+    const clock = mutableClock(new Date("2026-08-30T00:00:00Z"));
+    const gateway = createFedifyGateway({
+      federation: stack.federation,
+      repository,
+      origin: "https://local.test",
+      clock,
+      sendActivity: async (_senderHandle, _recipients, activity) => {
+        sent.push(activity);
+      },
+    });
+    const item = unwrap(FeedItem.fromRaw({
+      guid: "author-only",
+      link: "https://source.test/post",
+      title: "Same post",
+      contentHtml: "<p>Same body</p>",
+      summaryHtml: null,
+      publishedAt: null,
+      language: null,
+      authorUris: [],
+    }));
+    const content = {
+      kind: "note" as const,
+      title: item.title,
+      bodyHtml: item.contentHtml,
+      linkUrl: item.link,
+      language: item.language,
+    };
+    const local = actorUri("https://local.test/ap/actor/feed_a");
+    const alice = actorUri("https://actors.test/alice");
+    const org = actorUri("https://actors.test/org");
+
+    const published = unwrap(await gateway.publish(
+      feed,
+      item.key,
+      content,
+      [alice, alice, local, org],
+    ));
+    const objectId = new URL(published.messageUri).pathname.split("/").at(-1);
+    if (objectId === undefined) throw new Error("missing test object ID");
+    const before = await repository.findObject(feed.handle, objectId);
+    expect(before?.attributedToUris).toEqual([
+      local,
+      alice,
+      org,
+    ]);
+
+    clock.set(new Date("2026-08-31T00:00:00Z"));
+    unwrap(await gateway.update(feed, published.messageUri, content, [org]));
+
+    const after = await repository.findObject(feed.handle, objectId);
+    expect(after).toEqual({
+      ...before,
+      attributedToUris: [local, org],
+      updatedAt: new Date("2026-08-31T00:00:00Z"),
+    });
+    expect(sent.at(-1)).toBeInstanceOf(Update);
   });
 
   it("delivers actor Delete before clearing followers and objects but retains keys", async () => {

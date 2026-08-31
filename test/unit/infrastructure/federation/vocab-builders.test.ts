@@ -41,7 +41,11 @@ function storedObject(
     language: "en",
     toUris: ["https://www.w3.org/ns/activitystreams#Public"],
     ccUris: ["https://local.test/ap/actor/feed_a/followers"],
-    attributedToUris: ["https://local.test/ap/actor/feed_a"],
+    attributedToUris: [
+      "https://local.test/ap/actor/feed_a",
+      "https://actors.test/alice",
+      "https://actors.test/org",
+    ],
     mentions: [{ name: "@alice@remote.test", href: "https://remote.test/users/alice" }],
     publishedAt: new Date("2026-08-30T00:00:00Z"),
     updatedAt: new Date("2026-08-31T00:00:00Z"),
@@ -137,7 +141,11 @@ describe("vocab builders", () => {
     expect(await message.toJsonLd()).toMatchObject({
       id: "https://local.test/ap/actor/feed_a/note/object-1",
       type: "Note",
-      attributedTo: "https://local.test/ap/actor/feed_a",
+      attributedTo: [
+        "https://local.test/ap/actor/feed_a",
+        "https://actors.test/alice",
+        "https://actors.test/org",
+      ],
       cc: "https://local.test/ap/actor/feed_a/followers",
       contentMap: { en: "<p>Hello</p>" },
       mediaType: "text/html",
