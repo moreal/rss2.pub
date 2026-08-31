@@ -4837,6 +4837,7 @@ __metadata:
     "@fedify/postgres": "npm:^2.3.3"
     "@fedify/vocab": "npm:~2.3.5"
     "@hono/node-server": "npm:^2.0.11"
+    "@js-temporal/polyfill": "npm:^0.5.1"
     "@lingui/cli": "npm:^6.6.0"
     "@lingui/core": "npm:^6.6.0"
     "@logtape/logtape": "npm:^2.2.4"
