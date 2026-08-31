@@ -1,7 +1,23 @@
 # rss2.pub
 
-RSS/Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스
+Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스
 계정 하나가 되어, 마스토돈 등에서 팔로우하면 새 글이 게시물로 전달됩니다.
+
+입력은 Atom 전용입니다. 자세한 범위와 RSS 지원을 제공하지 않는 이유는
+[ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)를 참고하세요. M6는
+아직 BotKit을 사용하며, raw Fedify 전환은 [ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md)에
+따라 다음 마일스톤에서 진행합니다.
+
+Atom 형식의 규범적 사양은 RFC 4287입니다. rss2.pub는 고정된 W3C Feed Validator
+corpus를 회귀 오라클로 사용하는 소비자 적합성 프로필을 유지합니다.
+
+Tested against the rss2.pub Atom consumer conformance profile derived from the W3C Feed Validator RFC 4287 corpus.
+
+이 프로필은 선택된 381개 경로를 모두 설명합니다. 그중 upstream에서 오류가 없다고
+표시된 Atom Feed Document 62개는 수용하거나 DTO로 투영하고, 독립 Atom Entry는 제품
+정책에 따라 거부합니다. 전체 Feed Validator와의 동등성이나 W3C의 보증을 주장하지
+않습니다. 자세한 범위, 라이선스, pin 갱신 절차는
+[Atom parser conformance guide](packages/atom-feed/README.md)를 참고하세요.
 
 - 메인 액터 `@rss2pub`: 멘션/DM으로 `register <url>`, `search <keyword>` 명령 처리
 - 웹 UI: 인기 피드 추천 · 검색 · 등록
@@ -13,6 +29,7 @@ nix develop            # Node 24 + Yarn Berry + psql (direnv 사용 시 자동)
 # Nix가 없다면: mise가 Node 24를 제공(mise.toml), 최초 1회 `corepack enable`
 yarn install --immutable
 yarn typecheck && yarn test    # e2e는 Docker 필요(testcontainers)
+yarn atom:conformance:update   # 고정된 W3C Atom manifest 재생성
 
 # 로컬 실행
 docker compose up -d           # PostgreSQL 17
@@ -22,6 +39,12 @@ yarn dev                       # http://localhost:8000
 # Nix 패키지 빌드 (최초 1회 flake.nix의 yarnOfflineCache.hash 채우기 필요)
 nix build .#
 ./result/bin/rss2pub
+```
+
+W3C Atom corpus를 사용하는 테스트는 clone 뒤 한 번 다음 명령이 필요합니다.
+
+```sh
+git submodule update --init --depth 1 vendor/w3c-feedvalidator
 ```
 
 ## 컨테이너 배포

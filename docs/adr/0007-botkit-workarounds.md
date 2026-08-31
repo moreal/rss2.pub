@@ -2,6 +2,7 @@
 
 - Status: superseded (2026-08-27) — 두 한계 모두 BotKit 0.6에서 업스트림 해소,
   로컬 패치 제거. 과거 우회의 기록으로 유지.
+  ADR-0013(2026-08-30)이 BotKit 자체를 목표 구조에서 제거한다.
   (2026-07-27 accepted; 2026-08-25 amended — 한계 1은 BotKit 0.6에서
   업스트림 해소, 한계 2 패치는 0.6.0-dev.345로 포팅)
 - Context: M3 구현 중 확인된 BotKit 0.5.1의 두 가지 한계 (node_modules 소스 수준 확인)

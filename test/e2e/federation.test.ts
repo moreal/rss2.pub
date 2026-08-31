@@ -12,7 +12,7 @@ import {
   startFixtureFeedServer,
   type FixtureFeedServer,
 } from "./helpers/fixture-feed-server.js";
-import { atomFixture, rssFixture } from "./helpers/fixtures.js";
+import { atomFixture } from "./helpers/fixtures.js";
 
 const AP_ACCEPT = "application/activity+json";
 
@@ -99,26 +99,52 @@ const LONG_BODY = `<p>lead paragraph of the long post</p><p>${"word ".repeat(600
 describe("federation e2e", () => {
   let feedHandle: string;
 
+  it("rejects an RSS registration without creating an actor", async () => {
+    fixtures.setFixture(
+      "/rss.xml",
+      `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"><channel><title>RSS Blog</title><link>https://example.com/</link><description>legacy feed</description></channel></rss>`,
+      { contentType: "application/rss+xml" },
+    );
+    const feedUrl = fixtures.url("/rss.xml");
+    const rejectedHandle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+
+    const response = await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl }),
+    });
+
+    expect(response.status).toBe(422);
+    expect(await response.text()).toContain(
+      "Couldn’t read an Atom feed there: document is not an Atom 1.0 feed",
+    );
+
+    const webfinger = await fetch(
+      `${base}/.well-known/webfinger?resource=acct:${rejectedHandle}@${host}`,
+    );
+    expect(webfinger.status).toBe(404);
+  });
+
   it("registers a feed through the web form", async () => {
     fixtures.setFixture(
       "/blog/feed.xml",
-      rssFixture({
+      atomFixture({
         title: "E2E Blog",
-        description: "end to end fixture blog",
-        items: [
+        subtitle: "end to end fixture blog",
+        entries: [
           {
-            guid: "urn:e2e:short",
+            id: "urn:e2e:short",
             link: "https://blog.example/short",
             title: "Short Post",
-            description: SHORT_BODY,
-            pubDate: "Wed, 01 Jul 2026 00:00:00 GMT",
+            summary: SHORT_BODY,
+            published: new Date("Wed, 01 Jul 2026 00:00:00 GMT").toISOString(),
           },
           {
-            guid: "urn:e2e:long",
+            id: "urn:e2e:long",
             link: "https://blog.example/long",
             title: "Long Post",
-            contentEncoded: LONG_BODY,
-            pubDate: "Thu, 02 Jul 2026 00:00:00 GMT",
+            contentHtml: LONG_BODY,
+            published: new Date("Thu, 02 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),
@@ -204,15 +230,15 @@ describe("federation e2e", () => {
     // botkit-gateway.ts url rewrite).
     fixtures.setFixture(
       "/blog/bad-link-feed.xml",
-      rssFixture({
+      atomFixture({
         title: "Bad Link Blog",
-        items: [
+        entries: [
           {
-            guid: "urn:e2e:bad-link",
+            id: "urn:e2e:bad-link",
             link: "/relative/path",
             title: "Bad Link Post",
-            description: SHORT_BODY,
-            pubDate: "Fri, 03 Jul 2026 00:00:00 GMT",
+            summary: SHORT_BODY,
+            published: new Date("Fri, 03 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),
@@ -300,7 +326,6 @@ describe("federation e2e", () => {
           },
         ],
       }),
-      { contentType: "application/atom+xml" },
     );
     const feedUrl = fixtures.url("/atom.xml");
     const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
@@ -322,23 +347,23 @@ describe("federation e2e", () => {
     expect(object["content"]).toContain("<strong>Atom Entry</strong>");
   });
 
-  it("tags Note content with the feed's RSS channel <language> (ADR-0011)", async () => {
+  it("tags Note content with the Korean Atom feed root's xml:lang (ADR-0011)", async () => {
     fixtures.setFixture(
-      "/lang-rss.xml",
-      rssFixture({
+      "/lang-atom-ko.xml",
+      atomFixture({
         title: "Korean Blog",
         language: "ko",
-        items: [
+        entries: [
           {
-            guid: "urn:e2e:lang-rss",
+            id: "urn:e2e:lang-atom-ko",
             title: "Post",
-            description: SHORT_BODY,
-            pubDate: "Fri, 03 Jul 2026 00:00:00 GMT",
+            summary: SHORT_BODY,
+            published: new Date("Fri, 03 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),
     );
-    const feedUrl = fixtures.url("/lang-rss.xml");
+    const feedUrl = fixtures.url("/lang-atom-ko.xml");
     const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
 
     await fetch(`${base}/register`, {
@@ -354,7 +379,7 @@ describe("federation e2e", () => {
     expect(note["contentMap"]).toMatchObject({ ko: expect.any(String) });
   });
 
-  it("tags Note content with the Atom feed root's xml:lang (ADR-0011)", async () => {
+  it("tags Note content with the Japanese Atom feed root's xml:lang (ADR-0011)", async () => {
     fixtures.setFixture(
       "/lang-atom.xml",
       atomFixture({
@@ -369,7 +394,6 @@ describe("federation e2e", () => {
           },
         ],
       }),
-      { contentType: "application/atom+xml" },
     );
     const feedUrl = fixtures.url("/lang-atom.xml");
     const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
@@ -403,7 +427,6 @@ describe("federation e2e", () => {
           },
         ],
       }),
-      { contentType: "application/atom+xml" },
     );
     const feedUrl = fixtures.url("/lang-atom-override.xml");
     const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
@@ -425,15 +448,15 @@ describe("federation e2e", () => {
   it("publishes an Update activity when a feed entry's content changes", async () => {
     fixtures.setFixture(
       "/blog/mutable-feed.xml",
-      rssFixture({
+      atomFixture({
         title: "Mutable Blog",
-        items: [
+        entries: [
           {
-            guid: "urn:e2e:mutable",
+            id: "urn:e2e:mutable",
             link: "https://blog.example/mutable",
             title: "Original Title",
-            description: "<p>original body</p>",
-            pubDate: "Sat, 04 Jul 2026 00:00:00 GMT",
+            summary: "<p>original body</p>",
+            published: new Date("Sat, 04 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),
@@ -458,15 +481,15 @@ describe("federation e2e", () => {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     fixtures.setFixture(
       "/blog/mutable-feed.xml",
-      rssFixture({
+      atomFixture({
         title: "Mutable Blog",
-        items: [
+        entries: [
           {
-            guid: "urn:e2e:mutable",
+            id: "urn:e2e:mutable",
             link: "https://blog.example/mutable",
             title: "Edited Title",
-            description: "<p>edited body</p>",
-            pubDate: "Sat, 04 Jul 2026 00:00:00 GMT",
+            summary: "<p>edited body</p>",
+            published: new Date("Sat, 04 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),

@@ -2,8 +2,8 @@ import type { Brand } from "../../shared/brand.js";
 import { err, ok, type Result } from "../../shared/result.js";
 
 /**
- * BCP-47 language tag of a feed's content (RSS channel `<language>` or Atom
- * `xml:lang`). Normalized via `Intl.Locale` (case-canonicalized `baseName`,
+ * BCP-47 language tag from Atom `xml:lang`. Normalized via `Intl.Locale`
+ * (case-canonicalized `baseName`,
  * Unicode extension subtags dropped) so equal languages compare equal
  * regardless of how the source feed wrote them.
  */

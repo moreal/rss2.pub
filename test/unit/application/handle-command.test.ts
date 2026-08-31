@@ -129,7 +129,7 @@ describe("CommandHandler", () => {
     );
   });
 
-  it("explains registration failures", async () => {
+  it("explains Atom feed registration failures", async () => {
     const { fetcher, handler } = setup();
     expect(flatten(await handler.handle("register not-a-url"))).toContain(
       "doesn't look like a URL",
@@ -147,7 +147,7 @@ describe("CommandHandler", () => {
     );
     expect(
       flatten(await handler.handle("register https://dead.example/f")),
-    ).toContain("couldn't read a feed");
+    ).toContain("couldn't read an Atom feed");
   });
 
   it("lists search hits with account handles", async () => {
@@ -169,9 +169,13 @@ describe("CommandHandler", () => {
     expect(reply).toContain('No feeds found for "nothing"');
   });
 
-  it("answers anything else with usage help", async () => {
+  it("answers anything else with Atom-only usage help", async () => {
     const { handler } = setup();
     const reply = flatten(await handler.handle("@rss2pub hi!"));
+    expect(reply).toContain(
+      "I turn Atom feeds into followable fediverse accounts. Commands:",
+    );
+    expect(reply).not.toContain("RSS/Atom");
     expect(reply).toContain("register <feed-url>");
     expect(reply).toContain("search <keyword>");
   });

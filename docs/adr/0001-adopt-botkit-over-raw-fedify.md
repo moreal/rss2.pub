@@ -1,6 +1,8 @@
 # ADR-0001: BotKit을 raw Fedify 대신 채택
 
-- Status: accepted (2026-07-26)
+- Status: superseded by ADR-0013 (2026-08-30)
+  (originally accepted 2026-07-26; retained as the historical rationale for
+  the initial implementation)
 - Context: docs/PLAN.md §1 (2026-07 조사)
 
 ## 배경

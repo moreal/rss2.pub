@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .direnv/
+.worktrees/
 result
 *.log
 .env

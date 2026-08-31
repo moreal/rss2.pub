@@ -2,20 +2,24 @@
   "name": "rss2pub",
   "version": "0.0.0",
   "private": true,
-  "description": "RSS/Atom to ActivityPub bridge — each feed becomes a followable fediverse actor",
+  "description": "Atom to ActivityPub bridge — each feed becomes a followable fediverse actor",
   "type": "module",
   "packageManager": "yarn@4.17.1",
   "engines": {
     "node": ">=24"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
+    "atom:conformance:update": "node scripts/update-w3c-atom-manifest.mjs vendor/w3c-feedvalidator 9ce274c9db93796b8ab2a44952b9da80811bf765",
+    "dev": "yarn workspace @rss2pub/atom-feed build && node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
     "db:reset": "./scripts/db-reset.sh",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run",
-    "test:unit": "vitest run --project unit",
-    "test:e2e": "vitest run --project e2e",
+    "typecheck": "yarn workspace @rss2pub/atom-feed typecheck && tsc --noEmit",
+    "build": "yarn workspace @rss2pub/atom-feed build && tsc -p tsconfig.build.json",
+    "test": "yarn workspace @rss2pub/atom-feed build && vitest run",
+    "test:unit": "yarn workspace @rss2pub/atom-feed build && vitest run --project unit",
+    "test:e2e": "yarn workspace @rss2pub/atom-feed build && vitest run --project e2e",
     "test:watch": "vitest --project unit",
     "i18n:extract": "lingui extract",
     "i18n:compile": "lingui compile"
@@ -45,11 +49,11 @@
     "@opentelemetry/exporter-trace-otlp-http": "^0.221.0",
     "@opentelemetry/sdk-metrics": "^2.10.0",
     "@opentelemetry/sdk-node": "^0.221.0",
+    "@rss2pub/atom-feed": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.32",
     "linkedom": "^0.18.13",
     "postgres": "^3.4.9",
-    "rss-parser": "^3.13.0",
     "sanitize-html": "^2.17.6"
   }
 }

@@ -117,7 +117,7 @@ export function createFederationStack(deps: {
   const mainBot = instance.createBot(MAIN_ACTOR_HANDLE, {
     username: MAIN_ACTOR_HANDLE,
     name: "rss2.pub",
-    summary: text`I turn RSS/Atom feeds into followable accounts. Mention me with "register <feed-url>" to bridge a feed, or "search <keyword>" to find one.`,
+    summary: text`I turn Atom feeds into followable accounts. Mention me with "register <feed-url>" to bridge an Atom feed, or "search <keyword>" to find one.`,
   });
 
   mainBot.onMention = async (_session, message) => {

@@ -1904,6 +1904,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rss2pub/atom-feed@workspace:*, @rss2pub/atom-feed@workspace:packages/atom-feed":
+  version: 0.0.0-use.local
+  resolution: "@rss2pub/atom-feed@workspace:packages/atom-feed"
+  dependencies:
+    saxes: "npm:^6.0.0"
+    typescript: "npm:^7.0.2"
+    vitest: "npm:^4.1.10"
+  languageName: unknown
+  linkType: soft
+
 "@sinclair/typebox@npm:^0.27.8":
   version: 0.27.12
   resolution: "@sinclair/typebox@npm:0.27.12"
@@ -3207,13 +3217,6 @@ __metadata:
   dependencies:
     once: "npm:^1.4.0"
   checksum: 10c0/b0701c92a10b89afb1cb45bf54a5292c6f008d744eb4382fa559d54775ff31617d1d7bc3ef617575f552e24fad2c7c1a1835948c66b3f3a4be0a6c1f35c883d8
-  languageName: node
-  linkType: hard
-
-"entities@npm:^2.0.3":
-  version: 2.2.0
-  resolution: "entities@npm:2.2.0"
-  checksum: 10c0/7fba6af1f116300d2ba1c5673fc218af1961b20908638391b4e1e6d5850314ee2ac3ec22d741b3a8060479911c99305164aed19b6254bde75e7e6b1b2c3f3aa3
   languageName: node
   linkType: hard
 
@@ -4824,16 +4827,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rss-parser@npm:^3.13.0":
-  version: 3.13.0
-  resolution: "rss-parser@npm:3.13.0"
-  dependencies:
-    entities: "npm:^2.0.3"
-    xml2js: "npm:^0.5.0"
-  checksum: 10c0/d3912c9971b81630aedb39bf57d44767d6e35e1e040fbb3602725eb8d1b17867f7f7db6c3377722c3daeff90c02ee2b3a14725fee723e2375611a56d75ea2159
-  languageName: node
-  linkType: hard
-
 "rss2pub@workspace:.":
   version: 0.0.0-use.local
   resolution: "rss2pub@workspace:."
@@ -4853,6 +4846,7 @@ __metadata:
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.221.0"
     "@opentelemetry/sdk-metrics": "npm:^2.10.0"
     "@opentelemetry/sdk-node": "npm:^0.221.0"
+    "@rss2pub/atom-feed": "workspace:*"
     "@testcontainers/postgresql": "npm:^12.0.4"
     "@types/node": "npm:^24"
     "@types/sanitize-html": "npm:^2.16.1"
@@ -4861,7 +4855,6 @@ __metadata:
     hono: "npm:^4.12.32"
     linkedom: "npm:^0.18.13"
     postgres: "npm:^3.4.9"
-    rss-parser: "npm:^3.13.0"
     sanitize-html: "npm:^2.17.6"
     tsx: "npm:^4.23.1"
     typescript: "npm:^7.0.2"
@@ -4905,10 +4898,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sax@npm:>=0.6.0":
-  version: 1.6.1
-  resolution: "sax@npm:1.6.1"
-  checksum: 10c0/c91a71043d60da50fdf1e2cee936fc7ad4c9376afb8d1022aef5655f279433640859ec06b3b49abfcbe578fc7da2828cc1661e45aaedf835f5393496193437fa
+"saxes@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "saxes@npm:6.0.0"
+  dependencies:
+    xmlchars: "npm:^2.2.0"
+  checksum: 10c0/3847b839f060ef3476eb8623d099aa502ad658f5c40fd60c105ebce86d244389b0d76fcae30f4d0c728d7705ceb2f7e9b34bb54717b6a7dbedaf5dad2d9a4b74
   languageName: node
   linkType: hard
 
@@ -5776,20 +5771,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml2js@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "xml2js@npm:0.5.0"
-  dependencies:
-    sax: "npm:>=0.6.0"
-    xmlbuilder: "npm:~11.0.0"
-  checksum: 10c0/c9cd07cd19c5e41c740913bbbf16999a37a204488e11f86eddc2999707d43967197e257014d7ed72c8fc4348c192fa47eb352d1d9d05637cefd0d2e24e9aa4c8
-  languageName: node
-  linkType: hard
-
-"xmlbuilder@npm:~11.0.0":
-  version: 11.0.1
-  resolution: "xmlbuilder@npm:11.0.1"
-  checksum: 10c0/74b979f89a0a129926bc786b913459bdbcefa809afaa551c5ab83f89b1915bdaea14c11c759284bb9b931e3b53004dbc2181e21d3ca9553eeb0b2a7b4e40c35b
+"xmlchars@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "xmlchars@npm:2.2.0"
+  checksum: 10c0/b64b535861a6f310c5d9bfa10834cf49127c71922c297da9d4d1b45eeaae40bf9b4363275876088fbe2667e5db028d2cd4f8ee72eed9bede840a67d57dab7593
   languageName: node
   linkType: hard
 

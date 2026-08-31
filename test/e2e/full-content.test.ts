@@ -12,7 +12,7 @@ import {
   startFixtureFeedServer,
   type FixtureFeedServer,
 } from "./helpers/fixture-feed-server.js";
-import { rssFixture } from "./helpers/fixtures.js";
+import { atomFixture } from "./helpers/fixtures.js";
 
 async function getFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -124,15 +124,15 @@ describe("full-content extraction e2e (ADR-0009)", () => {
     fixtures.setFixture("/full-article", ARTICLE_HTML, { contentType: "text/html" });
     fixtures.setFixture(
       "/feed.xml",
-      rssFixture({
+      atomFixture({
         title: "Full Content Blog",
-        items: [
+        entries: [
           {
-            guid: "urn:e2e:full",
+            id: "urn:e2e:full",
             link: fixtures.url("/full-article"),
             title: "Post Title",
-            description: TEASER_BODY,
-            pubDate: "Wed, 01 Jul 2026 00:00:00 GMT",
+            summary: TEASER_BODY,
+            published: new Date("Wed, 01 Jul 2026 00:00:00 GMT").toISOString(),
           },
         ],
       }),

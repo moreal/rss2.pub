@@ -69,18 +69,6 @@ async function withFullContent(
   return extracted.ok ? { ...item, contentHtml: extracted.value.contentHtml } : item;
 }
 
-/**
- * Resolves the language a published item should carry (ADR-0011): the
- * entry's own `xml:lang` (Atom only) if it has one, else the feed's —
- * using this poll's freshly fetched value, not the pre-poll one, so a
- * language change on the source feed applies to items published in the
- * very same poll rather than only from the next one onward.
- */
-function withLanguage(item: FeedItem, feedLanguage: FeedLanguage | null): FeedItem {
-  if (item.language !== null) return item;
-  return { ...item, language: feedLanguage };
-}
-
 function languageFrom(raw: string | null): FeedLanguage | null {
   if (raw === null) return null;
   const result = FeedLanguage.create(raw);
@@ -88,12 +76,11 @@ function languageFrom(raw: string | null): FeedLanguage | null {
 }
 
 /** Builds the post content for one item, applying full-content extraction
- * and language resolution identically for both new and changed items. */
+ * identically for both new and changed items. */
 async function buildContent(
   item: FeedItem,
   ctx: {
     readonly feed: Feed;
-    readonly currentLanguage: FeedLanguage | null;
     readonly contentExtractor: ContentExtractor;
     readonly contentPolicy: ContentPolicy;
   },
@@ -101,10 +88,7 @@ async function buildContent(
   const enriched = ctx.feed.fullContentEnabled
     ? await withFullContent(item, ctx.contentExtractor)
     : item;
-  return decidePostContent(
-    withLanguage(enriched, ctx.currentLanguage),
-    ctx.contentPolicy,
-  );
+  return decidePostContent(enriched, ctx.contentPolicy);
 }
 
 /**
@@ -211,7 +195,6 @@ export function createPollFeed(deps: {
 
       const buildCtx = {
         feed,
-        currentLanguage,
         contentExtractor: deps.contentExtractor,
         contentPolicy: deps.contentPolicy,
       };

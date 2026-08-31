@@ -1,9 +1,14 @@
 # rss2.pub — Agent Guide
 
-RSS/Atom → ActivityPub bridge. Each registered feed becomes a followable
+Atom → ActivityPub bridge. Each registered Atom feed becomes a followable
 fediverse actor (dynamic BotKit bot); a static main actor `rss2pub` accepts
 `register <url>` / `search <keyword>` commands via mention/DM; a server-rendered
 web UI offers search, registration, and most-followed recommendations.
+
+Input is Atom-only: [ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)
+removed RSS support and `rss-parser`. M6 intentionally retains BotKit; the raw
+Fedify migration in [ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md) is not
+implemented until M7.
 
 Full plan and researched decisions: `docs/PLAN.md`. Decision records: `docs/adr/`.
 
@@ -17,12 +22,35 @@ yarn typecheck                     # tsc --noEmit over src + test
 yarn test:unit                     # fast, no I/O
 yarn test:e2e                      # real server + containers (M3+)
 yarn test                          # everything
+yarn atom:conformance:update       # regenerate the pinned W3C Atom manifest
 yarn i18n:extract                  # update src/web/locales/*.po from source
 yarn i18n:compile                  # compile .po → checked-in .ts catalogs
 yarn db:reset                      # wipe the local dev database (asks first;
                                    #   `mise run db:reset` is the same script)
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
+
+## W3C Atom consumer conformance profile
+
+RFC 4287 is the normative Atom format specification. The pinned W3C Feed
+Validator corpus is a regression oracle for rss2.pub's consumer conformance
+profile, not a claim of full Feed Validator parity or W3C endorsement. It
+accounts for all 381 selected paths: the 62 upstream no-error Atom Feed
+Documents are accepted or projected, while standalone Atom Entries are
+rejected by product policy.
+
+After cloning, initialize the test-only corpus exactly once:
+
+```sh
+git submodule update --init --depth 1 vendor/w3c-feedvalidator
+```
+
+When changing the reviewed submodule pin, move the gitlink, run
+`yarn atom:conformance:update`, review every classification and checksum
+change, and run the complete repository gate. Do not edit the generated
+manifest by hand. The corpus is not a runtime or Nix package input. Attribution,
+license location, and the exact pin are in
+`packages/atom-feed/test/conformance/W3C-FEEDVALIDATOR.md`.
 
 After ANY yarn.lock change, both `nix/missing-hashes.json` and
 `yarnOfflineCache.hash` in flake.nix must be refreshed, or `nix build` fails:
@@ -52,7 +80,7 @@ src/shared  ←  src/domain  ←  src/application  ←  src/infrastructure
 - `src/domain`: entities, value objects, domain services, and **ports**
   (interfaces in `src/domain/ports/`). Imports only `src/shared` and other
   domain modules. **Never** imports application/infrastructure/web and **never**
-  any external package or Node builtin — no BotKit, no Drizzle, no rss-parser,
+  any external package or Node builtin — no BotKit, no Drizzle, no parser
   not even their types. Platform primitives reach domain only via `src/shared`
   wrappers or ports.
 - `src/application`: use cases orchestrating domain via ports. Imports domain +
@@ -92,7 +120,7 @@ adapter.
 - `test/unit` mirrors `src/`; no network, no disk, no timers without fake
   clocks (the `Clock` port exists for this).
 - `test/e2e`: boots the real server on an ephemeral port; PostgreSQL via
-  `@testcontainers/postgresql`; RSS/Atom sources served from local fixture
+  `@testcontainers/postgresql`; Atom sources served from local fixture
   servers — never fetch the real internet in tests.
 - Every domain rule gets a unit test at introduction time, in the same change.
 
@@ -100,7 +128,8 @@ adapter.
 
 | Decision | Where |
 |---|---|
-| BotKit over raw Fedify (multi-actor via dynamic bot group) | ADR-0001 |
+| Atom-only input and dedicated parser package | ADR-0012 |
+| Raw Fedify over BotKit (planned after M6) | ADR-0013 |
 | Hand-rolled `Result`, no Effect-TS (revisit at Effect v4 LTS) | ADR-0002 |
 | Nix devShell only; no app packaging with Nix yet | ADR-0003 |
 | Handle normalization: `[a-z0-9_]`, mandatory hash suffix, max 30 | ADR-0004 |
@@ -109,7 +138,7 @@ adapter.
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
 | Full-content extraction is opt-in per registration (`register <url> full`); teaser and full-content are separate actors, one handle/id per (url, mode) | ADR-0009 (handle/id derivation: ADR-0004) |
 | Actor avatar resolved from the channel link's favicon on the first poll (not at registration); resolved once, never re-fetched | ADR-0010 |
-| Post language tagging: RSS channel `<language>` only, Atom `xml:lang` at feed root *and* per-entry override; regex-based attribute extraction (no XML parser dependency) | ADR-0011 |
+| Post language tagging: Atom `xml:lang` at feed root *and* per-entry override | ADR-0011, amended by ADR-0012 |
 
 ## Gotchas
 

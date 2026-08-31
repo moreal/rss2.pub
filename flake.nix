@@ -1,5 +1,5 @@
 {
-  description = "rss2.pub — RSS/Atom to ActivityPub bridge";
+  description = "rss2.pub — Atom to ActivityPub bridge";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -60,6 +60,7 @@
                 ./tsconfig.json
                 ./tsconfig.build.json
                 ./src
+                ./packages
                 ./drizzle
               ];
             };
@@ -75,7 +76,7 @@
             missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
               inherit (finalAttrs) src missingHashes;
-              hash = "sha256-Z9IwaS3ugLoJpQdBIqdkAJW19mG2nU9JBPLeol0YS8E=";
+              hash = "sha256-QpZMEnXybf0w8SU2Ux1JViCLgcfUcr+NG5WCGLxs2A4=";
             };
 
             nativeBuildInputs = [
@@ -98,7 +99,7 @@
             installPhase = ''
               runHook preInstall
               mkdir -p $out/lib/rss2pub $out/bin
-              cp -R dist node_modules drizzle package.json $out/lib/rss2pub/
+              cp -R dist node_modules drizzle package.json packages $out/lib/rss2pub/
               makeWrapper ${lib.getExe pkgs.nodejs_24} $out/bin/rss2pub \
                 --chdir "$out/lib/rss2pub" \
                 --add-flags dist/web/main.js
@@ -106,7 +107,7 @@
             '';
 
             meta = {
-              description = "RSS/Atom to ActivityPub bridge";
+              description = "Atom to ActivityPub bridge";
               homepage = "https://github.com/moreal/rss2.pub";
               mainProgram = "rss2pub";
             };

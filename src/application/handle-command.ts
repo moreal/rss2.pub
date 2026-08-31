@@ -56,8 +56,8 @@ export type CommandHandler = {
 };
 
 const HELP_TEXT = [
-  "I turn RSS/Atom feeds into followable fediverse accounts. Commands:",
-  "register <feed-url> — register a feed and get its account handle",
+  "I turn Atom feeds into followable fediverse accounts. Commands:",
+  "register <feed-url> — register an Atom feed and get its account handle",
   "register <feed-url> full — same, but fetch each item's full article " +
     "instead of the feed's summary (a separate account from the plain one)",
   "search <keyword> — find registered feeds",
@@ -94,7 +94,9 @@ export function createCommandHandler(deps: {
                 ];
               case "FeedUnreachable":
                 return [
-                  t(`I couldn't read a feed there: ${result.error.message}`),
+                  t(
+                    `I couldn't read an Atom feed there: ${result.error.message}`,
+                  ),
                 ];
               default: {
                 const unreachable: never = result.error;
