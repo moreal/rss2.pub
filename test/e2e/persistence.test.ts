@@ -2,6 +2,12 @@ import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import type { ItemKey } from "../../src/domain/feed/feed-item.js";
 import type { MessageUri } from "../../src/domain/ports/federation-gateway.js";
+import type {
+  StoredFederationObject,
+  StoredFollower,
+  StoredKeyPair,
+} from "../../src/infrastructure/federation/model.js";
+import { createDrizzleFederationRepository } from "../../src/infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../../src/infrastructure/persistence/drizzle-feed-repository.js";
 import { createDrizzleItemRepository } from "../../src/infrastructure/persistence/drizzle-item-repository.js";
 import { makeFeed, T0 as now } from "../helpers/fakes.js";
@@ -183,5 +189,86 @@ describe("DrizzleItemRepository", () => {
     expect(await items.findExisting(feed.id, [record.key])).toEqual([
       { ...record, contentFingerprint: "fp-new" },
     ]);
+  });
+});
+
+describe("DrizzleFederationRepository", () => {
+  it("persists keys, followers, and objects across repository instances", async () => {
+    const first = createDrizzleFederationRepository(database.db);
+    const keyPairs: readonly StoredKeyPair[] = [
+      {
+        localHandle: "persistent_feed",
+        algorithm: "RSASSA-PKCS1-v1_5",
+        publicJwk: { kty: "RSA", n: "rsa-public", e: "AQAB" },
+        privateJwk: { kty: "RSA", n: "rsa-public", e: "AQAB", d: "rsa-private" },
+        createdAt: new Date("2026-08-30T00:00:00Z"),
+      },
+      {
+        localHandle: "persistent_feed",
+        algorithm: "Ed25519",
+        publicJwk: { kty: "OKP", crv: "Ed25519", x: "ed-public" },
+        privateJwk: { kty: "OKP", crv: "Ed25519", x: "ed-public", d: "ed-private" },
+        createdAt: new Date("2026-08-30T00:00:00Z"),
+      },
+    ];
+    const storedFollower: StoredFollower = {
+      localHandle: "persistent_feed",
+      actorUri: "https://remote.example/users/alice",
+      inboxUri: "https://remote.example/users/alice/inbox",
+      sharedInboxUri: "https://remote.example/inbox",
+      followedAt: new Date("2026-08-30T01:00:00Z"),
+    };
+    const storedObject: StoredFederationObject = {
+      id: "stable-object-id",
+      actorHandle: "persistent_feed",
+      kind: "article",
+      contentHtml: "<p>First version</p>",
+      name: "Persistent title",
+      summaryHtml: "<p>Summary</p>",
+      sourceUrl: "https://source.example/posts/1",
+      language: "en",
+      toUris: ["https://www.w3.org/ns/activitystreams#Public"],
+      ccUris: ["https://local.example/ap/actor/persistent_feed/followers"],
+      attributedToUris: ["https://local.example/ap/actor/persistent_feed"],
+      mentions: [{
+        name: "@alice@remote.example",
+        href: "https://remote.example/users/alice",
+      }],
+      publishedAt: new Date("2026-08-30T02:00:00Z"),
+      updatedAt: null,
+    };
+
+    expect(await first.saveKeyPairsIfAbsent(keyPairs)).toBe(true);
+    expect(await first.saveKeyPairsIfAbsent(keyPairs)).toBe(false);
+    expect(await first.addFollower(storedFollower)).toBe(true);
+    expect(await first.addFollower(storedFollower)).toBe(false);
+    await first.upsertObject(storedObject);
+    await first.upsertObject({
+      ...storedObject,
+      contentHtml: "<p>Updated version</p>",
+      updatedAt: new Date("2026-08-31T02:00:00Z"),
+    });
+
+    const restarted = createDrizzleFederationRepository(database.db);
+    expect(await restarted.getKeyPairs("persistent_feed")).toEqual(keyPairs);
+    expect(await restarted.countFollowers("persistent_feed")).toBe(1);
+    expect((await restarted.listFollowers("persistent_feed", null, 20)).items)
+      .toEqual([storedFollower]);
+    expect(await restarted.findObject("persistent_feed", "stable-object-id"))
+      .toEqual({
+        ...storedObject,
+        contentHtml: "<p>Updated version</p>",
+        updatedAt: new Date("2026-08-31T02:00:00Z"),
+      });
+    expect(await restarted.countObjects("persistent_feed")).toBe(1);
+
+    expect(await restarted.removeFollower(
+      storedFollower.localHandle,
+      storedFollower.actorUri,
+    )).toBe(true);
+    expect(await restarted.removeFollower(
+      storedFollower.localHandle,
+      storedFollower.actorUri,
+    )).toBe(false);
   });
 });
