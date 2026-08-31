@@ -140,6 +140,32 @@ function main() {
     fail(`wrong W3C Feed Validator HEAD: expected ${expectedCommit}, got ${actualCommit}`);
   }
 
+  let relevantStatus;
+  try {
+    relevantStatus = execFileSync(
+      "git",
+      [
+        "-C",
+        submodulePath,
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all",
+        "--",
+        "LICENSE",
+        "testcases/atom",
+      ],
+      {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    ).trim();
+  } catch {
+    fail(`cannot inspect W3C Feed Validator corpus status: ${submodulePath}`);
+  }
+  if (relevantStatus.length > 0) {
+    fail(`dirty W3C Feed Validator corpus:\n${relevantStatus}`);
+  }
+
   const atomRoot = join(submodulePath, "testcases", "atom");
   let paths;
   try {
