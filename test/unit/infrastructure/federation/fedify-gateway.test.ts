@@ -42,6 +42,7 @@ describe("createFedifyGateway", () => {
       summaryHtml: null,
       publishedAt: null,
       language: null,
+      authorUris: [],
     }));
     const content = {
       kind: "note" as const,
@@ -100,6 +101,7 @@ describe("createFedifyGateway", () => {
       summaryHtml: null,
       publishedAt: null,
       language: null,
+      authorUris: [],
     }));
     const published = unwrap(await gateway.publish(feed, item.key, {
       kind: "note",
@@ -190,6 +192,7 @@ describe("createFedifyGateway", () => {
       summaryHtml: null,
       publishedAt: null,
       language: null,
+      authorUris: [],
     }));
     unwrap(await gateway.publish(feed, item.key, {
       kind: "note",

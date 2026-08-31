@@ -17,6 +17,7 @@ const EMPTY: RawFeedItem = {
   summaryHtml: null,
   publishedAt: null,
   language: null,
+  authorUris: [],
 };
 
 function item(overrides: Partial<RawFeedItem>) {

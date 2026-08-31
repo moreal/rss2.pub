@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AttributionCandidates } from "../../../../src/domain/feed/author-uri.js";
 import {
   contentFingerprint,
   FeedItem,
@@ -14,6 +15,7 @@ const EMPTY: RawFeedItem = {
   summaryHtml: null,
   publishedAt: null,
   language: null,
+  authorUris: [],
 };
 
 describe("FeedItem.fromRaw identity", () => {
@@ -109,6 +111,24 @@ describe("FeedItem.fromRaw normalization", () => {
     );
     expect(item.language).toBeNull();
   });
+
+  it("filters raw author URIs through AttributionCandidates", () => {
+    const item = unwrap(
+      FeedItem.fromRaw({
+        ...EMPTY,
+        guid: "g",
+        authorUris: [
+          "https://actors.test/a",
+          "relative",
+          "https://actors.test/a",
+        ],
+      }),
+    );
+
+    expect(AttributionCandidates.values(item.authors)).toEqual([
+      "https://actors.test/a",
+    ]);
+  });
 });
 
 describe("contentFingerprint", () => {
@@ -137,5 +157,23 @@ describe("contentFingerprint", () => {
     const a = unwrap(FeedItem.fromRaw(base));
     const b = unwrap(FeedItem.fromRaw({ ...base, ...override }));
     expect(contentFingerprint(a)).not.toBe(contentFingerprint(b));
+  });
+
+  it("changes for author-only changes and author order", () => {
+    const aThenB = unwrap(FeedItem.fromRaw({
+      ...base,
+      authorUris: ["https://actors.test/a", "https://actors.test/b"],
+    }));
+    const bThenA = unwrap(FeedItem.fromRaw({
+      ...base,
+      authorUris: ["https://actors.test/b", "https://actors.test/a"],
+    }));
+    const onlyA = unwrap(FeedItem.fromRaw({
+      ...base,
+      authorUris: ["https://actors.test/a"],
+    }));
+
+    expect(contentFingerprint(aThenB)).not.toBe(contentFingerprint(bThenA));
+    expect(contentFingerprint(aThenB)).not.toBe(contentFingerprint(onlyA));
   });
 });

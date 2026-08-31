@@ -1,6 +1,10 @@
 import type { Brand } from "../../shared/brand.js";
 import { err, isOk, ok, type Result } from "../../shared/result.js";
 import { sha256Hex } from "../../shared/sha256.js";
+import {
+  AttributionCandidates,
+  type AttributionCandidates as AttributionCandidatesValue,
+} from "./author-uri.js";
 import { FeedLanguage } from "./feed-language.js";
 
 /**
@@ -19,6 +23,8 @@ export type RawFeedItem = {
   readonly publishedAt: Date | null;
   /** Raw BCP-47 tag from the entry's effective `xml:lang` (ADR-0011). */
   readonly language: string | null;
+  /** Raw URIs from the entry's effective Atom authors, in document order. */
+  readonly authorUris: readonly string[];
 };
 
 export type FeedItem = {
@@ -29,6 +35,7 @@ export type FeedItem = {
   readonly summaryHtml: string | null;
   readonly publishedAt: Date | null;
   readonly language: FeedLanguage | null;
+  readonly authors: AttributionCandidatesValue;
 };
 
 export type UnidentifiableItem = { readonly type: "UnidentifiableItem" };
@@ -52,16 +59,15 @@ function parseLanguage(raw: string | null): FeedLanguage | null {
  * full-content HTML, which can vary poll to poll independent of the feed.
  */
 export function contentFingerprint(item: FeedItem): string {
-  return sha256Hex(
-    [
-      item.title ?? "",
-      item.contentHtml,
-      item.summaryHtml ?? "",
-      item.link ?? "",
-      item.publishedAt?.toISOString() ?? "",
-      item.language ?? "",
-    ].join(" "),
-  );
+  return sha256Hex(JSON.stringify([
+    item.title,
+    item.contentHtml,
+    item.summaryHtml,
+    item.link,
+    item.publishedAt?.toISOString() ?? null,
+    item.language,
+    AttributionCandidates.values(item.authors),
+  ]));
 }
 
 export const FeedItem = {
@@ -91,6 +97,7 @@ export const FeedItem = {
       summaryHtml,
       publishedAt: raw.publishedAt,
       language: parseLanguage(raw.language),
+      authors: AttributionCandidates.fromRaw(raw.authorUris),
     });
   },
 } as const;

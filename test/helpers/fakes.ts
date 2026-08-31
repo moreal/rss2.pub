@@ -111,6 +111,7 @@ export const EMPTY_RAW: RawFeedItem = {
   summaryHtml: null,
   publishedAt: null,
   language: null,
+  authorUris: [],
 };
 
 export function rawItem(overrides: Partial<RawFeedItem>): RawFeedItem {

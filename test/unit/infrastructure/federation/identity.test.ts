@@ -15,6 +15,7 @@ describe("stableObjectId", () => {
       summaryHtml: null,
       publishedAt: null,
       language: null,
+      authorUris: [],
     }));
 
     expect(stableObjectId(feedId, item.key)).toBe(
@@ -34,6 +35,7 @@ describe("stableObjectId", () => {
       summaryHtml: null,
       publishedAt: null,
       language: null,
+      authorUris: [],
     }));
     const itemTwo = unwrap(FeedItem.fromRaw({
       guid: "item-two",
@@ -43,6 +45,7 @@ describe("stableObjectId", () => {
       summaryHtml: null,
       publishedAt: null,
       language: null,
+      authorUris: [],
     }));
 
     expect(stableObjectId(feedA, itemOne.key)).not.toBe(

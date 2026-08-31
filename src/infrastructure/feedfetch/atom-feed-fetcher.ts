@@ -64,6 +64,9 @@ function mapEntry(entry: AtomEntryDto): RawFeedItem {
     summaryHtml: htmlText(entry.summary),
     publishedAt: dateOf(entry.published ?? entry.updated),
     language: entry.language,
+    authorUris: entry.authors.flatMap((author) =>
+      author.uri === null ? [] : [author.uri]
+    ),
   };
 }
 

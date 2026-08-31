@@ -21,7 +21,7 @@ const ATOM_XML = `<?xml version="1.0"?>
   <title>Feed title</title>
   <subtitle>Feed summary</subtitle>
   <link rel="alternate" href="https://example.test/"/>
-  <author><name>Not mapped in M6</name></author>
+  <author><name>Feed author</name><uri>https://actors.test/feed</uri></author>
   <entry xml:lang="ko">
     <id>urn:entry:1</id>
     <link rel="alternate" href="https://example.test/one"/>
@@ -30,7 +30,9 @@ const ATOM_XML = `<?xml version="1.0"?>
     <summary>Short</summary>
     <published>2026-08-29T00:00:00Z</published>
     <updated>2026-08-30T00:00:00Z</updated>
-    <author><name>Also not mapped</name></author>
+    <author><name>Entry A</name><uri>https://actors.test/a</uri></author>
+    <author><name>Name only</name></author>
+    <author><name>Entry B</name><uri>https://actors.test/b</uri></author>
   </entry>
 </feed>`;
 
@@ -81,6 +83,10 @@ describe("createAtomFeedFetcher", () => {
               summaryHtml: "Short",
               publishedAt: new Date("2026-08-29T00:00:00Z"),
               language: "ko",
+              authorUris: [
+                "https://actors.test/a",
+                "https://actors.test/b",
+              ],
             },
           ],
         },
@@ -131,6 +137,7 @@ describe("createAtomFeedFetcher", () => {
               summaryHtml: "5 &lt; 6 &amp; 7 &gt; 3",
               publishedAt: null,
               language: null,
+              authorUris: [],
             },
             {
               guid: "urn:xhtml",
@@ -140,6 +147,7 @@ describe("createAtomFeedFetcher", () => {
               summaryHtml: null,
               publishedAt: null,
               language: null,
+              authorUris: [],
             },
           ],
         },
