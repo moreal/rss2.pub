@@ -14,6 +14,7 @@ import {
   Update,
 } from "@fedify/vocab";
 import { serve, type ServerType } from "@hono/node-server";
+import { execFile } from "node:child_process";
 import { createServer } from "node:net";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
@@ -110,6 +111,20 @@ function stringValues(value: unknown): string[] {
 
 function requestCount(path: string): number {
   return remoteDocumentRequests.get(path) ?? 0;
+}
+
+async function fedifyLookup(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      "yarn",
+      ["exec", "fedify", "lookup", "-a", "-p", "-C", url],
+      { cwd: process.cwd(), timeout: 30_000 },
+      (error, stdout, stderr) => {
+        if (error === null) resolve(stdout);
+        else reject(new Error(`fedify lookup failed: ${stderr}`, { cause: error }));
+      },
+    );
+  });
 }
 
 beforeAll(async () => {
@@ -387,6 +402,19 @@ describe("signed federation round trip", () => {
     authoredContent = authored["content"];
     authoredTo = authored["to"];
     authoredCc = authored["cc"];
+  });
+
+  it("is inspectable with an authorized fedify CLI lookup", async () => {
+    const output = await fedifyLookup(authoredObjectUrl);
+    const local = output.indexOf(`${base}/ap/actor/${feedHandle}`);
+    const alice = output.indexOf(`${remoteBase}/users/alice`);
+    const editors = output.indexOf(`${remoteBase}/users/editors`);
+
+    expect(local).toBeGreaterThanOrEqual(0);
+    expect(alice).toBeGreaterThan(local);
+    expect(editors).toBeGreaterThan(alice);
+    expect(output).toContain("same rendered body regardless of author metadata");
+    expect(output).not.toContain('"tag"');
   });
 
   it("sends an author-only Update for the same object", async () => {
