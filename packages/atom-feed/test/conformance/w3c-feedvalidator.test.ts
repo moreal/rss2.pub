@@ -13,6 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { W3C_ATOM_CASES } from "./w3c-feedvalidator-cases.js";
+import { parseW3cAtomCase } from "./w3c-feedvalidator-runner.js";
 import {
   actualW3cFeedValidatorCommit,
   assertW3cSubmoduleInitialized,
@@ -21,6 +22,13 @@ import {
   W3C_FEEDVALIDATOR_COMMIT,
   W3C_FEEDVALIDATOR_ROOT,
 } from "./w3c-feedvalidator-support.js";
+
+const accepted = W3C_ATOM_CASES.filter(
+  (testCase) => testCase.classification === "accept",
+);
+const rejected = W3C_ATOM_CASES.filter(
+  (testCase) => testCase.classification === "reject",
+);
 
 const REPOSITORY_ROOT = join(W3C_FEEDVALIDATOR_ROOT, "..", "..");
 const UPDATE_SCRIPT = join(REPOSITORY_ROOT, "scripts", "update-w3c-atom-manifest.mjs");
@@ -164,6 +172,17 @@ describe("W3C Feed Validator Atom corpus", () => {
     expect(noError.filter((testCase) => testCase.rootKind === "entry")
       .every((testCase) => testCase.classification === "reject"
         && testCase.expectedError === "NotAtomFeed")).toBe(true);
+  });
+
+  it.each(accepted)("accepts RFC $rfcSection $path", (testCase) => {
+    expect(parseW3cAtomCase(testCase), testCase.path).toMatchObject({ ok: true });
+  });
+
+  it.each(rejected)("rejects RFC $rfcSection $path as $expectedError", (testCase) => {
+    expect(parseW3cAtomCase(testCase), testCase.path).toMatchObject({
+      ok: false,
+      error: { type: testCase.expectedError },
+    });
   });
 
   it("refuses staged, unstaged, and untracked changes in the pinned corpus", () => {
