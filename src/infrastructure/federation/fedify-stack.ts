@@ -48,6 +48,7 @@ export function createFedifyStack(deps: {
   readonly clock?: Clock;
   readonly repository: FederationRepository;
   readonly softwareVersion: string;
+  readonly origin?: string;
   readonly allowPrivateAddress?: boolean;
 }): FedifyStack {
   const federation = createFederation<void>({
@@ -55,6 +56,7 @@ export function createFedifyStack(deps: {
     ...(deps.queue === undefined ? {} : { queue: deps.queue }),
     manuallyStartQueue: deps.queue !== undefined,
     userAgent: `rss2pub/${deps.softwareVersion}`,
+    ...(deps.origin === undefined ? {} : { origin: deps.origin }),
     ...(deps.allowPrivateAddress === true ? { allowPrivateAddress: true } : {}),
   });
 

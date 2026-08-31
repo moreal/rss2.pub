@@ -1,4 +1,4 @@
-import { getLogger } from "@logtape/logtape";
+import { PostgresKvStore, PostgresMessageQueue } from "@fedify/postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { Hono } from "hono";
@@ -24,8 +24,9 @@ import type { Clock } from "../domain/ports/clock.js";
 import { createReadabilityContentExtractor } from "../infrastructure/content/readability-extractor.js";
 import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favicon-resolver.js";
 import { createAtomFeedFetcher } from "../infrastructure/feedfetch/atom-feed-fetcher.js";
-import { createBotKitFederationGateway } from "../infrastructure/federation/botkit-gateway.js";
-import { createFederationStack } from "../infrastructure/federation/botkit-stack.js";
+import { createFedifyGateway } from "../infrastructure/federation/fedify-gateway.js";
+import { createFedifyStack } from "../infrastructure/federation/fedify-stack.js";
+import { createDrizzleFederationRepository } from "../infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../infrastructure/persistence/drizzle-feed-repository.js";
 import { createDrizzleItemRepository } from "../infrastructure/persistence/drizzle-item-repository.js";
 import {
@@ -35,6 +36,7 @@ import {
 import { instrumentPollFeed } from "../infrastructure/telemetry/instrumented-poll.js";
 import { isErr } from "../shared/result.js";
 import type { AppConfig } from "./config.js";
+import { createFederationPages } from "./federation-pages.js";
 import { createWebRoutes } from "./routes.js";
 
 export type App = {
@@ -46,7 +48,7 @@ export type App = {
 
 /**
  * Composition root: the only place where domain, application, infrastructure,
- * and BotKit are wired together. `main.ts` adds the HTTP listener and signals.
+ * and raw Fedify are wired together. `main.ts` adds the HTTP listener and signals.
  */
 export async function createApp(config: AppConfig): Promise<App> {
   const pollPolicyResult = PollPolicy.create({
@@ -74,6 +76,7 @@ export async function createApp(config: AppConfig): Promise<App> {
 
   const feeds = createDrizzleFeedRepository(db);
   const items = createDrizzleItemRepository(db);
+  const federationObjects = createDrizzleFederationRepository(db);
   const fetcher = createAtomFeedFetcher();
   const contentExtractor = createReadabilityContentExtractor();
   const faviconResolver = createHtmlFaviconResolver();
@@ -89,26 +92,28 @@ export async function createApp(config: AppConfig): Promise<App> {
     host: config.host,
   });
 
-  const stack = createFederationStack({
-    sql,
-    behindProxy: config.behindProxy,
+  const kv = new PostgresKvStore(sql);
+  const queue = new PostgresMessageQueue(sql);
+  const stack = createFedifyStack({
+    kv,
+    queue,
+    origin: config.origin,
     softwareVersion: "0.1.0",
     feeds,
+    repository: federationObjects,
     followerTracker,
     commandHandler,
+    host: config.host,
+    clock,
     ...(config.allowPrivateAddress ? { allowPrivateAddress: true } : {}),
   });
-  const federation = createBotKitFederationGateway({
-    group: stack.feedBots,
+  const federation = createFedifyGateway({
+    federation: stack.federation,
+    repository: federationObjects,
     origin: config.origin,
+    clock,
   });
-  // Not awaited: the queue's listen loop resolves only when it stops.
-  // Started eagerly so queued deliveries flow before any inbound request.
-  stack.instance.federation.startQueue(undefined).catch((error) => {
-    getLogger(["rss2pub", "main"]).error("federation queue stopped: {error}", {
-      error,
-    });
-  });
+  stack.startQueue();
 
   const pollFeed = instrumentPollFeed(
     createPollFeed({
@@ -148,9 +153,24 @@ export async function createApp(config: AppConfig): Promise<App> {
 
   const app = new Hono();
   app.route("/", web);
-  // Everything else — WebFinger, NodeInfo, /ap/*, bot profile pages — is
-  // BotKit/Fedify territory.
-  app.all("*", (c) => stack.instance.fetch(c.req.raw));
+  const federationFetch = (request: Request) => stack.federation.fetch(request, {
+    contextData: undefined,
+  });
+  // The HTML page routes intentionally use broad one- and two-segment Hono
+  // patterns so they can recognize /@handle.  Give protocol endpoints priority
+  // so those patterns cannot turn WebFinger or NodeInfo requests into 404s.
+  app.all("/.well-known/*", (c) => federationFetch(c.req.raw));
+  app.all("/nodeinfo/*", (c) => federationFetch(c.req.raw));
+  app.all("/ap/*", (c) => federationFetch(c.req.raw));
+  app.route(
+    "/",
+    createFederationPages({
+      origin: config.origin,
+      feeds,
+      federationObjects,
+    }),
+  );
+  app.all("*", (c) => federationFetch(c.req.raw));
 
   return {
     fetch: (request) => app.fetch(request),

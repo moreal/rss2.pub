@@ -225,9 +225,8 @@ describe("federation e2e", () => {
   });
 
   it("still publishes when a feed item's link is not an absolute URL", async () => {
-    // `new URL()` throws on a relative link; that must only skip the object's
-    // `url` metadata, not fail the whole publish (regression guard for the
-    // botkit-gateway.ts url rewrite).
+    // `new URL()` throws on a relative link; that must fall back to the local
+    // message permalink rather than fail the whole publish.
     fixtures.setFixture(
       "/blog/bad-link-feed.xml",
       atomFixture({
@@ -262,8 +261,8 @@ describe("federation e2e", () => {
     const note = await resolveItem(activities[0]?.["object"]);
     expect(note["type"]).toBe("Note");
     expect(note["content"]).toContain("Bad Link Post");
-    // The malformed link is never parsed into `url`; BotKit's own default
-    // permalink (set at publish time) is left untouched instead.
+    // The malformed source link is never exposed as `url`; the first-party
+    // message permalink is used instead.
     expect(note["url"]).not.toBe("/relative/path");
     expect(typeof note["url"]).toBe("string");
   });

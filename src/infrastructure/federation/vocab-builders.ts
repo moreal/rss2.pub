@@ -81,11 +81,15 @@ export function buildMessage(
   ctx: Context<void>,
   record: StoredFederationObject,
 ): Note | Article {
+  const sourceUrl = record.sourceUrl === null ? null : urlOf(record.sourceUrl);
   const values = {
     id: messageUri(ctx, record),
     content: languageValue(record.contentHtml, record.language),
     mediaType: "text/html",
-    url: record.sourceUrl === null ? null : urlOf(record.sourceUrl),
+    url: sourceUrl ?? new URL(
+      `/@${encodeURIComponent(record.actorHandle)}/${encodeURIComponent(record.id)}`,
+      ctx.origin,
+    ),
     attributions: record.attributedToUris.flatMap((raw) => {
       const uri = urlOf(raw);
       return uri === null ? [] : [uri];

@@ -159,7 +159,9 @@ describe("vocab builders", () => {
       mentions: [{ name: "invalid", href: "/relative" }],
     });
 
-    expect(message.url).toBeNull();
+    expect(message.url?.href).toBe(
+      "https://local.test/@feed_a/object-1",
+    );
     expect(message.toIds).toEqual([]);
     expect(message.ccIds).toEqual([]);
     expect(message.attributionIds).toEqual([]);
