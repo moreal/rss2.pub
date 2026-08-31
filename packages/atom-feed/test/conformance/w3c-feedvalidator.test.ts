@@ -3,10 +3,13 @@ import { createHash } from "node:crypto";
 import {
   appendFileSync,
   existsSync,
+  mkdtempSync,
   readFileSync,
+  rmdirSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { W3C_ATOM_CASES } from "./w3c-feedvalidator-cases.js";
@@ -25,6 +28,14 @@ const DIRTY_FIXTURE_PATH = "testcases/atom/8.2/alternate_href_ipv6_literal.xml";
 const DIRTY_FIXTURE = join(W3C_FEEDVALIDATOR_ROOT, DIRTY_FIXTURE_PATH);
 const UNTRACKED_FIXTURE_PATH = "testcases/atom/8.2/rss2pub-dirty-fixture.xml";
 const UNTRACKED_FIXTURE = join(W3C_FEEDVALIDATOR_ROOT, UNTRACKED_FIXTURE_PATH);
+const GENERATED_MANIFEST = join(
+  REPOSITORY_ROOT,
+  "packages",
+  "atom-feed",
+  "test",
+  "conformance",
+  "w3c-feedvalidator-cases.ts",
+);
 
 function runManifestUpdater() {
   return spawnSync(
@@ -34,17 +45,56 @@ function runManifestUpdater() {
   );
 }
 
-function restoreGeneratedManifest(): void {
-  const result = runManifestUpdater();
-  if (result.status !== 0) {
-    throw new Error(`Failed to restore W3C Atom manifest: ${result.stderr}`);
-  }
+function scopedCorpusStatus(): string {
+  return execFileSync(
+    "git",
+    [
+      "-C",
+      W3C_FEEDVALIDATOR_ROOT,
+      "status",
+      "--porcelain=v1",
+      "--untracked-files=all",
+      "--",
+      "LICENSE",
+      "testcases/atom",
+    ],
+    { encoding: "utf8" },
+  ).trim();
+}
+
+function assertPathAbsent(path: string): void {
+  if (existsSync(path)) throw new Error(`Test probe path already exists: ${path}`);
 }
 
 function expectUpdaterToRejectDirtyCorpus(): void {
   const result = runManifestUpdater();
   expect(result.status).toBe(2);
   expect(result.stderr).toContain("dirty W3C Feed Validator corpus");
+}
+
+function withPreservedCorpusMutation(mutate: () => void): void {
+  const initialStatus = scopedCorpusStatus();
+  if (initialStatus.length > 0) {
+    throw new Error(`W3C Feed Validator corpus must be clean:\n${initialStatus}`);
+  }
+  assertPathAbsent(UNTRACKED_FIXTURE);
+
+  const initialFixture = readFileSync(DIRTY_FIXTURE);
+  const initialManifest = readFileSync(GENERATED_MANIFEST);
+  try {
+    mutate();
+  } finally {
+    execFileSync(
+      "git",
+      ["-C", W3C_FEEDVALIDATOR_ROOT, "restore", "--staged", "--", DIRTY_FIXTURE_PATH],
+    );
+    writeFileSync(DIRTY_FIXTURE, initialFixture);
+    if (existsSync(UNTRACKED_FIXTURE)) unlinkSync(UNTRACKED_FIXTURE);
+    writeFileSync(GENERATED_MANIFEST, initialManifest);
+
+    expect(scopedCorpusStatus()).toBe(initialStatus);
+    expect(readFileSync(GENERATED_MANIFEST)).toEqual(initialManifest);
+  }
 }
 
 describe("W3C Feed Validator Atom corpus", () => {
@@ -87,36 +137,45 @@ describe("W3C Feed Validator Atom corpus", () => {
   });
 
   it("refuses staged, unstaged, and untracked changes in the pinned corpus", () => {
-    const originalFixture = readFileSync(DIRTY_FIXTURE);
+    const repositoryManifest = readFileSync(GENERATED_MANIFEST);
+    const preexistingManifest = Buffer.concat([repositoryManifest, Buffer.from("\n")]);
+    writeFileSync(GENERATED_MANIFEST, preexistingManifest);
 
     try {
-      appendFileSync(DIRTY_FIXTURE, "\n");
-      expectUpdaterToRejectDirtyCorpus();
+      withPreservedCorpusMutation(() => {
+        appendFileSync(DIRTY_FIXTURE, "\n");
+        expectUpdaterToRejectDirtyCorpus();
+      });
+
+      withPreservedCorpusMutation(() => {
+        appendFileSync(DIRTY_FIXTURE, "\n");
+        execFileSync("git", ["-C", W3C_FEEDVALIDATOR_ROOT, "add", "--", DIRTY_FIXTURE_PATH]);
+        expectUpdaterToRejectDirtyCorpus();
+      });
+
+      withPreservedCorpusMutation(() => {
+        writeFileSync(UNTRACKED_FIXTURE, readFileSync(DIRTY_FIXTURE));
+        expectUpdaterToRejectDirtyCorpus();
+      });
+
+      expect(readFileSync(GENERATED_MANIFEST)).toEqual(preexistingManifest);
     } finally {
-      writeFileSync(DIRTY_FIXTURE, originalFixture);
-      restoreGeneratedManifest();
+      writeFileSync(GENERATED_MANIFEST, repositoryManifest);
     }
+  });
+
+  it("leaves an existing probe file untouched when its precondition fails", () => {
+    const temporaryDirectory = mkdtempSync(join(tmpdir(), "rss2pub-w3c-probe-"));
+    const existingProbe = join(temporaryDirectory, "existing.xml");
+    const existingBytes = Buffer.from("pre-existing probe bytes");
+    writeFileSync(existingProbe, existingBytes);
 
     try {
-      appendFileSync(DIRTY_FIXTURE, "\n");
-      execFileSync("git", ["-C", W3C_FEEDVALIDATOR_ROOT, "add", "--", DIRTY_FIXTURE_PATH]);
-      expectUpdaterToRejectDirtyCorpus();
+      expect(() => assertPathAbsent(existingProbe)).toThrow("Test probe path already exists");
+      expect(readFileSync(existingProbe)).toEqual(existingBytes);
     } finally {
-      execFileSync(
-        "git",
-        ["-C", W3C_FEEDVALIDATOR_ROOT, "restore", "--staged", "--", DIRTY_FIXTURE_PATH],
-      );
-      writeFileSync(DIRTY_FIXTURE, originalFixture);
-      restoreGeneratedManifest();
-    }
-
-    try {
-      expect(existsSync(UNTRACKED_FIXTURE)).toBe(false);
-      writeFileSync(UNTRACKED_FIXTURE, originalFixture);
-      expectUpdaterToRejectDirtyCorpus();
-    } finally {
-      if (existsSync(UNTRACKED_FIXTURE)) unlinkSync(UNTRACKED_FIXTURE);
-      restoreGeneratedManifest();
+      if (existsSync(existingProbe)) unlinkSync(existingProbe);
+      rmdirSync(temporaryDirectory);
     }
   });
 });
