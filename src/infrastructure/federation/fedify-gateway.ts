@@ -147,6 +147,7 @@ export function createFedifyGateway(deps: {
       feed: Feed,
       itemKey: ItemKey,
       content: PostContent,
+      _additionalAttributions,
     ): Promise<Result<PublishedMessage, FederationError>> {
       try {
         const record = initialObject(ctx, feed, itemKey, content, deps.clock.now());
@@ -160,7 +161,7 @@ export function createFedifyGateway(deps: {
       }
     },
 
-    async update(feed, messageUri, content) {
+    async update(feed, messageUri, content, _additionalAttributions) {
       try {
         const parsed = ctx.parseUri(new URL(messageUri));
         if (parsed?.type !== "object"

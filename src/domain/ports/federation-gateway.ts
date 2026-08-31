@@ -3,6 +3,7 @@ import type { Result } from "../../shared/result.js";
 import type { PostContent } from "../content/content-policy.js";
 import type { Feed, FeedId } from "../feed/feed.js";
 import type { ItemKey } from "../feed/feed-item.js";
+import type { ResolvedActorUri } from "./actor-resolver.js";
 
 export type FederationError = {
   readonly type: "FederationDeliveryFailed";
@@ -34,12 +35,14 @@ export type FederationGateway = {
     /** Provides retry-stable object identity within the feed. */
     itemKey: ItemKey,
     content: PostContent,
+    additionalAttributions: readonly ResolvedActorUri[],
   ): Promise<Result<PublishedMessage, FederationError>>;
   /** Edits a previously published post in place, sending an `Update` activity. */
   update(
     feed: Feed,
     messageUri: MessageUri,
     content: PostContent,
+    additionalAttributions: readonly ResolvedActorUri[],
   ): Promise<Result<void, FederationError>>;
   /** Propagates actor deletion to followers when a feed is removed. */
   deleteActor(feed: Feed): Promise<Result<void, FederationError>>;

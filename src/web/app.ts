@@ -25,6 +25,7 @@ import { createReadabilityContentExtractor } from "../infrastructure/content/rea
 import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favicon-resolver.js";
 import { createAtomFeedFetcher } from "../infrastructure/feedfetch/atom-feed-fetcher.js";
 import { createFedifyGateway } from "../infrastructure/federation/fedify-gateway.js";
+import { createFedifyActorResolver } from "../infrastructure/federation/fedify-actor-resolver.js";
 import { createFedifyStack } from "../infrastructure/federation/fedify-stack.js";
 import { createDrizzleFederationRepository } from "../infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../infrastructure/persistence/drizzle-feed-repository.js";
@@ -113,6 +114,10 @@ export async function createApp(config: AppConfig): Promise<App> {
     origin: config.origin,
     clock,
   });
+  const actorResolver = createFedifyActorResolver({
+    federation: stack.federation,
+    origin: config.origin,
+  });
   stack.startQueue();
 
   const pollFeed = instrumentPollFeed(
@@ -121,6 +126,7 @@ export async function createApp(config: AppConfig): Promise<App> {
       items,
       fetcher,
       federation,
+      actorResolver,
       contentExtractor,
       faviconResolver,
       clock,

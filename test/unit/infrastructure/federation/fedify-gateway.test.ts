@@ -52,8 +52,8 @@ describe("createFedifyGateway", () => {
       language: item.language,
     };
 
-    const first = unwrap(await gateway.publish(feed, item.key, content));
-    const retry = unwrap(await gateway.publish(feed, item.key, content));
+    const first = unwrap(await gateway.publish(feed, item.key, content, []));
+    const retry = unwrap(await gateway.publish(feed, item.key, content, []));
 
     expect(retry.messageUri).toBe(first.messageUri);
     expect(await repository.countObjects(feed.handle)).toBe(1);
@@ -109,7 +109,7 @@ describe("createFedifyGateway", () => {
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
       language: item.language,
-    }));
+    }, []));
 
     clock.set(new Date("2026-08-31T00:00:00Z"));
     unwrap(await gateway.update(feed, published.messageUri, {
@@ -119,7 +119,7 @@ describe("createFedifyGateway", () => {
       contentHtml: "<p>Changed</p>",
       linkUrl: "https://source.test/changed",
       language: null,
-    }));
+    }, []));
 
     const objectId = new URL(published.messageUri).pathname.split("/").at(-1);
     const stored = objectId === undefined
@@ -200,7 +200,7 @@ describe("createFedifyGateway", () => {
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
       language: item.language,
-    }));
+    }, []));
 
     unwrap(await gateway.deleteActor(feed));
 

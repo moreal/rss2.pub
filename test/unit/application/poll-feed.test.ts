@@ -4,7 +4,9 @@ import {
   createPollFeed,
 } from "../../../src/application/poll-feed.js";
 import { ContentPolicy } from "../../../src/domain/content/content-policy.js";
+import { AttributionCandidates } from "../../../src/domain/feed/author-uri.js";
 import { FeedId } from "../../../src/domain/feed/feed.js";
+import { ResolvedActorUri } from "../../../src/domain/ports/actor-resolver.js";
 import type { ItemKey } from "../../../src/domain/feed/feed-item.js";
 import { PollPolicy } from "../../../src/domain/feed/poll-policy.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
@@ -12,6 +14,7 @@ import { createInMemoryItemRepository } from "../../../src/infrastructure/persis
 import { err, ok } from "../../../src/shared/result.js";
 import {
   capturingFederation,
+  fakeActorResolver,
   fakeContentExtractor,
   fakeFaviconResolver,
   fakeFetcher,
@@ -38,6 +41,7 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
   const items = createInMemoryItemRepository();
   const fetcher = fakeFetcher();
   const federation = capturingFederation();
+  const actorResolver = fakeActorResolver();
   const contentExtractor = fakeContentExtractor();
   const faviconResolver = fakeFaviconResolver();
   const clock = mutableClock(now);
@@ -46,6 +50,7 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
     items,
     fetcher,
     federation,
+    actorResolver,
     contentExtractor,
     faviconResolver,
     clock,
@@ -59,6 +64,7 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
     items,
     fetcher,
     federation,
+    actorResolver,
     contentExtractor,
     faviconResolver,
     clock,
@@ -285,6 +291,146 @@ describe("PollFeed", () => {
     expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
       "<p>teaser</p>",
     );
+  });
+});
+
+describe("PollFeed author attribution", () => {
+  const resolved = (raw: string) => unwrap(ResolvedActorUri.create(raw));
+  const candidate = (raw: string) => {
+    const value = AttributionCandidates.values(
+      AttributionCandidates.fromRaw([raw]),
+    )[0];
+    if (value === undefined) throw new Error(`invalid author URI: ${raw}`);
+    return value;
+  };
+
+  it("memoizes a shared author once within one poll", async () => {
+    const { feed, feeds, fetcher, federation, actorResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    const author = "https://actors.test/alice";
+    actorResolver.respondWith(author, ok(resolved(author)));
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({
+        items: [
+          rawItem({ guid: "a", title: "A", authorUris: [author] }),
+          rawItem({ guid: "b", title: "B", authorUris: [author] }),
+        ],
+      })),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report).toMatchObject({ status: "polled", published: 2 });
+    expect(actorResolver.calls).toEqual([author]);
+    expect(federation.published.map((post) => post.additionalAttributions))
+      .toEqual([[author], [author]]);
+  });
+
+  it("preserves successful order while isolating failures and non-Actors", async () => {
+    const { feed, feeds, fetcher, federation, actorResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    const a = "https://actors.test/a";
+    const b = "https://actors.test/b";
+    const c = "https://actors.test/c";
+    const d = "https://actors.test/d";
+    actorResolver.respondWith(a, ok(resolved(a)));
+    actorResolver.respondWith(b, err({
+      type: "ActorLookupFailed",
+      uri: candidate(b),
+      message: "lookup B failed",
+    }));
+    actorResolver.respondWith(c, ok(null));
+    actorResolver.respondWith(d, ok(resolved(d)));
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({
+        items: [rawItem({
+          guid: "x",
+          title: "post",
+          authorUris: [a, b, c, d],
+        })],
+      })),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report).toMatchObject({
+      status: "polled",
+      published: 1,
+      publishErrors: [],
+      attributionErrors: ["lookup B failed"],
+    });
+    expect(federation.published[0]?.additionalAttributions).toEqual([a, d]);
+  });
+
+  it("does no lookup for an unchanged item", async () => {
+    const { feed, feeds, fetcher, actorResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    const author = "https://actors.test/alice";
+    actorResolver.respondWith(author, ok(resolved(author)));
+    const response = ok(fetchedFeed({
+      items: [rawItem({ guid: "x", title: "same", authorUris: [author] })],
+    }));
+    fetcher.respondWith(feed.url, response);
+    await pollFeed.execute(feed.id);
+    actorResolver.clearCalls();
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report).toMatchObject({ published: 0, updated: 0 });
+    expect(actorResolver.calls).toEqual([]);
+  });
+
+  it("updates for an author-only change and resolves the new author", async () => {
+    const { feed, feeds, fetcher, federation, actorResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    const a = "https://actors.test/a";
+    const b = "https://actors.test/b";
+    actorResolver.respondWith(a, ok(resolved(a)));
+    actorResolver.respondWith(b, ok(resolved(b)));
+    fetcher.respondWith(feed.url, ok(fetchedFeed({
+      items: [rawItem({ guid: "x", title: "same", authorUris: [a] })],
+    })));
+    await pollFeed.execute(feed.id);
+    actorResolver.clearCalls();
+    fetcher.respondWith(feed.url, ok(fetchedFeed({
+      items: [rawItem({ guid: "x", title: "same", authorUris: [b] })],
+    })));
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report).toMatchObject({ published: 0, updated: 1 });
+    expect(actorResolver.calls).toEqual([b]);
+    expect(federation.updated[0]?.additionalAttributions).toEqual([b]);
+  });
+
+  it("still updates when author lookup fails", async () => {
+    const { feed, feeds, fetcher, federation, actorResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(feed.url, ok(fetchedFeed({
+      items: [rawItem({ guid: "x", title: "v1" })],
+    })));
+    await pollFeed.execute(feed.id);
+    const author = "https://actors.test/failing";
+    actorResolver.respondWith(author, err({
+      type: "ActorLookupFailed",
+      uri: candidate(author),
+      message: "author unavailable",
+    }));
+    fetcher.respondWith(feed.url, ok(fetchedFeed({
+      items: [rawItem({ guid: "x", title: "v1", authorUris: [author] })],
+    })));
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report).toMatchObject({
+      status: "polled",
+      updated: 1,
+      publishErrors: [],
+      attributionErrors: ["author unavailable"],
+    });
+    expect(federation.updated[0]?.additionalAttributions).toEqual([]);
   });
 });
 

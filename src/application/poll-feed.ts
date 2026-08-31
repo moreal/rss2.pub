@@ -3,6 +3,10 @@ import {
   decidePostContent,
 } from "../domain/content/content-policy.js";
 import { Feed, type FeedId, FeedTitle } from "../domain/feed/feed.js";
+import {
+  AttributionCandidates,
+  type AuthorUri,
+} from "../domain/feed/author-uri.js";
 import { contentFingerprint, FeedItem } from "../domain/feed/feed-item.js";
 import { FeedLanguage } from "../domain/feed/feed-language.js";
 import { IconUrl } from "../domain/feed/icon-url.js";
@@ -12,6 +16,11 @@ import {
   type PollPolicy,
 } from "../domain/feed/poll-policy.js";
 import type { ContentExtractor } from "../domain/ports/content-extractor.js";
+import type {
+  ActorLookupError,
+  ActorResolver,
+  ResolvedActorUri,
+} from "../domain/ports/actor-resolver.js";
 import type { Clock } from "../domain/ports/clock.js";
 import type { FaviconResolver } from "../domain/ports/favicon-resolver.js";
 import type { FeedFetcher, FetchedFeed } from "../domain/ports/feed-fetcher.js";
@@ -31,6 +40,8 @@ export type PollFeedReport = {
   readonly updated: number;
   /** Per-item publish/update failures; failed items stay unmarked and retry next poll. */
   readonly publishErrors: readonly string[];
+  /** Best-effort author lookup failures; never make the poll fail. */
+  readonly attributionErrors: readonly string[];
   readonly fetchError: string | null;
 };
 
@@ -119,6 +130,7 @@ export function createPollFeed(deps: {
   readonly items: ItemRepository;
   readonly fetcher: FeedFetcher;
   readonly federation: FederationGateway;
+  readonly actorResolver: ActorResolver;
   readonly contentExtractor: ContentExtractor;
   readonly faviconResolver: FaviconResolver;
   readonly clock: Clock;
@@ -143,6 +155,7 @@ export function createPollFeed(deps: {
           published: 0,
           updated: 0,
           publishErrors: [],
+          attributionErrors: [],
           fetchError: fetched.error.message,
         });
       }
@@ -161,6 +174,7 @@ export function createPollFeed(deps: {
           published: 0,
           updated: 0,
           publishErrors: [],
+          attributionErrors: [],
           fetchError: null,
         });
       }
@@ -201,9 +215,51 @@ export function createPollFeed(deps: {
 
       const publishedRecords: PublishedItemRecord[] = [];
       const publishErrors: string[] = [];
+      const attributionErrors: string[] = [];
+      const failedCandidates = new Set<AuthorUri>();
+      const actorMemo = new Map<
+        AuthorUri,
+        Promise<Result<ResolvedActorUri | null, ActorLookupError>>
+      >();
+
+      async function resolveAuthors(item: FeedItem): Promise<ResolvedActorUri[]> {
+        const candidates = AttributionCandidates.values(item.authors);
+        const results = await Promise.all(candidates.map((uri) => {
+          const existing = actorMemo.get(uri);
+          if (existing !== undefined) return existing;
+          const pending = deps.actorResolver.resolve(uri);
+          actorMemo.set(uri, pending);
+          return pending;
+        }));
+        const seen = new Set<string>();
+        const resolved: ResolvedActorUri[] = [];
+        for (let index = 0; index < results.length; index++) {
+          const result = results[index];
+          const candidate = candidates[index];
+          if (result === undefined || candidate === undefined) continue;
+          if (!result.ok) {
+            if (!failedCandidates.has(candidate)) {
+              failedCandidates.add(candidate);
+              attributionErrors.push(result.error.message);
+            }
+            continue;
+          }
+          if (result.value === null || seen.has(result.value)) continue;
+          seen.add(result.value);
+          resolved.push(result.value);
+        }
+        return resolved;
+      }
+
       for (const item of toPublish) {
         const content = await buildContent(item, buildCtx);
-        const result = await deps.federation.publish(feed, item.key, content);
+        const attributions = await resolveAuthors(item);
+        const result = await deps.federation.publish(
+          feed,
+          item.key,
+          content,
+          attributions,
+        );
         if (result.ok) {
           publishedRecords.push({
             key: item.key,
@@ -229,10 +285,12 @@ export function createPollFeed(deps: {
           continue;
         }
         const content = await buildContent(item, buildCtx);
+        const attributions = await resolveAuthors(item);
         const result = await deps.federation.update(
           feed,
           record.messageUri,
           content,
+          attributions,
         );
         if (result.ok) {
           await deps.items.markUpdated(feed.id, item.key, fingerprint);
@@ -274,6 +332,7 @@ export function createPollFeed(deps: {
         published: publishedRecords.length,
         updated: updatedCount,
         publishErrors,
+        attributionErrors,
         fetchError: null,
       });
     },

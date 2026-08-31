@@ -5,11 +5,17 @@ import {
   FeedTitle,
 } from "../../src/domain/feed/feed.js";
 import type { ItemKey, RawFeedItem } from "../../src/domain/feed/feed-item.js";
+import type { AuthorUri } from "../../src/domain/feed/author-uri.js";
 import { FeedLanguage } from "../../src/domain/feed/feed-language.js";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import { Handle } from "../../src/domain/feed/handle.js";
 import { IconUrl } from "../../src/domain/feed/icon-url.js";
 import type { Clock } from "../../src/domain/ports/clock.js";
+import type {
+  ActorLookupError,
+  ActorResolver,
+  ResolvedActorUri,
+} from "../../src/domain/ports/actor-resolver.js";
 import type {
   ContentExtractor,
   ExtractContentError,
@@ -165,29 +171,81 @@ export function fakeFetcher(): FakeFetcher {
   };
 }
 
+export type FakeActorResolver = ActorResolver & {
+  readonly calls: readonly AuthorUri[];
+  respondWith(
+    uri: string,
+    result: Result<ResolvedActorUri | null, ActorLookupError>,
+  ): void;
+  clearCalls(): void;
+};
+
+export function fakeActorResolver(): FakeActorResolver {
+  const responses = new Map<
+    string,
+    Result<ResolvedActorUri | null, ActorLookupError>
+  >();
+  const calls: AuthorUri[] = [];
+  return {
+    calls,
+    respondWith(uri, result) {
+      responses.set(uri, result);
+    },
+    clearCalls() {
+      calls.splice(0);
+    },
+    async resolve(uri) {
+      calls.push(uri);
+      return responses.get(uri) ?? ok(null);
+    },
+  };
+}
+
 export type CapturingFederation = FederationGateway & {
-  readonly publishAttempts: { feed: Feed; itemKey: ItemKey; content: PostContent }[];
+  readonly publishAttempts: {
+    feed: Feed;
+    itemKey: ItemKey;
+    content: PostContent;
+    additionalAttributions: readonly ResolvedActorUri[];
+  }[];
   readonly published: {
     feed: Feed;
     itemKey: ItemKey;
     content: PostContent;
+    additionalAttributions: readonly ResolvedActorUri[];
     messageUri: MessageUri;
   }[];
-  readonly updated: { feed: Feed; messageUri: MessageUri; content: PostContent }[];
+  readonly updated: {
+    feed: Feed;
+    messageUri: MessageUri;
+    content: PostContent;
+    additionalAttributions: readonly ResolvedActorUri[];
+  }[];
   readonly deletedActors: Feed[];
   failNextPublishesWith(message: string | null): void;
   failNextUpdatesWith(message: string | null): void;
 };
 
 export function capturingFederation(): CapturingFederation {
-  const publishAttempts: { feed: Feed; itemKey: ItemKey; content: PostContent }[] = [];
+  const publishAttempts: {
+    feed: Feed;
+    itemKey: ItemKey;
+    content: PostContent;
+    additionalAttributions: readonly ResolvedActorUri[];
+  }[] = [];
   const published: {
     feed: Feed;
     itemKey: ItemKey;
     content: PostContent;
+    additionalAttributions: readonly ResolvedActorUri[];
     messageUri: MessageUri;
   }[] = [];
-  const updated: { feed: Feed; messageUri: MessageUri; content: PostContent }[] = [];
+  const updated: {
+    feed: Feed;
+    messageUri: MessageUri;
+    content: PostContent;
+    additionalAttributions: readonly ResolvedActorUri[];
+  }[] = [];
   const deletedActors: Feed[] = [];
   let publishFailure: string | null = null;
   let updateFailure: string | null = null;
@@ -207,8 +265,9 @@ export function capturingFederation(): CapturingFederation {
       feed,
       itemKey,
       content,
+      additionalAttributions,
     ): Promise<Result<{ messageUri: MessageUri }, FederationError>> {
-      publishAttempts.push({ feed, itemKey, content });
+      publishAttempts.push({ feed, itemKey, content, additionalAttributions });
       if (publishFailure !== null) {
         return err({
           type: "FederationDeliveryFailed",
@@ -217,10 +276,21 @@ export function capturingFederation(): CapturingFederation {
         });
       }
       const messageUri = `urn:fake-message:${++counter}` as MessageUri;
-      published.push({ feed, itemKey, content, messageUri });
+      published.push({
+        feed,
+        itemKey,
+        content,
+        additionalAttributions,
+        messageUri,
+      });
       return ok({ messageUri });
     },
-    async update(feed, messageUri, content): Promise<Result<void, FederationError>> {
+    async update(
+      feed,
+      messageUri,
+      content,
+      additionalAttributions,
+    ): Promise<Result<void, FederationError>> {
       if (updateFailure !== null) {
         return err({
           type: "FederationDeliveryFailed",
@@ -228,7 +298,7 @@ export function capturingFederation(): CapturingFederation {
           message: updateFailure,
         });
       }
-      updated.push({ feed, messageUri, content });
+      updated.push({ feed, messageUri, content, additionalAttributions });
       return ok(undefined);
     },
     async deleteActor(feed): Promise<Result<void, FederationError>> {
