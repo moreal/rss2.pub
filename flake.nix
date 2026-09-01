@@ -76,7 +76,7 @@
             missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
               inherit (finalAttrs) src missingHashes;
-              hash = "sha256-mMjvxqagbibBl/KEVm9DgY9CE3bHiEU+Jki9ANV7F+8=";
+              hash = "sha256-NBSucRdfn7SYzpJmKEs6hbEJCWMPd+g01TegYyx3Lwk=";
             };
 
             nativeBuildInputs = [

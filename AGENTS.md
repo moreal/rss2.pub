@@ -173,6 +173,15 @@ adapter.
   `to`, or `cc`.
 - `@fedify/vocab` and `@fedify/fedify` stay version-locked to the tested
   ~2.3.5 line so vocab `instanceof` checks operate on one package copy.
+- **`@fedify/cli` is a devDependency, not something you install globally.**
+  `test/e2e/remote-federation.test.ts` shells out to `yarn exec fedify lookup`;
+  without the dependency that silently resolves to whatever `fedify` happens to
+  be on `PATH`, so it passes on a machine with a homebrew/deno install and fails
+  in CI with `command not found`. It carries one phantom dependency —
+  `inquirer-toggle` requires `ansi-escapes` without declaring it, which the
+  strict pnpm linker refuses — so `.yarnrc.yml` declares it via
+  `packageExtensions`. Remove that entry and the CLI dies on a
+  `MODULE_NOT_FOUND` at startup.
 - **The web UI has one design system: `src/web/ui/styles.ts`.** Every colour,
   spacing step, type size, radius and focus style is a `--token` on `:root`
   there (with a dark-mode block redefining the same semantic roles); pages and

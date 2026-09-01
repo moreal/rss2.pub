@@ -25,6 +25,7 @@
     "i18n:compile": "lingui compile"
   },
   "devDependencies": {
+    "@fedify/cli": "~2.3.5",
     "@lingui/cli": "^6.6.0",
     "@testcontainers/postgresql": "^12.0.4",
     "@types/node": "^24",
