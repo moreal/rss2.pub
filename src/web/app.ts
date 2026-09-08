@@ -179,7 +179,18 @@ export async function createApp(config: AppConfig): Promise<App> {
   app.all("*", (c) => federationFetch(c.req.raw));
 
   return {
-    fetch: (request) => app.fetch(request),
+    fetch: (request) => {
+      if (!config.behindProxy) return app.fetch(request);
+      // Fedify's canonical origin pins actor/object IDs, but ctx.origin and
+      // collection links still use request.url. Trust our configured origin,
+      // not client-supplied Forwarded/X-Forwarded-Host headers.
+      const url = new URL(request.url);
+      const publicUrl = new URL(config.origin);
+      url.protocol = publicUrl.protocol;
+      url.host = publicUrl.host;
+      url.port = publicUrl.port;
+      return app.fetch(new Request(url, request));
+    },
     scheduler,
     unregisterFeed,
     shutdown: async () => {
