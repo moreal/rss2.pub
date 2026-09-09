@@ -114,12 +114,14 @@ function requestCount(path: string): number {
 }
 
 /**
- * Spawning the CLI costs a `yarn exec` resolution on top of the lookup itself,
- * and the e2e project runs its files in parallel — each with its own database
- * and HTTP server — so this budget has to survive a loaded machine, not just
- * an idle one. It was 30s until the suite grew enough to blow through that.
+ * This is the only test that shells out, and it competes with every other e2e
+ * file: the project runs them in parallel, each booting its own database and
+ * HTTP server, on a 4-core CI runner. The lookup itself takes ~4s idle, but a
+ * subprocess fighting seven Node apps for a core is a different measurement —
+ * 30s was enough until the suite grew, then 90s was not. Budget for the
+ * contention, not for the work.
  */
-const FEDIFY_CLI_TIMEOUT_MS = 90_000;
+const FEDIFY_CLI_TIMEOUT_MS = 240_000;
 
 async function fedifyLookup(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
