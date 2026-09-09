@@ -7,6 +7,55 @@ import type {
 } from "../../domain/ports/content-extractor.js";
 import { err, ok, type Result } from "../../shared/result.js";
 
+/**
+ * Some origins' bot filters reject any User-Agent that doesn't start with
+ * "Mozilla/5.0" (a common, crude WAF heuristic), 403-ing a plain
+ * "rss2.pub (+https://rss2.pub)" identifier and silently degrading every
+ * extraction on that site back to the feed's teaser. The Googlebot-style
+ * "compatible; ...; +url" form keeps us honestly self-identified as a bot
+ * while clearing that filter.
+ *
+ * It does not clear all of them. Some sites allowlist *named* crawlers, and
+ * no honest self-identification passes those — news.hada.io answers 403 to
+ * this UA, to a bare "Mozilla/5.0", and to this same shape under our own
+ * name, while serving Googlebot and Bingbot. Operators who need such a site
+ * can override this with EXTRACT_USER_AGENT; rss2.pub does not ship a UA
+ * that claims to be someone else.
+ */
+export const DEFAULT_EXTRACT_USER_AGENT =
+  "Mozilla/5.0 (compatible; rss2.pub/1.0; +https://rss2.pub)";
+
+/** Matches the feed fetcher's cap: an article page is not a download. */
+const DEFAULT_MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
+
+async function readCappedText(
+  response: Response,
+  maxResponseBytes: number,
+): Promise<string | null> {
+  const body = response.body;
+  if (body === null) return "";
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let byteLength = 0;
+  while (true) {
+    const result = await reader.read();
+    if (result.done) break;
+    byteLength += result.value.byteLength;
+    if (byteLength > maxResponseBytes) {
+      await reader.cancel().catch(() => undefined);
+      return null;
+    }
+    chunks.push(result.value);
+  }
+  const joined = new Uint8Array(byteLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    joined.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder("utf-8").decode(joined);
+}
+
 function messageOf(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
@@ -113,17 +162,11 @@ export function extractReadableContent(html: string): string | undefined {
 export function createReadabilityContentExtractor(options?: {
   readonly timeoutMs?: number;
   readonly userAgent?: string;
+  readonly maxResponseBytes?: number;
 }): ContentExtractor {
   const timeoutMs = options?.timeoutMs ?? 15_000;
-  // Some origin sites' bot filters reject any User-Agent that doesn't start
-  // with "Mozilla/5.0" (a common, crude WAF heuristic), 403-ing the plain
-  // "rss2.pub (+https://rss2.pub)" identifier and silently degrading every
-  // extraction on that site back to the feed's teaser. The Googlebot-style
-  // "compatible; ...; +url" form keeps us honestly self-identified as a bot
-  // while clearing that filter.
-  const userAgent =
-    options?.userAgent ??
-    "Mozilla/5.0 (compatible; rss2.pub/1.0; +https://rss2.pub)";
+  const maxResponseBytes = options?.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
+  const userAgent = options?.userAgent ?? DEFAULT_EXTRACT_USER_AGENT;
 
   return {
     async extract(
@@ -143,7 +186,15 @@ export function createReadabilityContentExtractor(options?: {
             message: `HTTP ${response.status}`,
           });
         }
-        html = await response.text();
+        const text = await readCappedText(response, maxResponseBytes);
+        if (text === null) {
+          return err({
+            type: "RequestFailed",
+            url,
+            message: `response exceeds ${maxResponseBytes} bytes`,
+          });
+        }
+        html = text;
       } catch (cause) {
         return err({ type: "RequestFailed", url, message: messageOf(cause) });
       }

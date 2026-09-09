@@ -35,6 +35,13 @@ export const feeds = pgTable(
     etag: text("etag"),
     lastModified: text("last_modified"),
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+    // Consecutive polls that found nothing new; stretches the poll interval
+    // so a dormant feed is not fetched as often as an active one.
+    unchangedPolls: integer("unchanged_polls").notNull().default(0),
+    // Favicon resolution retry state (ADR-0010). Without a give-up counter
+    // a site that never serves one is re-fetched on every single poll.
+    iconFailures: integer("icon_failures").notNull().default(0),
+    iconNextAttemptAt: timestamp("icon_next_attempt_at", { withTimezone: true }),
     nextPollAt: timestamp("next_poll_at", { withTimezone: true }).notNull(),
     followerCount: integer("follower_count").notNull().default(0),
   },
@@ -59,6 +66,15 @@ export const publishedItems = pgTable(
     // Null only for rows written before content-change tracking existed.
     contentFingerprint: text("content_fingerprint"),
     messageUri: text("message_uri"),
+    // True when the published object was built from extracted article
+    // content rather than the feed's own teaser (ADR-0009). Drives both the
+    // retry-until-upgraded path and the refusal to overwrite full content
+    // with a teaser when a later extraction fails.
+    fullContentUsed: boolean("full_content_used").notNull().default(false),
+    extractFailures: integer("extract_failures").notNull().default(0),
+    extractNextAttemptAt: timestamp("extract_next_attempt_at", {
+      withTimezone: true,
+    }),
   },
   (table) => [primaryKey({ columns: [table.feedId, table.key] })],
 );

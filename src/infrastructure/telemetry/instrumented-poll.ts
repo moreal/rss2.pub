@@ -34,6 +34,13 @@ export function instrumentPollFeed(
     "rss2pub.poll.author_lookup_failures",
     { description: "Atom author Actor lookups that failed" },
   );
+  const extractionFailures = meter.createCounter(
+    "rss2pub.poll.extraction_failures",
+    { description: "Full-content article extractions that failed" },
+  );
+  const iconFailures = meter.createCounter("rss2pub.poll.icon_failures", {
+    description: "Favicon resolutions that failed",
+  });
   const pollDuration = meter.createHistogram("rss2pub.poll.duration", {
     description: "Duration of a single feed poll",
     unit: "ms",
@@ -57,6 +64,20 @@ export function instrumentPollFeed(
               authorLookupFailures.add(result.value.attributionErrors.length);
               for (const error of result.value.attributionErrors) {
                 logger.warn("Atom author lookup failed: {error}", { error });
+              }
+              // Both fall back silently as far as followers are concerned —
+              // a teaser instead of the article, an actor without an avatar.
+              // Without this the only symptom is "the bridge feels wrong".
+              extractionFailures.add(result.value.extractionErrors.length);
+              for (const error of result.value.extractionErrors) {
+                logger.warn(
+                  "full-content extraction failed, published the feed teaser: {error}",
+                  { error },
+                );
+              }
+              iconFailures.add(result.value.iconErrors.length);
+              for (const error of result.value.iconErrors) {
+                logger.warn("favicon resolution failed: {error}", { error });
               }
             } else {
               span.setStatus({

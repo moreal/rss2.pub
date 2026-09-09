@@ -5,6 +5,10 @@ type Fixture = {
   readonly body: string;
   readonly contentType: string;
   readonly etag: string | null;
+  /** When set, every other User-Agent gets a bare 403 — the way some origins
+   * allowlist named crawlers and reject everything else (see the news.hada.io
+   * case in readability-extractor.ts). */
+  readonly allowUserAgent: string | null;
 };
 
 export type FixtureFeedServer = {
@@ -13,7 +17,11 @@ export type FixtureFeedServer = {
   setFixture(
     path: string,
     body: string,
-    options?: { readonly contentType?: string; readonly etag?: string },
+    options?: {
+      readonly contentType?: string;
+      readonly etag?: string;
+      readonly allowUserAgent?: string;
+    },
   ): void;
   readonly requests: { path: string; headers: IncomingHttpHeaders }[];
   close(): Promise<void>;
@@ -30,6 +38,13 @@ export async function startFixtureFeedServer(): Promise<FixtureFeedServer> {
     const fixture = fixtures.get(path);
     if (fixture === undefined) {
       res.writeHead(404).end("no fixture");
+      return;
+    }
+    if (
+      fixture.allowUserAgent !== null &&
+      req.headers["user-agent"] !== fixture.allowUserAgent
+    ) {
+      res.writeHead(403).end("Forbidden");
       return;
     }
     if (
@@ -57,6 +72,7 @@ export async function startFixtureFeedServer(): Promise<FixtureFeedServer> {
         body,
         contentType: options?.contentType ?? "application/atom+xml",
         etag: options?.etag ?? null,
+        allowUserAgent: options?.allowUserAgent ?? null,
       });
     },
     requests,

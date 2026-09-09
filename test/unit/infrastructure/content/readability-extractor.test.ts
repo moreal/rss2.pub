@@ -1,9 +1,13 @@
 import { parseHTML } from "linkedom";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  createReadabilityContentExtractor,
+  DEFAULT_EXTRACT_USER_AGENT,
   extractReadableContent,
   stripCommentContainers,
 } from "../../../../src/infrastructure/content/readability-extractor.js";
+import { unwrap, unwrapErr } from "../../../helpers/result.js";
+import { GEEKNEWS_TOPIC_HTML } from "./geeknews-topic-fixture.js";
 
 describe("stripCommentContainers", () => {
   it("removes elements whose class contains 'comment'", () => {
@@ -179,5 +183,82 @@ describe("extractReadableContent", () => {
     const content = extractReadableContent(html);
     expect(content).toBeDefined();
     expect(content).toContain("first paragraph of the full article");
+  });
+});
+
+describe("extractReadableContent on a real news.hada.io topic page", () => {
+  const content = extractReadableContent(GEEKNEWS_TOPIC_HTML);
+
+  it("keeps the whole submission body, section headings included", () => {
+    expect(content).toBeDefined();
+    expect(content).toContain("첫 번째 요약 항목");
+    expect(content).toContain("첫 번째 소제목");
+    expect(content).toContain("두 번째 소제목");
+    expect(content).toContain("마지막 절의 내용");
+  });
+
+  it("leaves the comment thread out", () => {
+    expect(content).not.toContain("첫 번째 댓글");
+    expect(content).not.toContain("두 번째 댓글");
+    expect(content).not.toContain("댓글을 남기려면");
+  });
+
+  it("recovers far more than the truncated teaser such a feed publishes", () => {
+    // The feed's own <content> for these entries is cut off mid-sentence, which
+    // is the entire reason full-content mode exists for this origin.
+    expect((content ?? "").length).toBeGreaterThan(200);
+  });
+});
+
+describe("createReadabilityContentExtractor — fetch layer", () => {
+  const fetchMock = vi.fn<typeof fetch>();
+  const URL_UNDER_TEST = "https://origin.test/article";
+
+  const headerOf = (call: number, name: string) => {
+    const init = fetchMock.mock.calls[call]?.[1];
+    const headers = (init?.headers ?? {}) as Record<string, string>;
+    return headers[name];
+  };
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("identifies itself with the default User-Agent", async () => {
+    fetchMock.mockResolvedValue(new Response(GEEKNEWS_TOPIC_HTML));
+    unwrap(await createReadabilityContentExtractor().extract(URL_UNDER_TEST));
+    expect(headerOf(0, "user-agent")).toBe(DEFAULT_EXTRACT_USER_AGENT);
+  });
+
+  it("sends an operator-configured User-Agent instead when given one", async () => {
+    fetchMock.mockResolvedValue(new Response(GEEKNEWS_TOPIC_HTML));
+    await createReadabilityContentExtractor({ userAgent: "custom/1.0" }).extract(
+      URL_UNDER_TEST,
+    );
+    expect(headerOf(0, "user-agent")).toBe("custom/1.0");
+  });
+
+  it("reports a bot-filter rejection as a request failure, not an empty article", async () => {
+    // news.hada.io answers exactly this to rss2.pub's honest User-Agent.
+    fetchMock.mockResolvedValue(new Response("Forbidden", { status: 403 }));
+    expect(
+      unwrapErr(await createReadabilityContentExtractor().extract(URL_UNDER_TEST)),
+    ).toMatchObject({ type: "RequestFailed", message: "HTTP 403" });
+  });
+
+  it("refuses a response past the size cap instead of buffering it whole", async () => {
+    fetchMock.mockResolvedValue(new Response("x".repeat(200)));
+    const error = unwrapErr(
+      await createReadabilityContentExtractor({ maxResponseBytes: 64 }).extract(
+        URL_UNDER_TEST,
+      ),
+    );
+    expect(error).toMatchObject({ type: "RequestFailed" });
+    expect(error.message).toContain("64");
   });
 });

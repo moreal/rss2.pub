@@ -69,10 +69,12 @@ beforeAll(async () => {
     port,
     databaseUrl: database.url,
     pollIntervalSeconds: 3600,
+    pollMaxIntervalSeconds: 3600,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
     noteMaxChars: 2000,
     teaserMaxChars: 200,
+    extractUserAgent: "rss2pub-e2e",
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",
@@ -182,5 +184,59 @@ describe("full-content extraction e2e (ADR-0009)", () => {
     const fullContent = JSON.stringify(fullObjects[0]);
     expect(fullContent).toContain("Readability content-density");
     expect(fullContent).not.toContain("A tiny teaser from the blog");
+  });
+});
+
+/**
+ * Some origins allowlist named crawlers and answer 403 to everything else,
+ * rss2.pub's honest self-identification included (news.hada.io does exactly
+ * this). The bridge must still publish — the feed's own teaser — rather than
+ * dropping the item or failing the poll.
+ */
+describe("full-content extraction when the origin blocks our User-Agent", () => {
+  it("falls back to the teaser and still federates the item", async () => {
+    fixtures.setFixture("/blocked-article", ARTICLE_HTML, {
+      contentType: "text/html",
+      // Anything but the User-Agent this app is configured with.
+      allowUserAgent: "Mozilla/5.0 (compatible; Googlebot/2.1)",
+    });
+    fixtures.setFixture(
+      "/blocked-feed.xml",
+      atomFixture({
+        title: "Blocked Origin Blog",
+        entries: [
+          {
+            id: "urn:e2e:blocked",
+            link: fixtures.url("/blocked-article"),
+            title: "Blocked Post",
+            summary: TEASER_BODY,
+            published: new Date("Wed, 01 Jul 2026 00:00:00 GMT").toISOString(),
+          },
+        ],
+      }),
+    );
+
+    const feedUrl = fixtures.url("/blocked-feed.xml");
+    const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)), true);
+    const response = await fetch(`${base}/register`, {
+      method: "POST",
+      body: new URLSearchParams({ url: feedUrl, full: "1" }),
+    });
+    expect(response.status).toBe(200);
+
+    await app.scheduler.tick();
+
+    const actor = await fetchAp(`${base}/ap/actor/${handle}`);
+    const activities = await collectOutbox(actor["outbox"] as string);
+    expect(activities).toHaveLength(1);
+    const object = await resolveItem(activities[0]?.["object"]);
+    expect(object["content"]).toContain("A tiny teaser from the blog");
+    expect(object["content"]).not.toContain("Readability content-density");
+
+    // The attempt really happened and really carried our User-Agent — the
+    // fallback is a rejection by the origin, not a skipped fetch.
+    const attempt = fixtures.requests.find((r) => r.path === "/blocked-article");
+    expect(attempt).toBeDefined();
+    expect(attempt?.headers["user-agent"]).toBe("rss2pub-e2e");
   });
 });

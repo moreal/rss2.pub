@@ -1,5 +1,6 @@
 import type { FeedId } from "../../domain/feed/feed.js";
 import type { ItemKey } from "../../domain/feed/feed-item.js";
+import type { RetryState } from "../../domain/feed/retry-policy.js";
 import type {
   ItemRepository,
   PublishedItemRecord,
@@ -43,6 +44,20 @@ export function createInMemoryItemRepository(): ItemRepository {
       const record = known?.get(key);
       if (known === undefined || record === undefined) return;
       known.set(key, { ...record, contentFingerprint });
+    },
+
+    async markExtraction(
+      feedId: FeedId,
+      key: ItemKey,
+      state: {
+        readonly fullContentUsed: boolean;
+        readonly extractRetry: RetryState;
+      },
+    ): Promise<void> {
+      const known = seen.get(feedId);
+      const record = known?.get(key);
+      if (known === undefined || record === undefined) return;
+      known.set(key, { ...record, ...state });
     },
 
     async removeAllOf(feedId: FeedId): Promise<void> {

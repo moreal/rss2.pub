@@ -175,6 +175,8 @@ describe("DrizzleFeedRepository", () => {
         publishedAt: now,
         contentFingerprint: "fp",
         messageUri: null,
+        fullContentUsed: false,
+        extractRetry: { failures: 0, nextAttemptAt: null },
       },
     ]);
 
@@ -202,6 +204,8 @@ describe("DrizzleItemRepository", () => {
         publishedAt: now,
         contentFingerprint: "fp-a",
         messageUri: "urn:msg:a" as MessageUri,
+        fullContentUsed: false,
+        extractRetry: { failures: 0, nextAttemptAt: null },
       },
     ]);
     expect(await items.findExisting(feed.id, keys)).toEqual([
@@ -210,6 +214,8 @@ describe("DrizzleItemRepository", () => {
         publishedAt: now,
         contentFingerprint: "fp-a",
         messageUri: "urn:msg:a",
+        fullContentUsed: false,
+        extractRetry: { failures: 0, nextAttemptAt: null },
       },
     ]);
     expect(await items.findExisting(feed.id, [])).toEqual([]);
@@ -226,6 +232,8 @@ describe("DrizzleItemRepository", () => {
       publishedAt: now,
       contentFingerprint: "fp-x",
       messageUri: "urn:msg:x" as MessageUri,
+      fullContentUsed: false,
+      extractRetry: { failures: 0, nextAttemptAt: null },
     };
     await items.markPublished(feed.id, [record]);
     await items.markPublished(feed.id, [record]);
@@ -246,6 +254,8 @@ describe("DrizzleItemRepository", () => {
       publishedAt: now,
       contentFingerprint: "fp-old",
       messageUri: "urn:msg:y" as MessageUri,
+      fullContentUsed: false,
+      extractRetry: { failures: 0, nextAttemptAt: null },
     };
     await items.markPublished(feed.id, [record]);
     await items.markUpdated(feed.id, record.key, "fp-new");
@@ -368,10 +378,12 @@ describe("application restart", () => {
         port: appPort,
         databaseUrl: database.url,
         pollIntervalSeconds: 60,
-        pollMaxBackoffSeconds: 86_400,
+        pollMaxIntervalSeconds: 60,
+    pollMaxBackoffSeconds: 86_400,
         schedulerTickMs: 3_600_000,
         noteMaxChars: 2000,
         teaserMaxChars: 200,
+        extractUserAgent: "rss2pub-e2e",
         behindProxy: false,
         allowPrivateAddress: true,
         logLevel: "warning",

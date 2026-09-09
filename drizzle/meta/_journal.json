@@ -43,6 +43,13 @@
       "when": 1788195095306,
       "tag": "0005_workable_mandrill",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788915642061,
+      "tag": "0006_bored_ronan",
+      "breakpoints": true
     }
   ]
 }

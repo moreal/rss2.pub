@@ -11,6 +11,7 @@ import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import { Handle } from "../../src/domain/feed/handle.js";
 import { IconUrl } from "../../src/domain/feed/icon-url.js";
 import type { Clock } from "../../src/domain/ports/clock.js";
+import type { Random } from "../../src/domain/ports/random.js";
 import type {
   ActorLookupError,
   ActorResolver,
@@ -45,6 +46,14 @@ import { unwrap } from "./result.js";
  * fixture and the clock cannot drift apart.
  */
 export const T0 = new Date("2026-07-26T12:00:00.000Z");
+
+/**
+ * Deterministic jitter. 0.5 is the midpoint of the spread, so scheduling
+ * assertions can be written against the un-jittered interval.
+ */
+export function fixedRandom(ratio = 0.5): Random {
+  return { ratio: () => ratio };
+}
 
 /**
  * A registered feed with everything optional. Tests that assert on a field

@@ -1,13 +1,18 @@
 import {
   type ContentPolicy,
   decidePostContent,
+  type PostContent,
 } from "../domain/content/content-policy.js";
 import { Feed, type FeedId, FeedTitle } from "../domain/feed/feed.js";
 import {
   AttributionCandidates,
   type AuthorUri,
 } from "../domain/feed/author-uri.js";
-import { contentFingerprint, FeedItem } from "../domain/feed/feed-item.js";
+import {
+  contentFingerprint,
+  FeedItem,
+  type ItemKey,
+} from "../domain/feed/feed-item.js";
 import { FeedLanguage } from "../domain/feed/feed-language.js";
 import { IconUrl } from "../domain/feed/icon-url.js";
 import {
@@ -15,6 +20,13 @@ import {
   afterSuccessfulPoll,
   type PollPolicy,
 } from "../domain/feed/poll-policy.js";
+import {
+  afterFailure,
+  hasGivenUp,
+  isRetryDue,
+  type RetryPolicy,
+  type RetryState,
+} from "../domain/feed/retry-policy.js";
 import type { ContentExtractor } from "../domain/ports/content-extractor.js";
 import type {
   ActorLookupError,
@@ -22,7 +34,11 @@ import type {
   ResolvedActorUri,
 } from "../domain/ports/actor-resolver.js";
 import type { Clock } from "../domain/ports/clock.js";
-import type { FaviconResolver } from "../domain/ports/favicon-resolver.js";
+import type {
+  FaviconResolver,
+  ResolveFaviconError,
+} from "../domain/ports/favicon-resolver.js";
+import type { Random } from "../domain/ports/random.js";
 import type { FeedFetcher, FetchedFeed } from "../domain/ports/feed-fetcher.js";
 import type { FeedRepository } from "../domain/ports/feed-repository.js";
 import type { FederationGateway } from "../domain/ports/federation-gateway.js";
@@ -42,6 +58,12 @@ export type PollFeedReport = {
   readonly publishErrors: readonly string[];
   /** Best-effort author lookup failures; never make the poll fail. */
   readonly attributionErrors: readonly string[];
+  /** Full-content extraction failures (ADR-0009). The teaser is published
+   * instead and the article page is retried on a later poll — surfaced here
+   * because a silent fallback is indistinguishable from a working bridge. */
+  readonly extractionErrors: readonly string[];
+  /** Favicon resolution failures (ADR-0010); cosmetic, and given up on. */
+  readonly iconErrors: readonly string[];
   readonly fetchError: string | null;
 };
 
@@ -65,19 +87,99 @@ function parseItems(fetched: FetchedFeed) {
   return [...byKey.values()];
 }
 
+const INITIAL_RETRY: RetryState = { failures: 0, nextAttemptAt: null };
+
+/** What an item was last published with, as far as extraction is concerned. */
+type ExtractionHistory = {
+  readonly fullContentUsed: boolean;
+  readonly extractRetry: RetryState;
+};
+
+type ExtractionAttempt =
+  | {
+      readonly kind: "content";
+      readonly content: PostContent;
+      readonly fullContentUsed: boolean;
+      readonly retry: RetryState;
+      readonly error: string | null;
+    }
+  | {
+      /**
+       * Extraction failed for an item that is already federated *with* its
+       * full article. Publishing the teaser now would overwrite the article
+       * and adopt the new fingerprint, losing it for good, so the caller
+       * skips this item and retries the whole edit on a later poll.
+       */
+      readonly kind: "keep-published";
+      readonly retry: RetryState;
+      readonly error: string;
+    };
+
+type ExtractionContext = {
+  readonly feed: Feed;
+  readonly contentExtractor: ContentExtractor;
+  readonly contentPolicy: ContentPolicy;
+  readonly retryPolicy: RetryPolicy;
+  readonly random: Random;
+  readonly now: Date;
+};
+
 /**
- * Replaces an item's teaser content with its extracted full article
- * (ADR-0009). Only called for feeds with `fullContentEnabled`; extraction
- * failure (no link, request failure, no article found) falls back silently
- * to the feed-provided content rather than blocking the publish.
+ * Builds what to publish for one item, fetching the original article first
+ * in full-content mode (ADR-0009).
+ *
+ * A failure publishes the feed's own teaser — timeliness beats completeness —
+ * but unlike before it is *recorded*: the item keeps a retry budget, is tried
+ * again on a later poll, and is upgraded to the article once that succeeds.
  */
-async function withFullContent(
+async function extractContent(
   item: FeedItem,
-  extractor: ContentExtractor,
-): Promise<FeedItem> {
-  if (item.link === null) return item;
-  const extracted = await extractor.extract(item.link);
-  return extracted.ok ? { ...item, contentHtml: extracted.value.contentHtml } : item;
+  ctx: ExtractionContext,
+  previous: ExtractionHistory | null,
+): Promise<ExtractionAttempt> {
+  const retry = previous?.extractRetry ?? INITIAL_RETRY;
+  const teaser = (state: RetryState, error: string | null): ExtractionAttempt => ({
+    kind: "content",
+    content: decidePostContent(item, ctx.contentPolicy),
+    fullContentUsed: false,
+    retry: state,
+    error,
+  });
+
+  if (!ctx.feed.fullContentEnabled || item.link === null) {
+    return teaser(retry, null);
+  }
+  // An item already carrying full content must re-extract whatever its retry
+  // budget says: its feed-side text changed, and only the article page can
+  // rebuild the body that is federated right now.
+  if (
+    previous?.fullContentUsed !== true &&
+    (hasGivenUp(ctx.retryPolicy, retry) || !isRetryDue(retry, ctx.now))
+  ) {
+    return teaser(retry, null);
+  }
+
+  const extracted = await ctx.contentExtractor.extract(item.link);
+  if (extracted.ok) {
+    return {
+      kind: "content",
+      content: decidePostContent(
+        { ...item, contentHtml: extracted.value.contentHtml },
+        ctx.contentPolicy,
+      ),
+      fullContentUsed: true,
+      retry: INITIAL_RETRY,
+      error: null,
+    };
+  }
+
+  const next = afterFailure(ctx.retryPolicy, retry, {
+    now: ctx.now,
+    jitterRatio: ctx.random.ratio(),
+  });
+  return previous?.fullContentUsed === true
+    ? { kind: "keep-published", retry: next, error: extracted.error.message }
+    : teaser(next, extracted.error.message);
 }
 
 function languageFrom(raw: string | null): FeedLanguage | null {
@@ -86,38 +188,60 @@ function languageFrom(raw: string | null): FeedLanguage | null {
   return isOk(result) ? result.value : null;
 }
 
-/** Builds the post content for one item, applying full-content extraction
- * identically for both new and changed items. */
-async function buildContent(
-  item: FeedItem,
-  ctx: {
-    readonly feed: Feed;
-    readonly contentExtractor: ContentExtractor;
-    readonly contentPolicy: ContentPolicy;
-  },
-) {
-  const enriched = ctx.feed.fullContentEnabled
-    ? await withFullContent(item, ctx.contentExtractor)
-    : item;
-  return decidePostContent(enriched, ctx.contentPolicy);
+function faviconErrorMessage(error: ResolveFaviconError): string {
+  return error.type === "NotFound"
+    ? `no icon found at ${error.url}`
+    : error.message;
 }
 
 /**
  * Resolves the actor avatar from the channel link's favicon (ADR-0010).
  * Only attempted while the feed has no icon yet — once found it is never
- * re-fetched, and a failed attempt just leaves it null for a later poll to
- * retry rather than blocking or failing this one.
+ * re-fetched.
+ *
+ * A failure now costs a retry from the feed's budget instead of one wasted
+ * request on every single poll forever, which is what "leave it null and try
+ * again next time" amounted to on a site that serves no usable icon.
  */
 async function resolveIcon(
   feed: Feed,
   channelLink: string | null,
-  resolver: FaviconResolver,
-): Promise<IconUrl | null> {
-  if (feed.iconUrl !== null || channelLink === null) return null;
-  const resolved = await resolver.resolve(channelLink);
-  if (!resolved.ok) return null;
+  ctx: {
+    readonly resolver: FaviconResolver;
+    readonly retryPolicy: RetryPolicy;
+    readonly random: Random;
+    readonly now: Date;
+  },
+): Promise<{
+  readonly iconUrl: IconUrl | null;
+  readonly retry: RetryState;
+  readonly error: string | null;
+}> {
+  const retry = feed.iconRetry;
+  if (
+    feed.iconUrl !== null ||
+    channelLink === null ||
+    hasGivenUp(ctx.retryPolicy, retry) ||
+    !isRetryDue(retry, ctx.now)
+  ) {
+    return { iconUrl: null, retry, error: null };
+  }
+
+  const failed = (error: string) => ({
+    iconUrl: null,
+    retry: afterFailure(ctx.retryPolicy, retry, {
+      now: ctx.now,
+      jitterRatio: ctx.random.ratio(),
+    }),
+    error,
+  });
+
+  const resolved = await ctx.resolver.resolve(channelLink);
+  if (!resolved.ok) return failed(faviconErrorMessage(resolved.error));
   const iconUrl = IconUrl.create(resolved.value.iconUrl);
-  return isOk(iconUrl) ? iconUrl.value : null;
+  return isOk(iconUrl)
+    ? { iconUrl: iconUrl.value, retry: INITIAL_RETRY, error: null }
+    : failed(`unusable icon URL: ${resolved.value.iconUrl}`);
 }
 
 /**
@@ -134,7 +258,10 @@ export function createPollFeed(deps: {
   readonly contentExtractor: ContentExtractor;
   readonly faviconResolver: FaviconResolver;
   readonly clock: Clock;
+  readonly random: Random;
   readonly pollPolicy: PollPolicy;
+  readonly iconRetryPolicy: RetryPolicy;
+  readonly extractRetryPolicy: RetryPolicy;
   readonly contentPolicy: ContentPolicy;
 }): PollFeed {
   return {
@@ -147,7 +274,11 @@ export function createPollFeed(deps: {
 
       if (!fetched.ok) {
         await deps.feeds.save(
-          afterFailedPoll(feed, { now, policy: deps.pollPolicy }),
+          afterFailedPoll(feed, {
+            now,
+            policy: deps.pollPolicy,
+            jitterRatio: deps.random.ratio(),
+          }),
         );
         return ok({
           feedId: feed.id,
@@ -156,6 +287,8 @@ export function createPollFeed(deps: {
           updated: 0,
           publishErrors: [],
           attributionErrors: [],
+          extractionErrors: [],
+          iconErrors: [],
           fetchError: fetched.error.message,
         });
       }
@@ -166,6 +299,9 @@ export function createPollFeed(deps: {
             validators: feed.validators,
             now,
             policy: deps.pollPolicy,
+            // A 304 is the definition of a quiet poll: stretch the interval.
+            changed: false,
+            jitterRatio: deps.random.ratio(),
           }),
         );
         return ok({
@@ -175,6 +311,8 @@ export function createPollFeed(deps: {
           updated: 0,
           publishErrors: [],
           attributionErrors: [],
+          extractionErrors: [],
+          iconErrors: [],
           fetchError: null,
         });
       }
@@ -207,15 +345,20 @@ export function createPollFeed(deps: {
           : [{ item, record, fingerprint }];
       });
 
-      const buildCtx = {
+      const buildCtx: ExtractionContext = {
         feed,
         contentExtractor: deps.contentExtractor,
         contentPolicy: deps.contentPolicy,
+        retryPolicy: deps.extractRetryPolicy,
+        random: deps.random,
+        now,
       };
 
       const publishedRecords: PublishedItemRecord[] = [];
       const publishErrors: string[] = [];
       const attributionErrors: string[] = [];
+      const extractionErrors: string[] = [];
+      const iconErrors: string[] = [];
       const failedCandidates = new Set<AuthorUri>();
       const actorMemo = new Map<
         AuthorUri,
@@ -252,12 +395,16 @@ export function createPollFeed(deps: {
       }
 
       for (const item of toPublish) {
-        const content = await buildContent(item, buildCtx);
+        // A never-published item has no full-content object to protect, so
+        // extraction here can only ever come back as content.
+        const attempt = await extractContent(item, buildCtx, null);
+        if (attempt.error !== null) extractionErrors.push(attempt.error);
+        if (attempt.kind !== "content") continue;
         const attributions = await resolveAuthors(item);
         const result = await deps.federation.publish(
           feed,
           item.key,
-          content,
+          attempt.content,
           attributions,
         );
         if (result.ok) {
@@ -266,6 +413,8 @@ export function createPollFeed(deps: {
             publishedAt: now,
             contentFingerprint: contentFingerprint(item),
             messageUri: result.value.messageUri,
+            fullContentUsed: attempt.fullContentUsed,
+            extractRetry: attempt.retry,
           });
         } else {
           publishErrors.push(result.error.message);
@@ -284,16 +433,80 @@ export function createPollFeed(deps: {
           await deps.items.markUpdated(feed.id, item.key, fingerprint);
           continue;
         }
-        const content = await buildContent(item, buildCtx);
+        const attempt = await extractContent(item, buildCtx, record);
+        if (attempt.error !== null) extractionErrors.push(attempt.error);
+        if (attempt.kind === "keep-published") {
+          // Deliberately leaves the fingerprint alone: the edit is still
+          // pending, and a later poll retries it rather than replacing a
+          // federated article with the feed's teaser.
+          await deps.items.markExtraction(feed.id, item.key, {
+            fullContentUsed: true,
+            extractRetry: attempt.retry,
+          });
+          continue;
+        }
         const attributions = await resolveAuthors(item);
         const result = await deps.federation.update(
           feed,
           record.messageUri,
-          content,
+          attempt.content,
           attributions,
         );
         if (result.ok) {
           await deps.items.markUpdated(feed.id, item.key, fingerprint);
+          await deps.items.markExtraction(feed.id, item.key, {
+            fullContentUsed: attempt.fullContentUsed,
+            extractRetry: attempt.retry,
+          });
+          updatedCount++;
+        } else {
+          publishErrors.push(result.error.message);
+        }
+      }
+
+      // Items the feed has not touched, but whose article extraction failed
+      // earlier and is due for another try. Without this pass a single 403
+      // pinned an item to its teaser permanently, even after the origin
+      // started answering again.
+      const handled = new Set<ItemKey>([
+        ...toPublish.map((item) => item.key),
+        ...toUpdate.map((pending) => pending.item.key),
+      ]);
+      for (const item of items) {
+        if (handled.has(item.key) || !feed.fullContentEnabled) continue;
+        const record = existing.get(item.key);
+        if (
+          record === undefined ||
+          record.messageUri === null ||
+          record.fullContentUsed ||
+          item.link === null ||
+          hasGivenUp(deps.extractRetryPolicy, record.extractRetry) ||
+          !isRetryDue(record.extractRetry, now)
+        ) {
+          continue;
+        }
+
+        const attempt = await extractContent(item, buildCtx, record);
+        if (attempt.error !== null) extractionErrors.push(attempt.error);
+        if (attempt.kind !== "content" || !attempt.fullContentUsed) {
+          await deps.items.markExtraction(feed.id, item.key, {
+            fullContentUsed: false,
+            extractRetry: attempt.retry,
+          });
+          continue;
+        }
+        const attributions = await resolveAuthors(item);
+        const result = await deps.federation.update(
+          feed,
+          record.messageUri,
+          attempt.content,
+          attributions,
+        );
+        if (result.ok) {
+          await deps.items.markExtraction(feed.id, item.key, {
+            fullContentUsed: true,
+            extractRetry: attempt.retry,
+          });
           updatedCount++;
         } else {
           publishErrors.push(result.error.message);
@@ -304,25 +517,29 @@ export function createPollFeed(deps: {
         fetched.value.feed.title !== null
           ? FeedTitle.create(fetched.value.feed.title)
           : null;
-      const iconUrl = await resolveIcon(
-        feed,
-        fetched.value.feed.link,
-        deps.faviconResolver,
-      );
+      const icon = await resolveIcon(feed, fetched.value.feed.link, {
+        resolver: deps.faviconResolver,
+        retryPolicy: deps.iconRetryPolicy,
+        random: deps.random,
+        now,
+      });
+      if (icon.error !== null) iconErrors.push(icon.error);
       const withMetadata = Feed.withMetadata(feed, {
         title:
           metadataTitle !== null && isOk(metadataTitle)
             ? metadataTitle.value
             : null,
         description: fetched.value.feed.description,
-        iconUrl,
+        iconUrl: icon.iconUrl,
         language: currentLanguage,
       });
       await deps.feeds.save(
-        afterSuccessfulPoll(withMetadata, {
+        afterSuccessfulPoll(Feed.withIconRetry(withMetadata, icon.retry), {
           validators: fetched.value.validators,
           now,
           policy: deps.pollPolicy,
+          changed: publishedRecords.length > 0 || updatedCount > 0,
+          jitterRatio: deps.random.ratio(),
         }),
       );
 
@@ -333,6 +550,8 @@ export function createPollFeed(deps: {
         updated: updatedCount,
         publishErrors,
         attributionErrors,
+        extractionErrors,
+        iconErrors,
         fetchError: null,
       });
     },

@@ -23,13 +23,22 @@ import {
   mutableClock,
   rawItem,
   T0,
+  fixedRandom,
 } from "../../helpers/fakes.js";
+import {
+  EXTRACT_RETRY_DEFAULT,
+  ICON_RETRY_DEFAULT,
+} from "../../../src/domain/feed/retry-policy.js";
 import { unwrap, unwrapErr } from "../../helpers/result.js";
 
 // The fixtures are registered at T0, and the clock starts there.
 const now = T0;
 const pollPolicy = unwrap(
-  PollPolicy.create({ intervalSeconds: 100, maxBackoffSeconds: 400 }),
+  PollPolicy.create({
+    intervalSeconds: 100,
+    maxIntervalSeconds: 100,
+    maxBackoffSeconds: 400,
+  }),
 );
 
 function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) {
@@ -54,6 +63,9 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
     contentExtractor,
     faviconResolver,
     clock,
+    random: fixedRandom(),
+    iconRetryPolicy: ICON_RETRY_DEFAULT,
+    extractRetryPolicy: EXTRACT_RETRY_DEFAULT,
     pollPolicy,
     contentPolicy: ContentPolicy.DEFAULT,
   });
@@ -622,6 +634,8 @@ describe("PollFeed content updates", () => {
         publishedAt: T0,
         contentFingerprint: "stale-fingerprint-from-before-this-feature",
         messageUri: null,
+        fullContentUsed: false,
+        extractRetry: { failures: 0, nextAttemptAt: null },
       },
     ]);
     fetcher.respondWith(
@@ -655,5 +669,191 @@ describe("PollDueFeeds", () => {
     const reports = await pollDueFeeds.execute();
     expect(reports).toHaveLength(1);
     expect(reports[0]?.feedId).toBe(feed.id);
+  });
+});
+
+/**
+ * Full-content extraction used to fail invisibly and permanently: the teaser
+ * was published, nothing was recorded, and the article was never fetched
+ * again even after the origin recovered. These pin the retry budget that
+ * replaced that (ADR-0009 + the shared retry policy).
+ */
+describe("PollFeed — full-content extraction retries", () => {
+  const LINK = "https://a.co/x";
+
+  function fullContentSetup() {
+    const ctx = setup({ fullContentEnabled: true });
+    const respond = (contentHtml: string) =>
+      ctx.fetcher.respondWith(
+        ctx.feed.url,
+        ok(
+          fetchedFeed({
+            items: [
+              rawItem({ guid: "x", title: "post", link: LINK, contentHtml }),
+            ],
+          }),
+        ),
+      );
+    respond("<p>teaser</p>");
+    return { ...ctx, respond };
+  }
+
+  const fails = (message: string) =>
+    err({ type: "RequestFailed" as const, url: LINK, message });
+
+  it("reports the failure instead of silently publishing the teaser", async () => {
+    const { feed, feeds, items, contentExtractor, federation, pollFeed } =
+      fullContentSetup();
+    await feeds.save(feed);
+    contentExtractor.respondWith(LINK, fails("HTTP 403"));
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report.published).toBe(1);
+    expect(report.extractionErrors).toEqual(["HTTP 403"]);
+    const [published] = federation.published;
+    expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
+      "<p>teaser</p>",
+    );
+    const [record] = await items.findExisting(feed.id, ["guid:x" as ItemKey]);
+    expect(record?.fullContentUsed).toBe(false);
+    expect(record?.extractRetry.failures).toBe(1);
+    expect(record?.extractRetry.nextAttemptAt).not.toBeNull();
+  });
+
+  it("waits out the backoff before touching the article again", async () => {
+    const { feed, feeds, contentExtractor, pollFeed } = fullContentSetup();
+    await feeds.save(feed);
+    contentExtractor.respondWith(LINK, fails("HTTP 403"));
+
+    await pollFeed.execute(feed.id);
+    await pollFeed.execute(feed.id);
+
+    expect(contentExtractor.calls).toEqual([LINK]);
+  });
+
+  it("upgrades an already-published teaser once the article becomes reachable", async () => {
+    const { feed, feeds, items, clock, contentExtractor, federation, pollFeed } =
+      fullContentSetup();
+    await feeds.save(feed);
+    contentExtractor.respondWith(LINK, fails("HTTP 403"));
+    await pollFeed.execute(feed.id);
+
+    contentExtractor.respondWith(LINK, ok({ contentHtml: "<p>the article</p>" }));
+    clock.set(new Date(now.getTime() + EXTRACT_RETRY_DEFAULT.ceilingSeconds * 1000));
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    // The feed document never changed — this update is driven purely by the
+    // extraction retry succeeding.
+    expect(report.published).toBe(0);
+    expect(report.updated).toBe(1);
+    const [updated] = federation.updated;
+    expect(updated?.content.kind === "note" && updated.content.bodyHtml).toBe(
+      "<p>the article</p>",
+    );
+    const [record] = await items.findExisting(feed.id, ["guid:x" as ItemKey]);
+    expect(record?.fullContentUsed).toBe(true);
+    expect(record?.extractRetry.failures).toBe(0);
+  });
+
+  it("gives up after the retry budget rather than fetching forever", async () => {
+    const { feed, feeds, clock, contentExtractor, pollFeed } = fullContentSetup();
+    await feeds.save(feed);
+    contentExtractor.respondWith(LINK, fails("HTTP 403"));
+
+    // Well past the ceiling each time, so every poll is due for a retry.
+    const step = EXTRACT_RETRY_DEFAULT.ceilingSeconds * 1000;
+    for (let poll = 0; poll < 10; poll++) {
+      clock.set(new Date(now.getTime() + step * (poll + 1)));
+      await pollFeed.execute(feed.id);
+    }
+
+    expect(contentExtractor.calls).toHaveLength(EXTRACT_RETRY_DEFAULT.maxAttempts ?? 0);
+  });
+
+  it("never overwrites a federated article with the teaser when a later extraction fails", async () => {
+    const {
+      feed,
+      feeds,
+      items,
+      respond,
+      contentExtractor,
+      federation,
+      pollFeed,
+    } = fullContentSetup();
+    await feeds.save(feed);
+    contentExtractor.respondWith(LINK, ok({ contentHtml: "<p>the article</p>" }));
+    await pollFeed.execute(feed.id);
+    const [before] = await items.findExisting(feed.id, ["guid:x" as ItemKey]);
+
+    // The feed edits the entry, so the item is genuinely due an Update — but
+    // the article page is unreachable at exactly that moment.
+    respond("<p>edited teaser</p>");
+    contentExtractor.respondWith(LINK, fails("HTTP 403"));
+    const report = unwrap(await pollFeed.execute(feed.id));
+
+    expect(report.updated).toBe(0);
+    expect(federation.updated).toHaveLength(0);
+    expect(report.extractionErrors).toEqual(["HTTP 403"]);
+    const [record] = await items.findExisting(feed.id, ["guid:x" as ItemKey]);
+    expect(record?.fullContentUsed).toBe(true);
+    // Still the pre-edit fingerprint, so the pending edit is retried on a
+    // later poll instead of being quietly accepted as already handled.
+    expect(record?.contentFingerprint).toBe(before?.contentFingerprint);
+    expect(record?.extractRetry.failures).toBe(1);
+  });
+});
+
+describe("PollFeed — favicon retries (ADR-0010)", () => {
+  it("stops re-fetching a favicon that never resolves", async () => {
+    const { feed, feeds, clock, faviconResolver, fetcher, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ link: "https://a.co/", items: [] })),
+    );
+
+    const step = ICON_RETRY_DEFAULT.ceilingSeconds * 1000;
+    for (let poll = 0; poll < 10; poll++) {
+      clock.set(new Date(now.getTime() + step * (poll + 1)));
+      await pollFeed.execute(feed.id);
+    }
+
+    expect(faviconResolver.calls).toHaveLength(ICON_RETRY_DEFAULT.maxAttempts ?? 0);
+  });
+
+  it("surfaces the failure and holds off until the backoff elapses", async () => {
+    const { feed, feeds, faviconResolver, fetcher, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ link: "https://a.co/", items: [] })),
+    );
+
+    const report = unwrap(await pollFeed.execute(feed.id));
+    expect(report.iconErrors).toEqual(["no icon found at https://a.co/"]);
+
+    await pollFeed.execute(feed.id);
+    expect(faviconResolver.calls).toHaveLength(1);
+  });
+});
+
+describe("PollFeed — adaptive interval wiring", () => {
+  it("counts a poll that published nothing as quiet, and resets on a publish", async () => {
+    const { feed, feeds, fetcher, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(feed.url, ok(fetchedFeed({ items: [] })));
+
+    await pollFeed.execute(feed.id);
+    expect((await feeds.findById(feed.id))?.unchangedPolls).toBe(1);
+    await pollFeed.execute(feed.id);
+    expect((await feeds.findById(feed.id))?.unchangedPolls).toBe(2);
+
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ items: [rawItem({ guid: "n", title: "new" })] })),
+    );
+    await pollFeed.execute(feed.id);
+    expect((await feeds.findById(feed.id))?.unchangedPolls).toBe(0);
   });
 });

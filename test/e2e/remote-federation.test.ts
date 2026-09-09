@@ -113,12 +113,20 @@ function requestCount(path: string): number {
   return remoteDocumentRequests.get(path) ?? 0;
 }
 
+/**
+ * Spawning the CLI costs a `yarn exec` resolution on top of the lookup itself,
+ * and the e2e project runs its files in parallel — each with its own database
+ * and HTTP server — so this budget has to survive a loaded machine, not just
+ * an idle one. It was 30s until the suite grew enough to blow through that.
+ */
+const FEDIFY_CLI_TIMEOUT_MS = 90_000;
+
 async function fedifyLookup(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
     execFile(
       "yarn",
       ["exec", "fedify", "lookup", "-a", "-p", "-C", url],
-      { cwd: process.cwd(), timeout: 30_000 },
+      { cwd: process.cwd(), timeout: FEDIFY_CLI_TIMEOUT_MS },
       (error, stdout, stderr) => {
         if (error === null) resolve(stdout);
         else reject(new Error(`fedify lookup failed: ${stderr}`, { cause: error }));
@@ -141,10 +149,12 @@ beforeAll(async () => {
     port: appPort,
     databaseUrl: database.url,
     pollIntervalSeconds: 1,
+    pollMaxIntervalSeconds: 1,
     pollMaxBackoffSeconds: 60,
     schedulerTickMs: 3_600_000,
     noteMaxChars: 2000,
     teaserMaxChars: 200,
+    extractUserAgent: "rss2pub-e2e",
     behindProxy: false,
     // Both sides talk over 127.0.0.1, so the SSRF guard must stand down for
     // signature key fetches — this is exactly what the flag exists for.
@@ -415,7 +425,7 @@ describe("signed federation round trip", () => {
     expect(editors).toBeGreaterThan(alice);
     expect(output).toContain("same rendered body regardless of author metadata");
     expect(output).not.toContain('"tag"');
-  });
+  }, FEDIFY_CLI_TIMEOUT_MS + 30_000);
 
   it("sends an author-only Update for the same object", async () => {
     fixtures.setFixture(

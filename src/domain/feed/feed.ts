@@ -5,6 +5,7 @@ import type { FeedLanguage } from "./feed-language.js";
 import type { FeedUrl } from "./feed-url.js";
 import type { Handle } from "./handle.js";
 import type { IconUrl } from "./icon-url.js";
+import type { RetryState } from "./retry-policy.js";
 
 /**
  * Deterministic feed identity: SHA-256 hex of the canonical feed URL and
@@ -70,12 +71,17 @@ export type Feed = {
   readonly fullContentEnabled: boolean;
   /** Actor avatar, resolved from the channel link's favicon (ADR-0010). */
   readonly iconUrl: IconUrl | null;
+  /** Favicon resolution is one outbound request per attempt on a site that
+   * may never serve one; without this it retried on every poll forever. */
+  readonly iconRetry: RetryState;
   /** Atom feed-root `xml:lang` (ADR-0011). Falls back for items that carry no
    * `xml:lang` of their own. */
   readonly language: FeedLanguage | null;
   readonly registeredAt: Date;
   readonly validators: CacheValidators;
   readonly consecutiveFailures: number;
+  /** Consecutive polls that produced nothing new; stretches the interval. */
+  readonly unchangedPolls: number;
   readonly nextPollAt: Date;
 };
 
@@ -100,12 +106,14 @@ export const Feed = {
       // Resolved later, on the first poll (ADR-0010) — registration only
       // proves the feed document is reachable, it never fetches the site.
       iconUrl: null,
+      iconRetry: { failures: 0, nextAttemptAt: null },
       // Unlike iconUrl, already present in the same document fetched to
       // register — no extra request needed, so it is set immediately.
       language: params.language ?? null,
       registeredAt: params.now,
       validators: NO_VALIDATORS,
       consecutiveFailures: 0,
+      unchangedPolls: 0,
       nextPollAt: params.now,
     };
   },
@@ -127,6 +135,11 @@ export const Feed = {
       iconUrl: metadata.iconUrl ?? feed.iconUrl,
       language: metadata.language ?? feed.language,
     };
+  },
+
+  /** Records the outcome of a favicon attempt (ADR-0010 give-up counter). */
+  withIconRetry(feed: Feed, iconRetry: RetryState): Feed {
+    return { ...feed, iconRetry };
   },
 
   displayName(feed: Feed): string {

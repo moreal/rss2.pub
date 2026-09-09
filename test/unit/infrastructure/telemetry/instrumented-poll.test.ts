@@ -25,6 +25,8 @@ describe("instrumentPollFeed", () => {
       updated: 0,
       publishErrors: [],
       attributionErrors: ["first lookup failed", "second lookup failed"],
+      extractionErrors: [],
+      iconErrors: [],
       fetchError: null,
     };
     const inner: PollFeed = {

@@ -56,6 +56,11 @@ function rowToFeed(row: FeedRow): Feed {
     registeredAt: row.registeredAt,
     validators,
     consecutiveFailures: row.consecutiveFailures,
+    unchangedPolls: row.unchangedPolls,
+    iconRetry: {
+      failures: row.iconFailures,
+      nextAttemptAt: row.iconNextAttemptAt,
+    },
     nextPollAt: row.nextPollAt,
   };
 }
@@ -74,6 +79,9 @@ function feedToRow(feed: Feed): Omit<FeedRow, "followerCount"> {
     etag: feed.validators.etag,
     lastModified: feed.validators.lastModified,
     consecutiveFailures: feed.consecutiveFailures,
+    unchangedPolls: feed.unchangedPolls,
+    iconFailures: feed.iconRetry.failures,
+    iconNextAttemptAt: feed.iconRetry.nextAttemptAt,
     nextPollAt: feed.nextPollAt,
   };
 }

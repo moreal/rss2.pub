@@ -47,10 +47,12 @@ beforeAll(async () => {
     databaseUrl: database.url,
     // 1s so the feed is due again right after the first poll.
     pollIntervalSeconds: 1,
+    pollMaxIntervalSeconds: 1,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
     noteMaxChars: 2000,
     teaserMaxChars: 200,
+    extractUserAgent: "rss2pub-e2e",
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",

@@ -15,6 +15,9 @@ export function createDrizzleItemRepository(db: Database): ItemRepository {
           publishedAt: publishedItems.publishedAt,
           contentFingerprint: publishedItems.contentFingerprint,
           messageUri: publishedItems.messageUri,
+          fullContentUsed: publishedItems.fullContentUsed,
+          extractFailures: publishedItems.extractFailures,
+          extractNextAttemptAt: publishedItems.extractNextAttemptAt,
         })
         .from(publishedItems)
         .where(
@@ -28,6 +31,11 @@ export function createDrizzleItemRepository(db: Database): ItemRepository {
         publishedAt: row.publishedAt,
         contentFingerprint: row.contentFingerprint ?? "",
         messageUri: row.messageUri as MessageUri | null,
+        fullContentUsed: row.fullContentUsed,
+        extractRetry: {
+          failures: row.extractFailures,
+          nextAttemptAt: row.extractNextAttemptAt,
+        },
       }));
     },
 
@@ -42,6 +50,9 @@ export function createDrizzleItemRepository(db: Database): ItemRepository {
             publishedAt: record.publishedAt,
             contentFingerprint: record.contentFingerprint,
             messageUri: record.messageUri,
+            fullContentUsed: record.fullContentUsed,
+            extractFailures: record.extractRetry.failures,
+            extractNextAttemptAt: record.extractRetry.nextAttemptAt,
           })),
         )
         .onConflictDoNothing();
@@ -51,6 +62,17 @@ export function createDrizzleItemRepository(db: Database): ItemRepository {
       await db
         .update(publishedItems)
         .set({ contentFingerprint })
+        .where(and(eq(publishedItems.feedId, feedId), eq(publishedItems.key, key)));
+    },
+
+    async markExtraction(feedId, key, state) {
+      await db
+        .update(publishedItems)
+        .set({
+          fullContentUsed: state.fullContentUsed,
+          extractFailures: state.extractRetry.failures,
+          extractNextAttemptAt: state.extractRetry.nextAttemptAt,
+        })
         .where(and(eq(publishedItems.feedId, feedId), eq(publishedItems.key, key)));
     },
 

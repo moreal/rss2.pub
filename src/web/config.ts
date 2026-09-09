@@ -16,10 +16,17 @@ export type AppConfig = {
   readonly port: number;
   readonly databaseUrl: string;
   readonly pollIntervalSeconds: number;
+  /** Ceiling the poll interval stretches to while a feed keeps not changing. */
+  readonly pollMaxIntervalSeconds: number;
   readonly pollMaxBackoffSeconds: number;
   readonly schedulerTickMs: number;
   readonly noteMaxChars: number;
   readonly teaserMaxChars: number;
+  /** User-Agent sent when fetching an article page for full-content mode;
+   * null leaves the adapter's own default in place. Overridable because some
+   * origins allowlist named crawlers and reject every honest
+   * self-identification, rss2.pub's included. */
+  readonly extractUserAgent: string | null;
   /** True when serving behind a reverse proxy that sets X-Forwarded-*. */
   readonly behindProxy: boolean;
   /** TEST ONLY (ALLOW_PRIVATE_ADDRESS=true): disables the SSRF guard. */
@@ -97,14 +104,39 @@ export function loadConfig(
 
   const pollIntervalSeconds = integer(env, "POLL_INTERVAL_SECONDS", 600);
   if (!pollIntervalSeconds.ok) return pollIntervalSeconds;
+  const pollMaxIntervalSeconds = integer(env, "POLL_MAX_INTERVAL_SECONDS", 1800);
+  if (!pollMaxIntervalSeconds.ok) return pollMaxIntervalSeconds;
   const pollMaxBackoffSeconds = integer(env, "POLL_MAX_BACKOFF_SECONDS", 86_400);
   if (!pollMaxBackoffSeconds.ok) return pollMaxBackoffSeconds;
+  // PollPolicy.create enforces the same ordering, but only once createApp runs
+  // and only by throwing. Catch it here so a bad environment is a config error
+  // like every other one.
+  if (pollMaxIntervalSeconds.value < pollIntervalSeconds.value) {
+    return err({
+      type: "InvalidConfig",
+      key: "POLL_MAX_INTERVAL_SECONDS",
+      message: `must be at least POLL_INTERVAL_SECONDS (${pollIntervalSeconds.value}), got ${pollMaxIntervalSeconds.value}`,
+    });
+  }
+  if (pollMaxBackoffSeconds.value < pollMaxIntervalSeconds.value) {
+    return err({
+      type: "InvalidConfig",
+      key: "POLL_MAX_BACKOFF_SECONDS",
+      message: `must be at least POLL_MAX_INTERVAL_SECONDS (${pollMaxIntervalSeconds.value}), got ${pollMaxBackoffSeconds.value}`,
+    });
+  }
   const schedulerTickMs = integer(env, "SCHEDULER_TICK_MS", 60_000);
   if (!schedulerTickMs.ok) return schedulerTickMs;
   const noteMaxChars = integer(env, "NOTE_MAX_CHARS", 2000);
   if (!noteMaxChars.ok) return noteMaxChars;
   const teaserMaxChars = integer(env, "TEASER_MAX_CHARS", 200);
   if (!teaserMaxChars.ok) return teaserMaxChars;
+
+  const rawUserAgent = env["EXTRACT_USER_AGENT"];
+  const extractUserAgent =
+    rawUserAgent === undefined || rawUserAgent.trim() === ""
+      ? null
+      : rawUserAgent.trim();
 
   let logLevel: LogLevel = "info";
   const rawLogLevel = env["LOG_LEVEL"];
@@ -140,10 +172,12 @@ export function loadConfig(
     port: port.value,
     databaseUrl,
     pollIntervalSeconds: pollIntervalSeconds.value,
+    pollMaxIntervalSeconds: pollMaxIntervalSeconds.value,
     pollMaxBackoffSeconds: pollMaxBackoffSeconds.value,
     schedulerTickMs: schedulerTickMs.value,
     noteMaxChars: noteMaxChars.value,
     teaserMaxChars: teaserMaxChars.value,
+    extractUserAgent,
     behindProxy: env["BEHIND_PROXY"] === "true",
     allowPrivateAddress: env["ALLOW_PRIVATE_ADDRESS"] === "true",
     logLevel,

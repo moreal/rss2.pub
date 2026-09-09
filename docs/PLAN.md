@@ -211,7 +211,10 @@ packages/
   발행하라"만 알고 Fedify vocab이나 delivery API를 모른다.
 - `ActorResolver` 포트는 remote JSON-LD lookup 결과를 `ResolvedActorUri`로 축소해 외부
   vocab type이 domain으로 들어오지 않게 한다.
-- 폴링 스케줄러는 infrastructure(단순 interval + 지터)에서 `PollFeed` 유스케이스 호출.
+- 폴링 스케줄러는 infrastructure(단순 interval)에서 `PollFeed` 유스케이스 호출.
+  간격 자체는 domain(`poll-policy.ts`)이 정한다 — 조용한 폴링마다 늘어나고,
+  변화가 감지되면 기본 간격으로 돌아오며, 모든 예약에 지터가 붙는다(난수는
+  `Random` 포트로 주입).
 
 ### ActivityPub 매핑
 
