@@ -17,7 +17,7 @@ import type { MessageDescriptor } from "@lingui/core";
 export const copy = {
   layoutMetaDescription: /*i18n*/ {
     id: "layout.meta-description",
-    message: "Follow Atom feeds from the fediverse.",
+    message: "Follow Atom and RSS 2.0 feeds from the fediverse.",
   },
   layoutLanguageLabel: /*i18n*/ {
     id: "layout.language-label",
@@ -44,7 +44,7 @@ export const copy = {
   },
   layoutFooterSummary: /*i18n*/ {
     id: "layout.footer-summary",
-    message: "rss2.pub turns an Atom feed into a fediverse account anyone can follow.",
+    message: "rss2.pub turns feeds into fediverse accounts anyone can follow.",
   },
   layoutFooterBot: /*i18n*/ {
     id: "layout.footer-bot",
@@ -57,7 +57,7 @@ export const copy = {
   },
   homeHeading: /*i18n*/ {
     id: "home.heading",
-    message: "Follow any Atom feed from the fediverse",
+    message: "Follow any Atom or RSS 2.0 feed from the fediverse",
   },
   homeLede: /*i18n*/ {
     id: "home.lede",

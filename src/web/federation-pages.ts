@@ -94,7 +94,7 @@ export function createFederationPages(deps: {
     let icon: string | null;
     if (rawHandle === MAIN_ACTOR_HANDLE) {
       name = "rss2.pub";
-      summary = "<p>I turn Atom feeds into followable accounts. Mention me with register or search commands.</p>";
+      summary = "<p>I turn Atom and RSS 2.0 feeds into followable accounts. Mention me with register or search commands.</p>";
       icon = null;
     } else {
       const handle = Handle.create(rawHandle);

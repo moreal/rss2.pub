@@ -73,12 +73,12 @@ msgstr "Feed URL"
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:58
 msgid "home.heading"
-msgstr "Follow any Atom feed from the fediverse"
+msgstr "Follow any Atom or RSS 2.0 feed from the fediverse"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:18
 msgid "layout.meta-description"
-msgstr "Follow Atom feeds from the fediverse."
+msgstr "Follow Atom and RSS 2.0 feeds from the fediverse."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:145
@@ -187,7 +187,7 @@ msgstr "Registering…"
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:45
 msgid "layout.footer-summary"
-msgstr "rss2.pub turns an Atom feed into a fediverse account anyone can follow."
+msgstr "rss2.pub turns feeds into fediverse accounts anyone can follow."
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id

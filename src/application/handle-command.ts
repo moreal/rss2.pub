@@ -52,8 +52,8 @@ export type CommandHandler = {
 };
 
 const HELP_TEXT = [
-  "I turn Atom feeds into followable fediverse accounts. Commands:",
-  "register <feed-url> — register an Atom feed and get its account handle",
+  "I turn Atom or RSS 2.0 feeds into followable fediverse accounts. Commands:",
+  "register <feed-url> — register an Atom or RSS 2.0 feed and get its account handle",
   "search <keyword> — find registered feeds",
 ].join("\n");
 

@@ -65,7 +65,7 @@ export function createFedifyStack(deps: {
       return {
         handle: MAIN_ACTOR_HANDLE,
         name: "rss2.pub",
-        summaryHtml: "I turn Atom feeds into followable accounts. Mention me with &quot;register &lt;feed-url&gt;&quot; to bridge an Atom feed, or &quot;search &lt;keyword&gt;&quot; to find one.",
+        summaryHtml: "I turn Atom or RSS 2.0 feeds into followable accounts. Mention me with &quot;register &lt;feed-url&gt;&quot; to bridge a feed, or &quot;search &lt;keyword&gt;&quot; to find one.",
         homepageUrl: null,
         iconUrl: null,
       };

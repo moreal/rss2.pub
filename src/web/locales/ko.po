@@ -73,12 +73,12 @@ msgstr "피드 URL"
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:58
 msgid "home.heading"
-msgstr "페디버스에서 어떤 Atom 피드든 팔로우하세요"
+msgstr "페디버스에서 어떤 Atom 또는 RSS 2.0 피드든 팔로우하세요"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:18
 msgid "layout.meta-description"
-msgstr "페디버스에서 Atom 피드를 팔로우하세요."
+msgstr "페디버스에서 Atom 및 RSS 2.0 피드를 팔로우하세요."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:145
@@ -187,7 +187,7 @@ msgstr "등록하는 중…"
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:45
 msgid "layout.footer-summary"
-msgstr "rss2.pub은 Atom 피드를 누구나 팔로우할 수 있는 페디버스 계정으로 바꿉니다."
+msgstr "rss2.pub은 피드를 누구나 팔로우할 수 있는 페디버스 계정으로 바꿉니다."
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id

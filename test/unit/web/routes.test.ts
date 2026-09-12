@@ -176,10 +176,10 @@ describe("localized page chrome", () => {
     expect(html).toContain(`<title>${title}</title>`);
   });
 
-  it("localizes the Atom-only meta description", async () => {
+  it("localizes the Atom/RSS 2.0 meta description", async () => {
     const html = await bodyOf(webApp().request("/?lang=ko"));
     expect(html).toContain(
-      '<meta name="description" content="페디버스에서 Atom 피드를 팔로우하세요."/>',
+      '<meta name="description" content="페디버스에서 Atom 및 RSS 2.0 피드를 팔로우하세요."/>',
     );
   });
 
@@ -201,13 +201,11 @@ describe("localized page chrome", () => {
 
 describe("localized content", () => {
   it.each([
-    { path: "/", expected: "Follow any Atom feed from the fediverse" },
-    { path: "/?lang=ko", expected: "페디버스에서 어떤 Atom 피드든 팔로우하세요" },
-  ])("renders Atom-only product copy at $path", async ({ path, expected }) => {
+    { path: "/", expected: "Follow any Atom or RSS 2.0 feed from the fediverse" },
+    { path: "/?lang=ko", expected: "페디버스에서 어떤 Atom 또는 RSS 2.0 피드든 팔로우하세요" },
+  ])("renders Atom/RSS 2.0 product copy at $path", async ({ path, expected }) => {
     const html = await bodyOf(webApp().request(path));
     expect(html).toContain(expected);
-    expect(html).not.toContain("RSS feed");
-    expect(html).not.toContain("RSS or Atom");
   });
 
   it("renders Korean home copy", async () => {

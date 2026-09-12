@@ -181,11 +181,11 @@ describe("CommandHandler", () => {
     expect(reply).toContain('No feeds found for "nothing"');
   });
 
-  it("answers anything else with Atom-only usage help", async () => {
+  it("answers anything else with Atom/RSS 2.0 usage help", async () => {
     const { handler } = setup();
     const reply = flatten(await handler.handle("@rss2pub hi!"));
     expect(reply).toContain(
-      "I turn Atom feeds into followable fediverse accounts. Commands:",
+      "I turn Atom or RSS 2.0 feeds into followable fediverse accounts. Commands:",
     );
     expect(reply).not.toContain("RSS/Atom");
     expect(reply).toContain("register <feed-url>");
