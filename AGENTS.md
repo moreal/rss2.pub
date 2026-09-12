@@ -136,7 +136,7 @@ adapter.
 | Note ≤ 2,000 chars, Article beyond; teaser = first paragraph | ADR-0005 |
 | Single PostgreSQL for domain + Fedify KV/MQ + first-party federation state | ADR-0006, ADR-0013 |
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
-| Full-content extraction is opt-in per registration (`register <url> full`); teaser and full-content are separate actors, one handle/id per (url, mode) | ADR-0009 (handle/id derivation: ADR-0004) |
+| Publish Atom entry content, falling back to summary; no article fetching or new full variant. Preserve legacy full actor identities and followers. | ADR-0015 (supersedes ADR-0009) |
 | Actor avatar resolved from the channel link's favicon on the first poll (not at registration); resolved once, never re-fetched | ADR-0010 |
 | Post language tagging: Atom `xml:lang` at feed root *and* per-entry override | ADR-0011, amended by ADR-0012 |
 | Atom author URI → metadata-only plural `attributedTo` | ADR-0014 |

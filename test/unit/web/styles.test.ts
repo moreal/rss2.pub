@@ -72,7 +72,7 @@ const AA_PAIRS: readonly (readonly [string, string])[] = [
   ["--text-subtle", "--bg"],
   ["--text-subtle", "--surface"],
   ["--text-subtle", "--surface-2"],
-  // Links, and the full-content badge that sits on a tinted chip.
+  // Links and accent text on a tinted chip.
   ["--accent-ink", "--bg"],
   ["--accent-ink", "--surface"],
   ["--accent-ink", "--surface-2"],

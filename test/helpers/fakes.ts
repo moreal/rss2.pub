@@ -18,11 +18,6 @@ import type {
   ResolvedActorUri,
 } from "../../src/domain/ports/actor-resolver.js";
 import type {
-  ContentExtractor,
-  ExtractContentError,
-  ExtractedContent,
-} from "../../src/domain/ports/content-extractor.js";
-import type {
   FaviconResolver,
   ResolveFaviconError,
   ResolvedFavicon,
@@ -313,33 +308,6 @@ export function capturingFederation(): CapturingFederation {
     async deleteActor(feed): Promise<Result<void, FederationError>> {
       deletedActors.push(feed);
       return ok(undefined);
-    },
-  };
-}
-
-export type FakeContentExtractor = ContentExtractor & {
-  respondWith(
-    url: string,
-    result: Result<ExtractedContent, ExtractContentError>,
-  ): void;
-  readonly calls: string[];
-};
-
-/** Fails extraction for any URL with no configured response. */
-export function fakeContentExtractor(): FakeContentExtractor {
-  const responses = new Map<string, Result<ExtractedContent, ExtractContentError>>();
-  const calls: string[] = [];
-  return {
-    calls,
-    respondWith(url, result) {
-      responses.set(url, result);
-    },
-    async extract(url) {
-      calls.push(url);
-      return (
-        responses.get(url) ??
-        err({ type: "ExtractionFailed", url, message: "no fake response" })
-      );
     },
   };
 }

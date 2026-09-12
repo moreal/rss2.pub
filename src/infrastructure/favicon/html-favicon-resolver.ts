@@ -41,7 +41,7 @@ export function createHtmlFaviconResolver(options?: {
   readonly userAgent?: string;
 }): FaviconResolver {
   const timeoutMs = options?.timeoutMs ?? 15_000;
-  // See readability-extractor.ts: a bare "rss2.pub (+url)" UA gets 403'd by
+  // A bare "rss2.pub (+url)" UA gets 403'd by
   // WAFs that require a "Mozilla/5.0" prefix; this form clears that while
   // staying honestly self-identified as a bot.
   const userAgent =

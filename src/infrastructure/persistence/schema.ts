@@ -66,10 +66,8 @@ export const publishedItems = pgTable(
     // Null only for rows written before content-change tracking existed.
     contentFingerprint: text("content_fingerprint"),
     messageUri: text("message_uri"),
-    // True when the published object was built from extracted article
-    // content rather than the feed's own teaser (ADR-0009). Drives both the
-    // retry-until-upgraded path and the refusal to overwrite full content
-    // with a teaser when a later extraction fails.
+    // Retired extraction columns, retained for rolling deployment/rollback
+    // compatibility. Application code no longer reads or writes them (ADR-0015).
     fullContentUsed: boolean("full_content_used").notNull().default(false),
     extractFailures: integer("extract_failures").notNull().default(0),
     extractNextAttemptAt: timestamp("extract_next_attempt_at", {

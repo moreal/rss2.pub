@@ -91,16 +91,6 @@ export const copy = {
     comment:
       "Replaces the submit button's label while the feed is being fetched.",
   },
-  registerFullContentLabel: /*i18n*/ {
-    id: "register.full-content-label",
-    message: "Fetch full articles",
-    comment: "Checkbox label on the registration form (ADR-0009).",
-  },
-  registerFullContentHelp: /*i18n*/ {
-    id: "register.full-content-help",
-    message:
-      "Posts carry the whole article instead of the feed's summary. This creates a second, separate account for the same feed.",
-  },
   registerBotAlt: /*i18n*/ {
     id: "register.bot-alt",
     message: "Prefer the fediverse? Mention {handle} with {command}.",
@@ -241,11 +231,6 @@ export const copy = {
   feedFollowers: /*i18n*/ {
     id: "feed.followers",
     message: "{count, plural, one {# follower} other {# followers}}",
-  },
-  feedFullContentBadge: /*i18n*/ {
-    id: "feed.full-content-badge",
-    message: "Full content",
-    comment: "Badge on a feed card whose account posts full articles (ADR-0009).",
   },
   // `as const` is load-bearing, not decoration: `translate()` reads each
   // message's literal text to decide whether ICU values are mandatory, and

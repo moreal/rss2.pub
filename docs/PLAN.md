@@ -286,9 +286,9 @@ packages/
 - 팔로워 수 기반 추천과 대규모 author lookup의 부하 테스트.
 - 운영 배포(리버스 프록시 + `BEHIND_PROXY=true`, 매니지드 Postgres) 및 Docker 이미지
   CI 빌드.
-- ✅ 전문(full content) 추출 기능: 요약만 제공하는 피드에서 원문을 가져와 전문으로
-  발행하는 등록 시점 opt-in 기능 — 설계와 구현은 ADR-0009 참고. 별도 피드 변환기
-  서비스로의 재분리는 ADR-0009 "재검토 조건"에 조건부로 남아 있다.
+- Atom entry의 content를 게시하고 content가 없으면 summary를 사용한다.
+  원문 페이지 추출과 full 신규 등록은 제거했다(ADR-0015, ADR-0009 대체).
+  기존 full 계정의 주소와 팔로워는 유지하며 동일한 Atom 본문 정책을 적용한다.
 
 ## 확정된 사항
 

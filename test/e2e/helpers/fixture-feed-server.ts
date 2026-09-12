@@ -6,8 +6,7 @@ type Fixture = {
   readonly contentType: string;
   readonly etag: string | null;
   /** When set, every other User-Agent gets a bare 403 — the way some origins
-   * allowlist named crawlers and reject everything else (see the news.hada.io
-   * case in readability-extractor.ts). */
+   * allowlist named crawlers and reject everything else. */
   readonly allowUserAgent: string | null;
 };
 

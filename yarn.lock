@@ -1987,13 +1987,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mozilla/readability@npm:^0.6.0":
-  version: 0.6.0
-  resolution: "@mozilla/readability@npm:0.6.0"
-  checksum: 10c0/05c0fdb837f6bddd307b9dbc396538cdf17ab6a0d3bec96971c2dfc079737fb7ab830a0797c5fad3d66db71cb9c305d8e05fe68d9b7eb0be951d4b802e43e588
-  languageName: node
-  linkType: hard
-
 "@multiformats/base-x@npm:^4.0.1":
   version: 4.0.1
   resolution: "@multiformats/base-x@npm:4.0.1"
@@ -6444,7 +6437,6 @@ __metadata:
     "@lingui/cli": "npm:^6.6.0"
     "@lingui/core": "npm:^6.6.0"
     "@logtape/logtape": "npm:^2.2.4"
-    "@mozilla/readability": "npm:^0.6.0"
     "@opentelemetry/api": "npm:^1.9.1"
     "@opentelemetry/exporter-metrics-otlp-http": "npm:^0.221.0"
     "@opentelemetry/exporter-trace-otlp-http": "npm:^0.221.0"

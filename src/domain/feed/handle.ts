@@ -10,10 +10,9 @@ import type { FeedUrl } from "./feed-url.js";
  * is truncated to 22 chars and always suffixed with `_` + 7 base36 chars of
  * a hash, keeping the total within 22 + 1 + 7 = 30.
  *
- * The hash also folds in whether this is the full-content variant
- * (ADR-0009): a URL registered both as teaser and as full-content gets two
- * distinct handles, one per actor. `fullContentEnabled` defaults to `false`
- * so every pre-ADR-0009 call site keeps deriving today's handle unchanged.
+ * The legacy full-content discriminator preserves ADR-0009 actor handles.
+ * New registrations always use false; both identities now publish Atom
+ * content exclusively (ADR-0015).
  */
 export type Handle = Brand<string, "Handle">;
 

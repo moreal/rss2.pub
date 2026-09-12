@@ -400,29 +400,6 @@ export const STYLE = `
     animation: spin 700ms linear infinite;
   }
 
-  /* Checkbox: title and explanation are both part of the label, so the whole
-     block is one hit target and one accessible name. */
-  .check {
-    display: grid; grid-template-columns: auto 1fr;
-    gap: var(--space-1) var(--space-3);
-    align-items: start;
-    padding: var(--space-3);
-    margin-inline: calc(var(--space-3) * -1);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-  }
-  .check input {
-    grid-row: span 2;
-    width: 1.25rem; height: 1.25rem; margin: 0.15rem 0 0;
-    accent-color: var(--accent); flex: none;
-  }
-  .check-title { font-size: var(--text-sm); font-weight: var(--weight-medium); }
-  .check-help { grid-column: 2; font-size: var(--text-sm); color: var(--text-muted); }
-  @media (hover: hover) and (pointer: fine) {
-    .check:hover { background: var(--surface-2); }
-  }
-  .check:focus-within { background: var(--surface-2); }
-
   .form-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
   @media (max-width: 30rem) {
     .form-actions .btn { width: 100%; }

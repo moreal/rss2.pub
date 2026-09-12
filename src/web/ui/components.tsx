@@ -123,11 +123,6 @@ export const FeedCard: FC<{
             </span>
           )}
           <span class="feed-src">{displayUrl(props.feed.url)}</span>
-          {props.feed.fullContentEnabled && (
-            <span class="tag tag-accent">
-              {translate(props.ctx.i18n, copy.feedFullContentBadge)}
-            </span>
-          )}
         </p>
       </div>
     </div>
@@ -215,7 +210,6 @@ export const SearchForm: FC<{
 /** What the user typed, so a rejected submission never has to be retyped. */
 export type RegisterDraft = {
   readonly url: string;
-  readonly fullContentEnabled: boolean;
   /** Present only after a failed attempt; renders inline above the field. */
   readonly error?: string;
 };
@@ -270,22 +264,6 @@ export const RegisterForm: FC<{
           {translate(props.ctx.i18n, copy.registerUrlHelp)}
         </p>
       </div>
-      {/* Before the button, not after it: this option changes what pressing
-          the button does, so it has to be readable first. */}
-      <label class="check">
-        <input
-          type="checkbox"
-          name="full"
-          value="1"
-          {...(props.draft?.fullContentEnabled ? { checked: true } : {})}
-        />
-        <span class="check-title">
-          {translate(props.ctx.i18n, copy.registerFullContentLabel)}
-        </span>
-        <span class="check-help">
-          {translate(props.ctx.i18n, copy.registerFullContentHelp)}
-        </span>
-      </label>
       <div class="form-actions">
         {/* The label is a span so the enhancement can swap the text without
             touching the spinner beside it. */}

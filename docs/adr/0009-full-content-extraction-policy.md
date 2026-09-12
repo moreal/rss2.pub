@@ -1,5 +1,7 @@
 # ADR-0009: 전문(Full Content) 추출 정책
 
+> Superseded by [ADR-0015](0015-atom-entry-content-only.md): 원문 추출 및 신규 full 등록 제거.
+
 - Status: accepted (2026-08-23)
 - Context: Inoreader/FiveFilters 리서치 및 논의 (2026-08-23 대화)
 

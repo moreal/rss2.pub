@@ -156,7 +156,6 @@ beforeAll(async () => {
     schedulerTickMs: 3_600_000,
     noteMaxChars: 2000,
     teaserMaxChars: 200,
-    extractUserAgent: "rss2pub-e2e",
     behindProxy: false,
     // Both sides talk over 127.0.0.1, so the SSRF guard must stand down for
     // signature key fetches — this is exactly what the flag exists for.

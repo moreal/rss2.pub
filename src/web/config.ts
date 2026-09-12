@@ -22,11 +22,6 @@ export type AppConfig = {
   readonly schedulerTickMs: number;
   readonly noteMaxChars: number;
   readonly teaserMaxChars: number;
-  /** User-Agent sent when fetching an article page for full-content mode;
-   * null leaves the adapter's own default in place. Overridable because some
-   * origins allowlist named crawlers and reject every honest
-   * self-identification, rss2.pub's included. */
-  readonly extractUserAgent: string | null;
   /** True when serving behind a reverse proxy that sets X-Forwarded-*. */
   readonly behindProxy: boolean;
   /** TEST ONLY (ALLOW_PRIVATE_ADDRESS=true): disables the SSRF guard. */
@@ -132,12 +127,6 @@ export function loadConfig(
   const teaserMaxChars = integer(env, "TEASER_MAX_CHARS", 200);
   if (!teaserMaxChars.ok) return teaserMaxChars;
 
-  const rawUserAgent = env["EXTRACT_USER_AGENT"];
-  const extractUserAgent =
-    rawUserAgent === undefined || rawUserAgent.trim() === ""
-      ? null
-      : rawUserAgent.trim();
-
   let logLevel: LogLevel = "info";
   const rawLogLevel = env["LOG_LEVEL"];
   if (rawLogLevel !== undefined && rawLogLevel.trim() !== "") {
@@ -177,7 +166,6 @@ export function loadConfig(
     schedulerTickMs: schedulerTickMs.value,
     noteMaxChars: noteMaxChars.value,
     teaserMaxChars: teaserMaxChars.value,
-    extractUserAgent,
     behindProxy: env["BEHIND_PROXY"] === "true",
     allowPrivateAddress: env["ALLOW_PRIVATE_ADDRESS"] === "true",
     logLevel,

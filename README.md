@@ -22,6 +22,10 @@ Tested against the rss2.pub Atom consumer conformance profile derived from the W
 - 메인 액터 `@rss2pub`: 멘션/DM으로 `register <url>`, `search <keyword>` 명령 처리
 - 웹 UI: 인기 피드 추천 · 검색 · 등록
 
+게시물 본문은 Atom entry의 `content`를 사용하며, 없으면 `summary`를 사용합니다.
+원문 웹페이지를 가져와 본문을 추출하지 않습니다. 기존 `full` 계정은 주소와 팔로워를
+유지하며 같은 본문 정책을 따릅니다([ADR-0015](docs/adr/0015-atom-entry-content-only.md)).
+
 Atom 저자는 entry → source → feed 순으로 상속된 URI를 사용합니다. 절대 HTTP(S) URI만
 canonicalize·중복 제거한 뒤 최대 8개를 ActivityPub Actor로 확인하며, 게시물의
 `attributedTo`에는 로컬 피드 액터를 먼저 두고 확인된 외부 액터를 최대 8개 추가합니다.

@@ -394,7 +394,7 @@ describe("feed cards", () => {
     expect(html.slice(title)).toContain("@example@rss2.test");
   });
 
-  it("badges full-content feeds and leaves plain feeds unbadged (ADR-0009)", async () => {
+  it("renders legacy accounts without advertising article extraction", async () => {
     const fullFeed = makeFeed({
       url: "https://full.example/feed.xml",
       handle: "fullexample",
@@ -403,8 +403,8 @@ describe("feed cards", () => {
     });
     const searchFeeds: SearchFeeds = { execute: async () => ok([fullFeed, FEED]) };
     const html = await bodyOf(webApp({ searchFeeds }).request("/search?q=example"));
-    expect(html).toContain('<span class="tag tag-accent">Full content</span>');
-    // FEED (not full-content) still renders, but without the badge markup.
+    expect(html).not.toContain('<span class="tag tag-accent">Full content</span>');
+    // Ordinary feed cards also render without the retired badge.
     const feedCardStart = html.indexOf('href="/@example"');
     expect(html.slice(feedCardStart, feedCardStart + 400)).not.toContain(
       "tag-accent",
@@ -419,11 +419,11 @@ describe("registration outcomes", () => {
     return app.request(`/register${query}`, { method: "POST", body: form });
   }
 
-  it("registers without full-content mode when the checkbox is unset", async () => {
-    const calls: { url: string; fullContentEnabled: boolean | undefined }[] = [];
+  it("registers the Atom feed URL", async () => {
+    const calls: string[] = [];
     const registerFeed: RegisterFeed = {
-      execute: async (url, fullContentEnabled) => {
-        calls.push({ url, fullContentEnabled });
+      execute: async (url) => {
+        calls.push(url);
         return ok({ feed: FEED, created: true });
       },
     };
@@ -434,15 +434,15 @@ describe("registration outcomes", () => {
       body: form,
     });
     expect(calls).toEqual([
-      { url: "https://example.com/feed.xml", fullContentEnabled: false },
+      "https://example.com/feed.xml",
     ]);
   });
 
-  it("opts into full-content mode when the checkbox is checked (ADR-0009)", async () => {
-    const calls: { url: string; fullContentEnabled: boolean | undefined }[] = [];
+  it("ignores a legacy full form field", async () => {
+    const calls: string[] = [];
     const registerFeed: RegisterFeed = {
-      execute: async (url, fullContentEnabled) => {
-        calls.push({ url, fullContentEnabled });
+      execute: async (url) => {
+        calls.push(url);
         return ok({ feed: FEED, created: true });
       },
     };
@@ -454,7 +454,7 @@ describe("registration outcomes", () => {
       body: form,
     });
     expect(calls).toEqual([
-      { url: "https://example.com/feed.xml", fullContentEnabled: true },
+      "https://example.com/feed.xml",
     ]);
   });
 
@@ -544,8 +544,8 @@ describe("recovering from a rejected registration", () => {
     expect(await bodyOf(reject())).toContain("autofocus");
   });
 
-  it("preserves the full-content choice (ADR-0009)", async () => {
-    expect(await bodyOf(reject(true))).toContain('value="1" checked');
+  it("does not reintroduce the retired full option on errors", async () => {
+    expect(await bodyOf(reject(true))).not.toContain('name="full"');
   });
 
   it("still answers 422 — only the body moved, not the contract", async () => {

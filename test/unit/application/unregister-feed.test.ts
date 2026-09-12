@@ -20,8 +20,6 @@ async function setup() {
       publishedAt: T0,
       contentFingerprint: "fp",
       messageUri: null,
-      fullContentUsed: false,
-      extractRetry: { failures: 0, nextAttemptAt: null },
     },
   ]);
   const unregister = createUnregisterFeed({ feeds, items, federation });

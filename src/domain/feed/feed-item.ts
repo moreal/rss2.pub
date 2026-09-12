@@ -55,8 +55,7 @@ function parseLanguage(raw: string | null): FeedLanguage | null {
 /**
  * Fingerprint of the feed-provided fields of an item, used to detect when a
  * feed re-serves an already-known item (same `ItemKey`) with different
- * content. Computed from the feed's own fields only — never from extracted
- * full-content HTML, which can vary poll to poll independent of the feed.
+ * content. Computed solely from the Atom entry's effective fields.
  */
 export function contentFingerprint(item: FeedItem): string {
   return sha256Hex(JSON.stringify([

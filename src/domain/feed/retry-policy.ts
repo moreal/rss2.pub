@@ -3,14 +3,6 @@ import { err, ok, type Result } from "../../shared/result.js";
 
 /**
  * When to try a failed outbound fetch again, and when to stop trying.
- *
- * rss2.pub makes three kinds of outbound request on a feed's behalf: the feed
- * document itself, the site favicon that becomes the actor avatar (ADR-0010),
- * and — in full-content mode — each item's article page (ADR-0009). Each one
- * used to decide retries for itself, and they disagreed: the feed backed off
- * exponentially, the favicon retried on every poll forever, and a failed
- * article extraction was never retried at all. This is the single policy all
- * three share; only the base, the ceiling and the give-up threshold differ.
  */
 export type RetryBudget = {
   readonly baseSeconds: number;
@@ -111,19 +103,6 @@ export function hasGivenUp(policy: RetryPolicy, state: RetryState): boolean {
  */
 export const ICON_RETRY_DEFAULT = fixedPolicy({
   baseSeconds: 3600,
-  ceilingSeconds: 86_400,
-  maxAttempts: 5,
-});
-
-/**
- * Article extraction in full-content mode (ADR-0009). A failure publishes the
- * feed's teaser immediately — timeliness beats completeness — and the article
- * page is retried on later polls, upgrading the published object if it
- * succeeds. Give up after a few attempts so a permanently blocked origin
- * costs a bounded number of requests per item, not one per poll.
- */
-export const EXTRACT_RETRY_DEFAULT = fixedPolicy({
-  baseSeconds: 1800,
   ceilingSeconds: 86_400,
   maxAttempts: 5,
 });

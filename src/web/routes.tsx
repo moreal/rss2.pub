@@ -162,7 +162,6 @@ export function createWebRoutes(deps: WebDeps): Hono {
     const ctx = pageContext(c, deps);
     const form = await c.req.formData();
     const rawUrl = form.get("url");
-    const fullContentEnabled = form.get("full") !== null;
     const rejected = async (
       failure: RegisterFailure,
       status: ContentfulStatusCode,
@@ -175,7 +174,6 @@ export function createWebRoutes(deps: WebDeps): Hono {
           morePopular={morePopular}
           draft={{
             url: typeof rawUrl === "string" ? rawUrl : "",
-            fullContentEnabled,
             error: registerErrorMessage(ctx.i18n, failure),
           }}
         />,
@@ -186,7 +184,7 @@ export function createWebRoutes(deps: WebDeps): Hono {
     if (typeof rawUrl !== "string") {
       return rejected({ type: "MissingUrl" }, 400);
     }
-    const result = await deps.registerFeed.execute(rawUrl, fullContentEnabled);
+    const result = await deps.registerFeed.execute(rawUrl);
     if (!result.ok) return rejected(result.error, 422);
     return c.html(
       <RegisterResultPage

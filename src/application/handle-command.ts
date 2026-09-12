@@ -10,8 +10,6 @@ export type Command =
   | {
       readonly type: "register";
       readonly url: string;
-      /** `register <url> full` opts into ADR-0009 full-content extraction. */
-      readonly fullContentEnabled: boolean;
     }
   | { readonly type: "search"; readonly keyword: string }
   | { readonly type: "help" };
@@ -25,8 +23,7 @@ export function parseCommand(text: string): Command {
     case "register": {
       const url = rest[0];
       if (url === undefined) return { type: "help" };
-      const fullContentEnabled = rest[1]?.toLowerCase() === "full";
-      return { type: "register", url, fullContentEnabled };
+      return { type: "register", url };
     }
     case "search": {
       const keyword = rest.join(" ");
@@ -57,8 +54,6 @@ export type CommandHandler = {
 const HELP_TEXT = [
   "I turn Atom feeds into followable fediverse accounts. Commands:",
   "register <feed-url> — register an Atom feed and get its account handle",
-  "register <feed-url> full — same, but fetch each item's full article " +
-    "instead of the feed's summary (a separate account from the plain one)",
   "search <keyword> — find registered feeds",
 ].join("\n");
 
@@ -77,10 +72,7 @@ export function createCommandHandler(deps: {
       const command = parseCommand(text);
       switch (command.type) {
         case "register": {
-          const result = await deps.registerFeed.execute(
-            command.url,
-            command.fullContentEnabled,
-          );
+          const result = await deps.registerFeed.execute(command.url);
           if (!result.ok) {
             switch (result.error.type) {
               case "NotAUrl":

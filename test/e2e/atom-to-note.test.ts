@@ -65,7 +65,6 @@ beforeAll(async () => {
     schedulerTickMs: 3_600_000,
     noteMaxChars: NOTE_MAX_CHARS,
     teaserMaxChars: 100,
-    extractUserAgent: "rss2pub-e2e",
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",

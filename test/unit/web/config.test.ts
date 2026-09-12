@@ -17,23 +17,9 @@ describe("loadConfig", () => {
       schedulerTickMs: 60_000,
       noteMaxChars: 2000,
       teaserMaxChars: 200,
-      // null means "leave the extractor's own default in place", so the
-      // User-Agent has exactly one owner.
-      extractUserAgent: null,
       logLevel: "info",
       logFormat: "console",
     });
-  });
-
-  it("takes an operator-supplied extraction User-Agent, ignoring blank ones", () => {
-    expect(
-      unwrap(loadConfig({ ...BASE, EXTRACT_USER_AGENT: "  custom/1.0  " }))
-        .extractUserAgent,
-    ).toBe("custom/1.0");
-    expect(
-      unwrap(loadConfig({ ...BASE, EXTRACT_USER_AGENT: "   " }))
-        .extractUserAgent,
-    ).toBeNull();
   });
 
   it("rejects poll intervals that are out of order", () => {

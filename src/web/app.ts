@@ -23,10 +23,8 @@ import { PollPolicy } from "../domain/feed/poll-policy.js";
 import type { Clock } from "../domain/ports/clock.js";
 import type { Random } from "../domain/ports/random.js";
 import {
-  EXTRACT_RETRY_DEFAULT,
   ICON_RETRY_DEFAULT,
 } from "../domain/feed/retry-policy.js";
-import { createReadabilityContentExtractor } from "../infrastructure/content/readability-extractor.js";
 import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favicon-resolver.js";
 import { createAtomFeedFetcher } from "../infrastructure/feedfetch/atom-feed-fetcher.js";
 import { createFedifyGateway } from "../infrastructure/federation/fedify-gateway.js";
@@ -85,11 +83,6 @@ export async function createApp(config: AppConfig): Promise<App> {
   const items = createDrizzleItemRepository(db);
   const federationObjects = createDrizzleFederationRepository(db);
   const fetcher = createAtomFeedFetcher();
-  const contentExtractor = createReadabilityContentExtractor(
-    config.extractUserAgent === null
-      ? {}
-      : { userAgent: config.extractUserAgent },
-  );
   const faviconResolver = createHtmlFaviconResolver();
   const clock: Clock = { now: () => new Date() };
   const random: Random = { ratio: () => Math.random() };
@@ -138,13 +131,11 @@ export async function createApp(config: AppConfig): Promise<App> {
       fetcher,
       federation,
       actorResolver,
-      contentExtractor,
       faviconResolver,
       clock,
       random,
       pollPolicy: pollPolicyResult.value,
       iconRetryPolicy: ICON_RETRY_DEFAULT,
-      extractRetryPolicy: EXTRACT_RETRY_DEFAULT,
       contentPolicy: contentPolicyResult.value,
     }),
   );

@@ -9,9 +9,8 @@ import type { RetryState } from "./retry-policy.js";
 
 /**
  * Deterministic feed identity: SHA-256 hex of the canonical feed URL and
- * content mode. A URL registered both as teaser and as full-content
- * (ADR-0009) yields two distinct ids — `fullContentEnabled` defaults to
- * `false` so existing callers keep deriving today's id unchanged.
+ * legacy content mode. Preserve ADR-0009 identities and their followers;
+ * new registrations always use the default identity (ADR-0015).
  */
 export type FeedId = Brand<string, "FeedId">;
 
@@ -66,8 +65,7 @@ export type Feed = {
   readonly handle: Handle;
   readonly title: FeedTitle | null;
   readonly description: string | null;
-  /** Opt-in per ADR-0009: fetch each item's original page and extract its
-   * main content instead of publishing the feed-provided teaser. */
+  /** Legacy identity discriminator only; never enables article fetching. */
   readonly fullContentEnabled: boolean;
   /** Actor avatar, resolved from the channel link's favicon (ADR-0010). */
   readonly iconUrl: IconUrl | null;
