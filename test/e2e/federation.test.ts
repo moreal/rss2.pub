@@ -100,7 +100,7 @@ const LONG_BODY = `<p>lead paragraph of the long post</p><p>${"word ".repeat(600
 describe("federation e2e", () => {
   let feedHandle: string;
 
-  it("rejects an RSS registration without creating an actor", async () => {
+  it("registers an RSS 2.0 feed and creates its actor (ADR-0016)", async () => {
     fixtures.setFixture(
       "/rss.xml",
       `<?xml version="1.0" encoding="UTF-8"?>
@@ -108,22 +108,26 @@ describe("federation e2e", () => {
       { contentType: "application/rss+xml" },
     );
     const feedUrl = fixtures.url("/rss.xml");
-    const rejectedHandle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+    const rssHandle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
 
     const response = await fetch(`${base}/register`, {
       method: "POST",
       body: new URLSearchParams({ url: feedUrl }),
     });
 
-    expect(response.status).toBe(422);
-    expect(await response.text()).toContain(
-      "Couldn’t read an Atom feed there: document is not an Atom 1.0 feed",
-    );
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Feed registered");
+    expect(html).toContain(`@${rssHandle}@${host}`);
 
     const webfinger = await fetch(
-      `${base}/.well-known/webfinger?resource=acct:${rejectedHandle}@${host}`,
+      `${base}/.well-known/webfinger?resource=acct:${rssHandle}@${host}`,
     );
-    expect(webfinger.status).toBe(404);
+    expect(webfinger.status).toBe(200);
+
+    const actor = await fetchAp(`${base}/ap/actor/${rssHandle}`);
+    expect(actor["preferredUsername"]).toBe(rssHandle);
+    expect(actor["name"]).toBe("RSS Blog");
   });
 
   it("registers a feed through the web form", async () => {

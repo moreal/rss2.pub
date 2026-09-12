@@ -53,7 +53,7 @@ msgstr "이 계정 이름을 복사하세요."
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:121
 msgid "register.error-feed-unreachable"
-msgstr "해당 주소에서 Atom 피드를 읽을 수 없습니다: {message}"
+msgstr "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니다: {message}"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:129
@@ -251,7 +251,7 @@ msgstr "이 피드를 등록하지 못했습니다"
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
 msgid "register.url-help"
-msgstr "웹사이트가 아니라 Atom 피드 자체의 주소를 입력하세요. 보통 /atom 또는 .xml로 끝납니다."
+msgstr "웹사이트가 아니라 Atom 또는 RSS 2.0 피드 자체의 주소를 입력하세요. 보통 /atom, /feed 또는 .xml로 끝납니다."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:141

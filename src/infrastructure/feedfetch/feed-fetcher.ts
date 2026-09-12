@@ -4,18 +4,22 @@ import {
   type AtomParseError,
   type AtomTextDto,
 } from "@rss2pub/atom-feed";
+import { parseRss2 } from "@rss2pub/rss-feed";
 import { escapeHtml } from "../../domain/content/html.js";
 import type { CacheValidators } from "../../domain/feed/feed.js";
 import type { RawFeedItem } from "../../domain/feed/feed-item.js";
 import type { FeedUrl } from "../../domain/feed/feed-url.js";
 import type {
   FeedFetcher,
+  FetchedFeed,
   FetchFeedError,
   FetchFeedSuccess,
 } from "../../domain/ports/feed-fetcher.js";
 import { err, ok, type Result } from "../../shared/result.js";
+import { mapRss2Entry, rss2ParseErrorMessage } from "./rss2-mapping.js";
 
-const ACCEPT = "application/atom+xml, application/xml;q=0.9, text/xml;q=0.8";
+const ACCEPT =
+  "application/atom+xml, application/rss+xml, application/xml;q=0.9, text/xml;q=0.8";
 const DEFAULT_MAX_RESPONSE_BYTES = 5 * 1024 * 1024;
 
 type ReadBodyResult =
@@ -27,7 +31,7 @@ function messageOf(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
-function parseErrorMessage(error: AtomParseError): string {
+function atomParseErrorMessage(error: AtomParseError): string {
   switch (error.type) {
     case "MalformedXml":
       return error.message;
@@ -55,7 +59,7 @@ function dateOf(raw: string | null): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function mapEntry(entry: AtomEntryDto): RawFeedItem {
+function mapAtomEntry(entry: AtomEntryDto): RawFeedItem {
   return {
     guid: entry.id,
     link: entry.link,
@@ -112,8 +116,46 @@ async function readBody(
   }
 }
 
-/** Atom 1.0 FeedFetcher adapter with conditional HTTP and bounded streaming. */
-export function createAtomFeedFetcher(options?: {
+function parseFeedBody(body: string): Result<FetchedFeed, string> {
+  const atomResult = parseAtom(body);
+  if (atomResult.ok) {
+    return ok({
+      title: displayText(atomResult.value.title),
+      description: displayText(atomResult.value.subtitle),
+      link: atomResult.value.link,
+      language: atomResult.value.language,
+      items: atomResult.value.entries.map(mapAtomEntry),
+    });
+  }
+
+  if (atomResult.error.type !== "NotAtomFeed") {
+    return err(atomParseErrorMessage(atomResult.error));
+  }
+
+  const rss2Result = parseRss2(body);
+  if (rss2Result.ok) {
+    const channelLanguage = rss2Result.value.language;
+    return ok({
+      title: rss2Result.value.title,
+      description: rss2Result.value.description,
+      link: rss2Result.value.link,
+      language: channelLanguage,
+      items: rss2Result.value.items.map((item) => mapRss2Entry(item, channelLanguage)),
+    });
+  }
+
+  if (rss2Result.error.type !== "NotRss2Feed") {
+    return err(rss2ParseErrorMessage(rss2Result.error));
+  }
+
+  return err("document is not a supported feed format (Atom 1.0 or RSS 2.0)");
+}
+
+/** FeedFetcher adapter with conditional HTTP and bounded streaming. Accepts
+ * Atom 1.0 first; when the root element is not an Atom feed it falls back to
+ * RSS 2.0 (ADR-0016). The two parser packages never reference each other —
+ * only this adapter knows about both. */
+export function createFeedFetcher(options?: {
   readonly timeoutMs?: number;
   readonly userAgent?: string;
   readonly maxResponseBytes?: number;
@@ -175,24 +217,14 @@ export function createAtomFeedFetcher(options?: {
         });
       }
 
-      const parsed = parseAtom(bodyResult.body);
+      const parsed = parseFeedBody(bodyResult.body);
       if (!parsed.ok) {
-        return err({
-          type: "InvalidFeedFormat",
-          url,
-          message: parseErrorMessage(parsed.error),
-        });
+        return err({ type: "InvalidFeedFormat", url, message: parsed.error });
       }
 
       return ok({
         status: "fetched",
-        feed: {
-          title: displayText(parsed.value.title),
-          description: displayText(parsed.value.subtitle),
-          link: parsed.value.link,
-          language: parsed.value.language,
-          items: parsed.value.entries.map(mapEntry),
-        },
+        feed: parsed.value,
         validators: {
           etag: response.headers.get("etag"),
           lastModified: response.headers.get("last-modified"),
@@ -201,3 +233,4 @@ export function createAtomFeedFetcher(options?: {
     },
   };
 }
+

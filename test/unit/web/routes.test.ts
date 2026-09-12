@@ -491,7 +491,7 @@ describe("registration outcomes", () => {
       failure: "FeedUnreachable",
       error: { type: "FeedUnreachable", url: FEED.url, message: "boom" },
       // Only {message} reaches the copy; url is here to satisfy the union.
-      expected: "해당 주소에서 Atom 피드를 읽을 수 없습니다: boom",
+      expected: "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니다: boom",
     },
   ] as const)("localizes the $failure failure", async ({ error, expected }) => {
     const registerFeed: RegisterFeed = { execute: async () => err(error) };

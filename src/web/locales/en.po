@@ -53,7 +53,7 @@ msgstr "Copy this account name."
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:121
 msgid "register.error-feed-unreachable"
-msgstr "Couldn’t read an Atom feed there: {message}"
+msgstr "Couldn’t read an Atom or RSS 2.0 feed there: {message}"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:129
@@ -251,7 +251,7 @@ msgstr "That feed could not be registered"
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
 msgid "register.url-help"
-msgstr "The address of the Atom feed itself, not the website — it often ends in /atom or .xml."
+msgstr "The address of the Atom or RSS 2.0 feed itself, not the website — it often ends in /atom, /feed, or .xml."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:141

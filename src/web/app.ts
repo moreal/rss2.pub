@@ -26,7 +26,7 @@ import {
   ICON_RETRY_DEFAULT,
 } from "../domain/feed/retry-policy.js";
 import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favicon-resolver.js";
-import { createAtomFeedFetcher } from "../infrastructure/feedfetch/atom-feed-fetcher.js";
+import { createFeedFetcher } from "../infrastructure/feedfetch/feed-fetcher.js";
 import { createFedifyGateway } from "../infrastructure/federation/fedify-gateway.js";
 import { createFedifyActorResolver } from "../infrastructure/federation/fedify-actor-resolver.js";
 import { createFedifyStack } from "../infrastructure/federation/fedify-stack.js";
@@ -82,7 +82,7 @@ export async function createApp(config: AppConfig): Promise<App> {
   const feeds = createDrizzleFeedRepository(db);
   const items = createDrizzleItemRepository(db);
   const federationObjects = createDrizzleFederationRepository(db);
-  const fetcher = createAtomFeedFetcher();
+  const fetcher = createFeedFetcher();
   const faviconResolver = createHtmlFaviconResolver();
   const clock: Clock = { now: () => new Date() };
   const random: Random = { ratio: () => Math.random() };

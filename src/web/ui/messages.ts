@@ -79,7 +79,7 @@ export const copy = {
   registerUrlHelp: /*i18n*/ {
     id: "register.url-help",
     message:
-      "The address of the Atom feed itself, not the website — it often ends in /atom or .xml.",
+      "The address of the Atom or RSS 2.0 feed itself, not the website — it often ends in /atom, /feed, or .xml.",
   },
   registerButton: /*i18n*/ {
     id: "register.button",
@@ -120,7 +120,7 @@ export const copy = {
   },
   registerErrorFeedUnreachable: /*i18n*/ {
     id: "register.error-feed-unreachable",
-    message: "Couldn’t read an Atom feed there: {message}",
+    message: "Couldn’t read an Atom or RSS 2.0 feed there: {message}",
   },
   registerResultHeading: /*i18n*/ {
     id: "register.result-heading",
