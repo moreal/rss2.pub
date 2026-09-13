@@ -35,7 +35,7 @@ function storedObject(
     actorHandle: "feed_a",
     kind,
     contentHtml: "<p>Hello</p>",
-    name: kind === "article" ? "Article title" : null,
+    name: kind === "article" ? "Article title" : "Note title",
     summaryHtml: kind === "article" ? "<p>Summary</p>" : null,
     sourceUrl: "https://source.test/posts/1",
     language: "en",
@@ -130,6 +130,7 @@ describe("vocab builders", () => {
     expect(message).toBeInstanceOf(Note);
     expect(message.id?.href).toBe("https://local.test/ap/actor/feed_a/note/object-1");
     expect(message.content).toEqual(new LanguageString("<p>Hello</p>", "en"));
+    expect(message.name).toBeNull();
     expect(message.attributionIds.map((uri) => uri.href)).toEqual(record.attributedToUris);
     expect(message.toIds.map((uri) => uri.href)).toEqual(record.toUris);
     expect(message.ccIds.map((uri) => uri.href)).toEqual(record.ccUris);

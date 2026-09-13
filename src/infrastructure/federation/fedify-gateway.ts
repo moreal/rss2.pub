@@ -75,7 +75,7 @@ function initialObject(
     contentHtml: content.kind === "note"
       ? renderNoteHtml(content)
       : renderArticleHtml(content),
-    name: content.kind === "article" ? content.name : null,
+    name: content.kind === "article" ? content.name : content.title,
     summaryHtml: content.kind === "article"
       ? renderArticleSummaryHtml(content)
       : null,
@@ -103,7 +103,7 @@ function updatedObject(
     return {
       ...existing,
       contentHtml,
-      name: null,
+      name: content.kind === "note" ? content.title : null,
       summaryHtml: null,
       sourceUrl: content.linkUrl,
       language: content.language,

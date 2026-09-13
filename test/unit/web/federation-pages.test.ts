@@ -43,7 +43,7 @@ async function setup() {
     actorHandle: feed.handle,
     kind: "note",
     contentHtml: "<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>",
-    name: null,
+    name: "Breaking news",
     summaryHtml: null,
     sourceUrl: "https://source.test/posts/2",
     language: "en",
@@ -84,6 +84,7 @@ describe("createFederationPages", () => {
     expect(html).toContain("Article title");
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
+    expect(html).not.toContain(">Post<");
 
     expect(main.status).toBe(200);
     expect(await main.text()).toContain("rss2.pub");

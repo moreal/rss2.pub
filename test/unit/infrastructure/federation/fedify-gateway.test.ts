@@ -72,6 +72,52 @@ describe("createFedifyGateway", () => {
     expect(sent[1]?.activity.id?.href).toBe(firstActivityId);
   });
 
+  it("stores the Atom item's title as the Note's local display name", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const repository = createInMemoryFederationRepository();
+    const feed = makeFeed({ handle: "feed_a" });
+    await feeds.save(feed);
+    const stack = createFedifyStack({
+      kv: new MemoryKvStore(),
+      feeds,
+      followerTracker: createFollowerTracker({ feeds }),
+      repository,
+      softwareVersion: "0.1.0",
+      allowPrivateAddress: true,
+    });
+    const gateway = createFedifyGateway({
+      federation: stack.federation,
+      repository,
+      origin: "https://local.test",
+      clock: fixedClock(new Date("2026-08-30T00:00:00Z")),
+      sendActivity: async () => {},
+    });
+    const item = unwrap(FeedItem.fromRaw({
+      guid: "titled-note",
+      link: "https://source.test/post",
+      title: "Real item title",
+      contentHtml: "<p>Hello</p>",
+      summaryHtml: null,
+      publishedAt: null,
+      language: null,
+      authorUris: [],
+    }));
+
+    const published = unwrap(await gateway.publish(feed, item.key, {
+      kind: "note",
+      title: item.title,
+      bodyHtml: item.contentHtml,
+      linkUrl: item.link,
+      language: item.language,
+    }, []));
+
+    const objectId = new URL(published.messageUri).pathname.split("/").at(-1);
+    const stored = objectId === undefined
+      ? null
+      : await repository.findObject(feed.handle, objectId);
+    expect(stored).toMatchObject({ kind: "note", name: "Real item title" });
+  });
+
   it("updates content without changing the stored object kind or URI", async () => {
     const feeds = createInMemoryFeedRepository();
     const repository = createInMemoryFederationRepository();
