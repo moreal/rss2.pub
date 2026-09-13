@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { escapeHtml } from "../domain/content/html.js";
+import { stripHtml, truncateText } from "../domain/content/html.js";
+import { ContentPolicy } from "../domain/content/content-policy.js";
 import { Feed } from "../domain/feed/feed.js";
 import { Handle } from "../domain/feed/handle.js";
 import type { FeedRepository } from "../domain/ports/feed-repository.js";
@@ -48,13 +50,31 @@ function absoluteUrl(raw: string | null): URL | null {
   }
 }
 
+/**
+ * List-view body preview. Article objects already carry a teaser in
+ * `summaryHtml`; Note objects never do (ADR-0005 - a Note full content is
+ * short enough that federated software renders it directly), so without a
+ * fallback the actor page showed a bare "Post" title and no body at all.
+ * Derive a plain-text snippet from the already-sanitized `contentHtml` in
+ * that case.
+ */
+function listPreviewHtml(object: StoredFederationObject): string {
+  if (object.summaryHtml !== null) {
+    return sanitizeFeedHtml(object.summaryHtml);
+  }
+  const snippet = truncateText(
+    stripHtml(object.contentHtml),
+    ContentPolicy.DEFAULT.teaserMaxChars,
+  );
+  return snippet.length === 0 ? "" : `<p>${escapeHtml(snippet)}</p>`;
+}
+
 function messageCard(handle: string, object: StoredFederationObject): string {
   const title = object.name === null
     ? object.kind === "note" ? "Post" : "Article"
     : object.name;
-  const summary = object.summaryHtml === null
-    ? ""
-    : `<div class="content">${sanitizeFeedHtml(object.summaryHtml)}</div>`;
+  const preview = listPreviewHtml(object);
+  const summary = preview.length === 0 ? "" : `<div class="content">${preview}</div>`;
   return `<article><h2><a href="/@${encodeURIComponent(handle)}/${encodeURIComponent(object.id)}">${escapeHtml(title)}</a></h2>${summary}<p class="muted">${escapeHtml(object.publishedAt.toISOString())}</p></article>`;
 }
 

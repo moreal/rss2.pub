@@ -38,6 +38,22 @@ async function setup() {
     publishedAt: new Date("2026-08-30T00:00:00Z"),
     updatedAt: null,
   });
+  await federationObjects.upsertObject({
+    id: "post-2",
+    actorHandle: feed.handle,
+    kind: "note",
+    contentHtml: "<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>",
+    name: null,
+    summaryHtml: null,
+    sourceUrl: "https://source.test/posts/2",
+    language: "en",
+    toUris: ["https://www.w3.org/ns/activitystreams#Public"],
+    ccUris: [],
+    attributedToUris: ["https://local.test/ap/actor/feed_a"],
+    mentions: [],
+    publishedAt: new Date("2026-08-31T00:00:00Z"),
+    updatedAt: null,
+  });
   return {
     app: createFederationPages({
       origin: "https://local.test",
@@ -66,6 +82,8 @@ describe("createFederationPages", () => {
     expect(html).toContain("https://source.test/icon.png");
     expect(html).toContain("1 follower");
     expect(html).toContain("Article title");
+    expect(html).toContain("Breaking news");
+    expect(html).toContain("Something happened today.");
 
     expect(main.status).toBe(200);
     expect(await main.text()).toContain("rss2.pub");
