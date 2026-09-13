@@ -35,6 +35,12 @@ msgstr "Already registered"
 msgid "layout.footer-bot"
 msgstr "Bot account: {handle}"
 
+#. Accessible label of the breadcrumb navigation on federation actor pages.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:235
+msgid "federation.breadcrumb-label"
+msgstr "Breadcrumb"
+
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:162
 msgid "register.copied"
@@ -56,7 +62,7 @@ msgid "register.error-feed-unreachable"
 msgstr "Couldn’t read an Atom or RSS 2.0 feed there: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:254
+#: src/web/ui/messages.ts:259
 msgid "federation.remote-follow-invalid-account"
 msgstr "Enter a valid Fediverse account, like you@instance.social."
 
@@ -76,7 +82,7 @@ msgid "register.url-label"
 msgstr "Feed URL"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:245
+#: src/web/ui/messages.ts:250
 msgid "federation.remote-follow-button"
 msgstr "Follow"
 
@@ -92,7 +98,7 @@ msgstr "Follow Atom and RSS 2.0 feeds from the fediverse."
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:240
 msgid "federation.remote-follow-label"
 msgstr "Follow from your Fediverse account"
 
@@ -202,7 +208,7 @@ msgstr "Registering…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:254
 msgid "federation.remote-follow-title"
 msgstr "Remote follow"
 
@@ -293,6 +299,6 @@ msgstr "Type part of a feed’s name, description, or address."
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:245
 msgid "federation.remote-follow-placeholder"
 msgstr "you@instance.social"

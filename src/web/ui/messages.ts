@@ -232,6 +232,11 @@ export const copy = {
     id: "feed.followers",
     message: "{count, plural, one {# follower} other {# followers}}",
   },
+  federationBreadcrumbLabel: /*i18n*/ {
+    id: "federation.breadcrumb-label",
+    message: "Breadcrumb",
+    comment: "Accessible label of the breadcrumb navigation on federation actor pages.",
+  },
   federationRemoteFollowLabel: /*i18n*/ {
     id: "federation.remote-follow-label",
     message: "Follow from your Fediverse account",

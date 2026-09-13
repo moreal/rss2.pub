@@ -106,7 +106,13 @@ describe("createFederationPages", () => {
     expect(html).not.toContain(">Post<");
 
     expect(main.status).toBe(200);
-    expect(await main.text()).toContain("rss2.pub");
+    const mainHtml = await main.text();
+    expect(mainHtml).toContain("rss2.pub");
+    // The main actor's display name is itself the string "rss2.pub", the
+    // same label the root crumb uses; its current crumb must use @rss2pub
+    // instead so the trail does not read "rss2.pub › rss2.pub" with no
+    // way to tell which item is the actor page.
+    expect(mainHtml).toContain('<li aria-current="page"><span class="crumb-label">@rss2pub</span></li>');
   });
 
   it("renders sanitized Note/Article message pages and source links", async () => {
@@ -139,15 +145,53 @@ describe("createFederationPages", () => {
     );
 
     const profileHtml = await profile.text();
-    expect(profileHtml).toContain('<a href="/">rss2.pub</a>');
+    expect(profileHtml).toContain('<a href="/"><span class="crumb-label">rss2.pub</span></a>');
     expect(profileHtml).toContain('action="/@feed_a/remote-follow"');
     expect(profileHtml).toContain('name="acct"');
 
     const postHtml = await post.text();
-    expect(postHtml).toContain('<a href="/">rss2.pub</a>');
+    expect(postHtml).toContain('<a href="/"><span class="crumb-label">rss2.pub</span></a>');
 
     expect(remoteFollowError.status).toBe(400);
-    expect(await remoteFollowError.text()).toContain('<a href="/">rss2.pub</a>');
+    expect(await remoteFollowError.text()).toContain('<a href="/"><span class="crumb-label">rss2.pub</span></a>');
+  });
+
+  it("renders an accessible breadcrumb trail and a dedicated remote-follow panel", async () => {
+    const { app } = await setup();
+    const profile = await app.request("https://local.test/@feed_a", {
+      headers: { Accept: "text/html" },
+    });
+    const post = await app.request("https://local.test/@feed_a/post-1", {
+      headers: { Accept: "text/html" },
+    });
+
+    const profileHtml = await profile.text();
+    // The breadcrumb is a real landmark, not a stray paragraph: a labelled
+    // <nav>/<ol> with the current page marked by aria-current rather than
+    // colour alone, and the feed's own name as the current crumb.
+    expect(profileHtml).toContain('<nav class="crumbs" aria-label="Breadcrumb">');
+    expect(profileHtml).toContain('<li aria-current="page"><span class="crumb-label">Example Feed</span></li>');
+    // The remote-follow form is its own labelled panel, not a row crammed
+    // into the profile header, and its submit control reads as a button
+    // rather than a bare unstyled input.
+    expect(profileHtml).toContain('aria-labelledby="remote-follow-heading"');
+    expect(profileHtml).toContain('id="remote-follow-heading"');
+    expect(profileHtml).toContain('class="btn btn-primary"');
+    expect(profileHtml.indexOf("</header>")).toBeLessThan(
+      profileHtml.indexOf('aria-labelledby="remote-follow-heading"'),
+    );
+
+    // A deeper page's trail links back up through the actor to the root,
+    // with only the current page left unlinked.
+    const postHtml = await post.text();
+    expect(postHtml).toContain('<a href="/@feed_a"><span class="crumb-label">@feed_a</span></a>');
+    expect(postHtml).toContain('<li aria-current="page"><span class="crumb-label">Article title</span></li>');
+
+    // The compact heading size is scoped to the new panel, not global: an
+    // unscoped h2 rule would also shrink the post list's own <h2> title
+    // links and any h2 a feed's sanitized content is allowed to carry.
+    expect(profileHtml).toContain(".panel h2 { font-size: 1.0625rem; }");
+    expect(profileHtml).not.toContain("\n  h2 { font-size");
   });
 
   it("renders the remote-follow form and error page in Korean when ?lang=ko", async () => {
