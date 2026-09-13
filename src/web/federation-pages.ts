@@ -24,6 +24,7 @@ import type { I18n } from "@lingui/core";
 import { i18nFor, translate } from "./i18n.js";
 import { negotiateLocale } from "./locale-middleware.js";
 import { LOCALE_QUERY_PARAM, resolveLocale } from "./locale.js";
+import { RSS_ICON_PATH } from "./ui/icons.js";
 import { copy } from "./ui/messages.js";
 
 const PAGE_CSS = `
@@ -42,7 +43,30 @@ const PAGE_CSS = `
   a { color: var(--fed-accent-ink); overflow-wrap: anywhere; }
   a:hover { color: var(--fed-accent-hover); }
   .muted { color: var(--fed-muted); }
-  .avatar { width: 4rem; height: 4rem; border-radius: var(--fed-radius-sm); object-fit: cover; }
+  /* Adopts the web UI's .avatar mechanism (src/web/ui/styles.ts), not its
+     exact look: this page previously rendered nothing at all when a feed
+     had no icon (icon === null) — the chip and its fallback RSS glyph are
+     both new here, added so every actor page reads consistently instead of
+     an empty header for most freshly-registered feeds (ADR-0010 resolves an
+     icon only on the first poll). The plate itself lives on .avatar img,
+     not this rule: a resolved favicon's own colours are unpredictable and
+     sometimes carry real alpha transparency, so its background must stay
+     fixed however this page's theme falls. The fallback glyph is first-party
+     art, drawn in this page's own --fed-surface-2 / --fed-accent-ink — there
+     is no --fed-brand equivalent to the web UI's decorative-only --brand, so
+     the two surfaces' fallback glyphs are not the same colour. */
+  .avatar {
+    position: relative; overflow: hidden; flex: none;
+    display: grid; place-items: center;
+    width: 4rem; height: 4rem; margin-bottom: var(--fed-space-3);
+    border: 1px solid var(--fed-border); border-radius: var(--fed-radius-sm);
+    background: var(--fed-surface-2); color: var(--fed-accent-ink);
+  }
+  .avatar svg { width: 2rem; height: 2rem; }
+  .avatar img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; background: var(--fed-avatar-plate);
+  }
   .posts { display: grid; gap: 1rem; }
   .content { overflow-wrap: anywhere; }
 
@@ -298,9 +322,15 @@ export function createFederationPages(deps: {
 
     const followers = await deps.federationObjects.countFollowers(rawHandle);
     const posts = await deps.federationObjects.listObjects(rawHandle, null, 20);
-    const avatar = icon === null
+    // Always draw the fallback glyph, exactly as the web UI's FeedAvatar
+    // does (components.tsx): a resolved icon can still fail to load later
+    // (the remote host removes it), and removing a broken <img> then reveals
+    // this pre-rendered svg underneath rather than leaving an empty chip.
+    const avatarFallback = `<svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true" focusable="false"><path fill="currentColor" d="${RSS_ICON_PATH}"/></svg>`;
+    const avatarImage = icon === null
       ? ""
-      : `<img class="avatar" src="${escapeHtml(icon)}" alt="">`;
+      : `<img src="${escapeHtml(icon)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`;
+    const avatar = `<span class="avatar" aria-hidden="true">${avatarFallback}${avatarImage}</span>`;
     // The main actor's own display name is the string "rss2.pub" — the same
     // label the root crumb already uses. Repeating it as the current crumb
     // ("rss2.pub › rss2.pub") gives no way to tell which item is the actor

@@ -30,6 +30,21 @@ export const FEDERATION_PAGE_THEME_CSS = `
     --fed-accent-soft: #fff3ec;
     --fed-on-accent: #ffffff;
     --fed-focus: #16161a;
+
+    /* Fixed, not themed — mirrors --avatar-plate in src/web/ui/styles.ts
+       (same value, kept in sync by hand per this file's header comment).
+       Painted on .avatar img itself, not the chip's own background: a
+       feed's icon is drawn for an unknown host page and must stay legible
+       whichever way this page's own theme falls (a light plate keeps only
+       the common case — an icon drawn for a light host page — legible; one
+       drawn only for dark chrome trades away visibility either way). The
+       new no-icon fallback glyph this diff adds is first-party art, drawn
+       in this page's own --fed-surface-2 / --fed-accent-ink rather than a
+       fixed pair: it is not the same colour as the web UI's equivalent
+       glyph (styles.ts uses the decorative --brand there; this page has no
+       equivalent token), so "mirrors" above refers to the plate mechanism
+       only, not a pixel-identical rendering. */
+    --fed-avatar-plate: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {

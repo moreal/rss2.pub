@@ -71,6 +71,24 @@ export const STYLE = `
     --on-success: #ffffff;
     --focus: #16161a;
 
+    /* Backing for a resolved external favicon (ADR-0010), painted on
+       .avatar img itself rather than the chip's own background — see the
+       comment on that rule below for why. Deliberately fixed, not themed: a
+       favicon is drawn for an unknown host page (usually assuming a light
+       background), so a constant light plate keeps that common case legible
+       in either app theme without knowing the icon's palette up front — the
+      trade-off is a mark drawn only for dark chrome: the themed surface
+      this plate replaces used to show such a mark in dark mode (against
+      --surface-2's own dark value), and this fixed white plate now hides
+       it in both themes instead. The chip's own background keeps following
+       --surface-2 for the no-icon/fallback state, which is entirely
+       first-party art and already reads fine in both themes. Restated by
+       hand in
+       src/infrastructure/federation/pages-theme.ts as --fed-avatar-plate
+       (same value) for the first-party actor pages, which cannot import
+       from src/web. */
+    --avatar-plate: #ffffff;
+
     --radius-xs: 0.375rem;
     --radius-sm: 0.5rem;
     --radius-md: 0.625rem;
@@ -542,7 +560,16 @@ export const STYLE = `
     background: var(--surface-2); color: var(--brand);
   }
   .avatar svg { width: 1.1rem; height: 1.1rem; }
-  .avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  /* A resolved icon can carry real alpha transparency (e.g. a mark drawn as
+     a ring with a cut-out centre) rather than merely failing to load. Without
+     its own opaque backing, that gap would reveal whatever paints behind it
+     in the same stacking context — the fallback svg above, painted first —
+     letting the RSS glyph bleed through an unrelated feed's icon. The plate
+     on the image itself, not just on the span, is what stops that. */
+  .avatar img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; background: var(--avatar-plate);
+  }
 
   .tag {
     display: inline-flex; align-items: center;
