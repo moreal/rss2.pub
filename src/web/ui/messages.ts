@@ -232,6 +232,29 @@ export const copy = {
     id: "feed.followers",
     message: "{count, plural, one {# follower} other {# followers}}",
   },
+  federationRemoteFollowLabel: /*i18n*/ {
+    id: "federation.remote-follow-label",
+    message: "Follow from your Fediverse account",
+    comment: "Label of the remote-follow form on a bridged feed's actor page.",
+  },
+  federationRemoteFollowPlaceholder: /*i18n*/ {
+    id: "federation.remote-follow-placeholder",
+    message: "you@instance.social",
+    comment: "Example account shown as the remote-follow input's placeholder.",
+  },
+  federationRemoteFollowButton: /*i18n*/ {
+    id: "federation.remote-follow-button",
+    message: "Follow",
+  },
+  federationRemoteFollowTitle: /*i18n*/ {
+    id: "federation.remote-follow-title",
+    message: "Remote follow",
+    comment: "Heading and page title of the remote-follow validation-error page.",
+  },
+  federationRemoteFollowInvalidAccount: /*i18n*/ {
+    id: "federation.remote-follow-invalid-account",
+    message: "Enter a valid Fediverse account, like you@instance.social.",
+  },
   // `as const` is load-bearing, not decoration: `translate()` reads each
   // message's literal text to decide whether ICU values are mandatory, and
   // plain `satisfies` would widen it to `string` and silently disable that

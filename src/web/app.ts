@@ -29,6 +29,7 @@ import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favico
 import { createFeedFetcher } from "../infrastructure/feedfetch/feed-fetcher.js";
 import { createFedifyGateway } from "../infrastructure/federation/fedify-gateway.js";
 import { createFedifyActorResolver } from "../infrastructure/federation/fedify-actor-resolver.js";
+import { createFedifyRemoteFollowResolver } from "../infrastructure/federation/fedify-remote-follow-resolver.js";
 import { createFedifyStack } from "../infrastructure/federation/fedify-stack.js";
 import { createDrizzleFederationRepository } from "../infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../infrastructure/persistence/drizzle-feed-repository.js";
@@ -122,6 +123,10 @@ export async function createApp(config: AppConfig): Promise<App> {
     federation: stack.federation,
     origin: config.origin,
   });
+  const remoteFollowResolver = createFedifyRemoteFollowResolver({
+    federation: stack.federation,
+    origin: config.origin,
+  });
   stack.startQueue();
 
   const pollFeed = instrumentPollFeed(
@@ -179,6 +184,7 @@ export async function createApp(config: AppConfig): Promise<App> {
       origin: config.origin,
       feeds,
       federationObjects,
+      remoteFollow: remoteFollowResolver,
     }),
   );
   app.all("*", (c) => federationFetch(c.req.raw));

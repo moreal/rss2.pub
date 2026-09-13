@@ -5,6 +5,10 @@ import { ContentPolicy } from "../domain/content/content-policy.js";
 import { Feed } from "../domain/feed/feed.js";
 import { Handle } from "../domain/feed/handle.js";
 import type { FeedRepository } from "../domain/ports/feed-repository.js";
+import {
+  RemoteFollowAccount,
+  type RemoteFollowResolver,
+} from "../domain/ports/remote-follow-resolver.js";
 import { MAIN_ACTOR_HANDLE } from "../infrastructure/federation/identity.js";
 import type {
   FederationRepository,
@@ -16,6 +20,11 @@ import {
   sanitizeFeedHtml,
 } from "../infrastructure/federation/render.js";
 import { isErr } from "../shared/result.js";
+import type { I18n } from "@lingui/core";
+import { i18nFor, translate } from "./i18n.js";
+import { negotiateLocale } from "./locale-middleware.js";
+import { LOCALE_QUERY_PARAM, resolveLocale } from "./locale.js";
+import { copy } from "./ui/messages.js";
 
 const PAGE_CSS = `
   * { box-sizing: border-box; }
@@ -29,6 +38,10 @@ const PAGE_CSS = `
   .avatar { width: 4rem; height: 4rem; border-radius: var(--fed-radius-sm); object-fit: cover; }
   .posts { display: grid; gap: 1rem; }
   .content { overflow-wrap: anywhere; }
+  .crumbs { margin: 0 0 1rem; }
+  .remote-follow { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+  .remote-follow input { flex: 1 1 12rem; padding: 0.5rem 0.75rem; border-radius: var(--fed-radius-sm); border: 1px solid var(--fed-border); background: var(--fed-bg); color: var(--fed-text); font: inherit; }
+  .remote-follow button { padding: 0.5rem 1rem; border-radius: var(--fed-radius-sm); border: 1px solid var(--fed-accent-ink); background: var(--fed-accent-ink); color: var(--fed-surface); font: inherit; cursor: pointer; }
 `;
 
 function acceptsHtml(accept: string | undefined): boolean {
@@ -37,8 +50,16 @@ function acceptsHtml(accept: string | undefined): boolean {
     || accept.includes("*/*");
 }
 
-function layout(title: string, body: string): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><style>${FEDERATION_PAGE_THEME_CSS}${PAGE_CSS}</style></head><body><main>${body}</main></body></html>`;
+function layout(title: string, body: string, locale = "en"): string {
+  return `<!doctype html><html lang="${escapeHtml(locale)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(title)}</title><style>${FEDERATION_PAGE_THEME_CSS}${PAGE_CSS}</style></head><body><main>${body}</main></body></html>`;
+}
+
+/** Root-page breadcrumb, optionally followed by a link back to the actor. */
+function crumbs(actorHandle?: string): string {
+  const actorLink = actorHandle === undefined
+    ? ""
+    : ` / <a href="/@${encodeURIComponent(actorHandle)}">@${escapeHtml(actorHandle)}</a>`;
+  return `<p class="crumbs muted"><a href="/">rss2.pub</a>${actorLink}</p>`;
 }
 
 function absoluteUrl(raw: string | null): URL | null {
@@ -48,6 +69,49 @@ function absoluteUrl(raw: string | null): URL | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Best-effort fallback when WebFinger discovery (see
+ * {@link RemoteFollowResolver}) does not yield a subscribe endpoint:
+ * Mastodon's own `authorize_interaction` endpoint, guessed from the
+ * account's bare domain. This is wrong for split-domain Mastodon
+ * deployments and non-Mastodon software, which is exactly why the
+ * WebFinger-based resolver is tried first.
+ */
+function guessAuthorizeInteractionUrl(
+  domain: string,
+  localActorAcct: string,
+): URL | null {
+  try {
+    const target = new URL(`https://${domain}/authorize_interaction`);
+    target.searchParams.set("uri", `acct:${localActorAcct}`);
+    return target;
+  } catch {
+    return null;
+  }
+}
+
+function remoteFollowForm(handle: string, i18n: I18n, locale: string): string {
+  const label = escapeHtml(translate(i18n, copy.federationRemoteFollowLabel));
+  const placeholder = escapeHtml(translate(i18n, copy.federationRemoteFollowPlaceholder));
+  const button = escapeHtml(translate(i18n, copy.federationRemoteFollowButton));
+  // A GET form only carries fields present in the markup: without this
+  // hidden field, submitting the form from a Korean-rendered profile page
+  // would silently drop back to English on the remote-follow response,
+  // since `?lang=ko` on the profile request is never itself part of the
+  // form's own query string.
+  return `<form class="remote-follow" method="get" action="/@${encodeURIComponent(handle)}/remote-follow"><input type="hidden" name="${escapeHtml(LOCALE_QUERY_PARAM)}" value="${escapeHtml(locale)}"><label for="remote-follow-acct">${label}</label><input type="text" id="remote-follow-acct" name="acct" placeholder="${placeholder}" autocomplete="off" required><button type="submit">${button}</button></form>`;
+}
+
+function remoteFollowErrorPage(actorHandle: string, i18n: I18n, locale: string): string {
+  const title = translate(i18n, copy.federationRemoteFollowTitle);
+  const message = escapeHtml(translate(i18n, copy.federationRemoteFollowInvalidAccount));
+  return layout(
+    title,
+    `${crumbs(actorHandle)}<header><h1>${escapeHtml(title)}</h1><p>${message}</p></header>`,
+    locale,
+  );
 }
 
 /**
@@ -92,7 +156,7 @@ function messagePage(
     : `<p><a href="${escapeHtml(source.href)}">View original</a></p>`;
   return layout(
     title,
-    `<header><p><a href="/@${encodeURIComponent(handle)}">@${escapeHtml(handle)}</a></p><h1>${escapeHtml(title)}</h1>${summary}<p class="muted">${escapeHtml(object.publishedAt.toISOString())}</p></header><article><div class="content">${sanitizeFeedHtml(object.contentHtml)}</div>${sourceLink}</article>`,
+    `${crumbs(handle)}<header><h1>${escapeHtml(title)}</h1>${summary}<p class="muted">${escapeHtml(object.publishedAt.toISOString())}</p></header><article><div class="content">${sanitizeFeedHtml(object.contentHtml)}</div>${sourceLink}</article>`,
   );
 }
 
@@ -100,15 +164,18 @@ export function createFederationPages(deps: {
   readonly origin: string;
   readonly feeds: FeedRepository;
   readonly federationObjects: FederationRepository;
+  readonly remoteFollow: RemoteFollowResolver;
 }): Hono {
   const app = new Hono();
   const host = new URL(deps.origin).host;
 
-  app.get("/:actor", async (c) => {
+  app.get("/:actor", negotiateLocale, async (c) => {
     if (!acceptsHtml(c.req.header("accept"))) return c.body(null, 406);
     const actor = c.req.param("actor");
     if (!actor.startsWith("@")) return c.notFound();
     const rawHandle = actor.slice(1);
+    const locale = resolveLocale(c.get("language"));
+    const i18n = i18nFor(locale);
     let name: string;
     let summary: string;
     let icon: string | null;
@@ -131,8 +198,41 @@ export function createFederationPages(deps: {
     const avatar = icon === null
       ? ""
       : `<img class="avatar" src="${escapeHtml(icon)}" alt="">`;
-    const body = `<header>${avatar}<h1>${escapeHtml(name)}</h1><p class="muted">@${escapeHtml(rawHandle)}@${escapeHtml(host)}</p><div class="content">${summary}</div><p>${followers} ${followers === 1 ? "follower" : "followers"}</p></header><section class="posts">${posts.items.map((object) => messageCard(rawHandle, object)).join("")}</section>`;
-    return c.html(layout(name, body));
+    const body = `${crumbs()}<header>${avatar}<h1>${escapeHtml(name)}</h1><p class="muted">@${escapeHtml(rawHandle)}@${escapeHtml(host)}</p><div class="content">${summary}</div><p>${followers} ${followers === 1 ? "follower" : "followers"}</p>${remoteFollowForm(rawHandle, i18n, locale)}</header><section class="posts">${posts.items.map((object) => messageCard(rawHandle, object)).join("")}</section>`;
+    return c.html(layout(name, body, locale));
+  });
+
+  app.get("/:actor/remote-follow", negotiateLocale, async (c) => {
+    const actor = c.req.param("actor");
+    if (!actor.startsWith("@")) return c.notFound();
+    const rawHandle = actor.slice(1);
+    const locale = resolveLocale(c.get("language"));
+    const i18n = i18nFor(locale);
+    if (rawHandle !== MAIN_ACTOR_HANDLE) {
+      const handle = Handle.create(rawHandle);
+      if (isErr(handle) || await deps.feeds.findByHandle(handle.value) === null) {
+        return c.notFound();
+      }
+    }
+    const account = RemoteFollowAccount.create(c.req.query("acct") ?? "");
+    if (isErr(account)) {
+      return c.html(remoteFollowErrorPage(rawHandle, i18n, locale), 400);
+    }
+    const localActorAcct = `${rawHandle}@${host}`;
+    const resolved = await deps.remoteFollow.resolveSubscribeUrl(
+      account.value,
+      localActorAcct,
+    );
+    const target = resolved.ok
+      ? resolved.value
+      : guessAuthorizeInteractionUrl(
+        RemoteFollowAccount.domain(account.value),
+        localActorAcct,
+      );
+    if (target === null) {
+      return c.html(remoteFollowErrorPage(rawHandle, i18n, locale), 400);
+    }
+    return c.redirect(target.toString(), 302);
   });
 
   app.get("/:actor/:id", async (c) => {

@@ -1,9 +1,8 @@
 import { Hono } from "hono";
 // Context's env parameter defaults to `any`; naming Env keeps c.get() checked
 // against hono/language's ContextVariableMap augmentation.
-import type { Context, Env, MiddlewareHandler } from "hono";
+import type { Context, Env } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { languageDetector } from "hono/language";
 import type { RegisterFeed } from "../application/register-feed.js";
 import type {
   ListPopularFeeds,
@@ -11,12 +10,8 @@ import type {
 } from "../application/search-feeds.js";
 import type { PopularFeed } from "../domain/ports/feed-repository.js";
 import { i18nFor } from "./i18n.js";
-import {
-  DEFAULT_LOCALE,
-  LOCALE_QUERY_PARAM,
-  SUPPORTED_LOCALES,
-  resolveLocale,
-} from "./locale.js";
+import { negotiateLocale } from "./locale-middleware.js";
+import { resolveLocale } from "./locale.js";
 import type { PageContext } from "./ui/layout.js";
 import {
   type RegisterFailure,
@@ -58,35 +53,6 @@ function pageContext(c: Context<Env>, deps: WebDeps): PageContext {
     switcherPath: c.req.method === "GET" ? `${url.pathname}${url.search}` : "/",
   };
 }
-
-/**
- * Applied per HTML route on purpose. An app-wide `use()` here would not stay
- * inside this app: app.ts mounts it with `app.route("/", web)`, which
- * re-registers the middleware as `/*` on the parent, so every federation route
- * (WebFinger, /ap/*) would answer with a language Set-Cookie too. Verified,
- * not theoretical — don't "simplify" this into `app.use(detectLanguage)`.
- */
-const detectLanguage = languageDetector({
-  supportedLanguages: [...SUPPORTED_LOCALES],
-  fallbackLanguage: DEFAULT_LOCALE,
-  // Hono's own prefix fallback maps ko-KR → ko, and its defaults already
-  // order querystring over cookie over Accept-Language.
-  order: ["querystring", "cookie", "header"],
-  lookupQueryString: LOCALE_QUERY_PARAM,
-  lookupCookie: LOCALE_QUERY_PARAM,
-  // Merged over hono's defaults, which add Secure — so the switcher does not
-  // persist on plain-HTTP origins other than localhost.
-  cookieOptions: { sameSite: "Lax" },
-});
-
-/**
- * Marks a response as locale-negotiated. Without `Vary`, any shared cache in
- * front of this app would serve one visitor's language to everyone else.
- */
-const negotiateLocale: MiddlewareHandler = async (c, next) => {
-  await detectLanguage(c, next);
-  c.header("Vary", "Accept-Language, Cookie");
-};
 
 /**
  * How many of the most-followed feeds the home page shows. The list is the
