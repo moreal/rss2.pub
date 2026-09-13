@@ -6,12 +6,14 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY packages/atom-feed/package.json ./packages/atom-feed/package.json
+COPY packages/rss-feed/package.json ./packages/rss-feed/package.json
 
 FROM base AS build
 RUN yarn install --immutable
 COPY tsconfig.json tsconfig.build.json ./
 COPY src ./src
 COPY packages/atom-feed ./packages/atom-feed
+COPY packages/rss-feed ./packages/rss-feed
 RUN yarn build
 
 FROM base AS deps
@@ -31,6 +33,7 @@ ENV NODE_ENV=production
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/packages/atom-feed ./packages/atom-feed
+COPY --from=build --chown=node:node /app/packages/rss-feed ./packages/rss-feed
 COPY --chown=node:node drizzle ./drizzle
 COPY --chown=node:node package.json ./
 EXPOSE 8000
