@@ -118,7 +118,7 @@ const SiteFooter: FC<{ ctx: PageContext }> = (props) => (
 export const Layout: FC<
   PropsWithChildren<{
     ctx: PageContext;
-    title?: MessageDescriptor | undefined;
+    title?: MessageDescriptor | string | undefined;
     nav?: NavKey | undefined;
     enter?: boolean | undefined;
   }>
@@ -134,7 +134,9 @@ export const Layout: FC<
       <title>
         {props.title === undefined
           ? SITE_NAME
-          : `${translate(props.ctx.i18n, props.title)} · ${SITE_NAME}`}
+          : `${typeof props.title === "string"
+            ? props.title
+            : translate(props.ctx.i18n, props.title)} · ${SITE_NAME}`}
       </title>
       {/* Crawlers ignore hreflang on ordinary links, so the translations are
           only discoverable through these. x-default is the negotiating URL. */}

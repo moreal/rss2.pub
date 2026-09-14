@@ -29,6 +29,12 @@ msgstr "{count, plural, other {팔로워 #명}}"
 msgid "register.result-exists-title"
 msgstr "이미 등록된 피드입니다"
 
+#. Fallback title for an untitled Article on an actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:240
+msgid "federation.article-fallback"
+msgstr "글"
+
 #. {handle} renders as a link to the @rss2pub account page.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:49
@@ -37,7 +43,7 @@ msgstr "봇 계정: {handle}"
 
 #. Accessible label of the breadcrumb navigation on federation actor pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:254
 msgid "federation.breadcrumb-label"
 msgstr "이동 경로"
 
@@ -62,7 +68,7 @@ msgid "register.error-feed-unreachable"
 msgstr "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니다: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:259
+#: src/web/ui/messages.ts:280
 msgid "federation.remote-follow-invalid-account"
 msgstr "올바른 페디버스 계정을 입력하세요. 예: you@instance.social"
 
@@ -82,7 +88,7 @@ msgid "register.url-label"
 msgstr "피드 URL"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:250
+#: src/web/ui/messages.ts:270
 msgid "federation.remote-follow-button"
 msgstr "팔로우"
 
@@ -98,7 +104,7 @@ msgstr "페디버스에서 Atom 및 RSS 2.0 피드를 팔로우하세요."
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:260
 msgid "federation.remote-follow-label"
 msgstr "내 페디버스 계정으로 팔로우하기"
 
@@ -111,6 +117,11 @@ msgstr "페디버스 계정에서 팔로우하기"
 #: src/web/ui/messages.ts:37
 msgid "layout.nav-home"
 msgstr "홈"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:249
+msgid "federation.main-actor-summary"
+msgstr "Atom 및 RSS 2.0 피드를 팔로우할 수 있는 계정으로 바꿔 드립니다. register 또는 search 명령을 멘션으로 보내세요."
 
 #. Accessible label of the language switcher.
 #. js-lingui-explicit-id
@@ -164,6 +175,12 @@ msgstr "해당 주소를 브라우저에서 열어 웹 페이지가 아니라 �
 msgid "register.next-follow"
 msgstr "마스토돈(또는 사용하는 앱)의 검색창에 붙여 넣고 팔로우를 누르세요."
 
+#. Fallback title for an untitled Note on an actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:235
+msgid "federation.post-fallback"
+msgstr "게시물"
+
 #. {handle} renders as the @rss2pub@host chip; {command} renders as the `register <url>` chip.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:94
@@ -208,7 +225,7 @@ msgstr "등록하는 중…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:254
+#: src/web/ui/messages.ts:274
 msgid "federation.remote-follow-title"
 msgstr "원격 팔로우"
 
@@ -297,8 +314,13 @@ msgstr "이제 이 피드는 자체 페디버스 계정으로 글을 게시합�
 msgid "search.help"
 msgstr "피드 이름, 설명, 주소의 일부를 입력하세요."
 
-#. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:245
+msgid "federation.view-original"
+msgstr "원문 보기"
+
+#. Example account shown as the remote-follow input's placeholder.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:265
 msgid "federation.remote-follow-placeholder"
 msgstr "아이디@인스턴스.example"

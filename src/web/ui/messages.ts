@@ -232,10 +232,30 @@ export const copy = {
     id: "feed.followers",
     message: "{count, plural, one {# follower} other {# followers}}",
   },
+  federationPostFallback: /*i18n*/ {
+    id: "federation.post-fallback",
+    message: "Post",
+    comment: "Fallback title for an untitled Note on an actor page.",
+  },
+  federationArticleFallback: /*i18n*/ {
+    id: "federation.article-fallback",
+    message: "Article",
+    comment: "Fallback title for an untitled Article on an actor page.",
+  },
+  federationViewOriginal: /*i18n*/ {
+    id: "federation.view-original",
+    message: "View original",
+  },
+  federationMainActorSummary: /*i18n*/ {
+    id: "federation.main-actor-summary",
+    message:
+      "I turn Atom and RSS 2.0 feeds into followable accounts. Mention me with register or search commands.",
+  },
   federationBreadcrumbLabel: /*i18n*/ {
     id: "federation.breadcrumb-label",
     message: "Breadcrumb",
-    comment: "Accessible label of the breadcrumb navigation on federation actor pages.",
+    comment:
+      "Accessible label of the breadcrumb navigation on federation actor pages.",
   },
   federationRemoteFollowLabel: /*i18n*/ {
     id: "federation.remote-follow-label",
@@ -254,7 +274,8 @@ export const copy = {
   federationRemoteFollowTitle: /*i18n*/ {
     id: "federation.remote-follow-title",
     message: "Remote follow",
-    comment: "Heading and page title of the remote-follow validation-error page.",
+    comment:
+      "Heading and page title of the remote-follow validation-error page.",
   },
   federationRemoteFollowInvalidAccount: /*i18n*/ {
     id: "federation.remote-follow-invalid-account",

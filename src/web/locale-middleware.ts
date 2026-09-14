@@ -28,13 +28,10 @@ const detectLanguage = languageDetector({
  * front of this app would serve one visitor's language to everyone else.
  *
  * Shared by the product UI (src/web/routes.ts) and the federation
- * actor/remote-follow pages (src/web/federation-pages.ts) so both surfaces
+ * actor/remote-follow pages (src/web/federation-pages.tsx) so both surfaces
  * apply the exact same query → cookie → Accept-Language negotiation instead
- * of maintaining two copies that could drift. The federation post/message
- * detail page is deliberately not wired to this - it renders no localized
- * copy and stays English, matching every other pre-existing string on that
- * page.
-*/
+ * of maintaining two copies that could drift.
+ */
 export const negotiateLocale: MiddlewareHandler<Env> = async (c, next) => {
   await detectLanguage(c, next);
   c.header("Vary", "Accept-Language, Cookie");

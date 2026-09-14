@@ -68,7 +68,7 @@
 - `src/infrastructure/federation/raw-html-text.ts`
 - `test/unit/infrastructure/federation/botkit-stack.test.ts`
 
-Keep `render.ts` and `pages-theme.ts`; they become first-party rendering assets.
+Keep `render.ts`; actor pages use the web UI's shared layout and styles.
 
 ---
 
@@ -657,7 +657,7 @@ Expected: FAIL because page routes do not exist.
 
 - [ ] **Step 3: Implement focused first-party pages**
 
-Keep CSS in `pages-theme.ts`; do not introduce product UI token literals into `src/web/ui/styles.ts`.
+Keep actor-page CSS in `src/web/ui/styles.ts` and use its shared design tokens.
 Use existing `renderFeedProfileHtml` and sanitized stored message HTML. Route `/@{handle}` before
 `/@{handle}/{id}` and reserve `followers` as a 404 rather than treating it as an object ID.
 

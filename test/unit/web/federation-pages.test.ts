@@ -16,17 +16,22 @@ function createStubRemoteFollowResolver(
   ) => Promise<Result<URL, RemoteFollowError>>,
 ): RemoteFollowResolver {
   return {
-    resolveSubscribeUrl: resolve
-      ?? (async (account) => err({ type: "NoSubscribeTemplate", account })),
+    resolveSubscribeUrl:
+      resolve ??
+      (async (account) => err({ type: "NoSubscribeTemplate", account })),
   };
 }
 
-async function setup(remoteFollow?: RemoteFollowResolver) {
+async function setup(
+  remoteFollow?: RemoteFollowResolver,
+  feedTitle = "Example Feed",
+  articleTitle = "Article title",
+) {
   const feeds = createInMemoryFeedRepository();
   const federationObjects = createInMemoryFederationRepository();
   const feed = makeFeed({
     handle: "feed_a",
-    title: "Example Feed",
+    title: feedTitle,
     description: "A useful feed",
     iconUrl: "https://source.test/icon.png",
     url: "https://source.test/feed.xml",
@@ -43,8 +48,9 @@ async function setup(remoteFollow?: RemoteFollowResolver) {
     id: "post-1",
     actorHandle: feed.handle,
     kind: "article",
-    contentHtml: "<p>Hello<script>alert(1)</script><strong>world</strong></p>",
-    name: "Article title",
+    contentHtml:
+      "<p>Hello<script>alert(1)</script><strong>world</strong></p><ul><li>First item</li></ul><blockquote><p>a</p><p>b</p></blockquote>",
+    name: articleTitle,
     summaryHtml: "<p>Short summary</p>",
     sourceUrl: "https://source.test/posts/1",
     language: "en",
@@ -59,7 +65,8 @@ async function setup(remoteFollow?: RemoteFollowResolver) {
     id: "post-2",
     actorHandle: feed.handle,
     kind: "note",
-    contentHtml: "<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>",
+    contentHtml:
+      "<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>",
     name: "Breaking news",
     summaryHtml: null,
     sourceUrl: "https://source.test/posts/2",
@@ -104,15 +111,20 @@ describe("createFederationPages", () => {
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
     expect(html).not.toContain(">Post<");
+    expect(html).toContain('class="site-nav"');
+    expect(html).toContain('class="site-footer"');
 
     expect(main.status).toBe(200);
     const mainHtml = await main.text();
     expect(mainHtml).toContain("rss2.pub");
+    expect(mainHtml).toContain("<title>rss2.pub</title>");
     // The main actor's display name is itself the string "rss2.pub", the
     // same label the root crumb uses; its current crumb must use @rss2pub
     // instead so the trail does not read "rss2.pub › rss2.pub" with no
     // way to tell which item is the actor page.
-    expect(mainHtml).toContain('<li aria-current="page"><span class="crumb-label">@rss2pub</span></li>');
+    expect(mainHtml).toContain(
+      '<li aria-current="page"><span class="crumb-label">@rss2pub</span></li>',
+    );
   });
 
   it("renders sanitized Note/Article message pages and source links", async () => {
@@ -127,9 +139,43 @@ describe("createFederationPages", () => {
     expect(html).toContain("Article title");
     expect(html).toContain("Short summary");
     expect(html).toContain("<strong>world</strong>");
-    expect(html).not.toContain("<script>");
+    expect(html).toContain("<ul><li>First item</li></ul>");
+    expect(html).toContain("<blockquote><p>a</p><p>b</p></blockquote>");
+    const mainHtml = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
+    expect(mainHtml).not.toContain("<script");
     expect(html).toContain("https://source.test/posts/1");
     expect(html).toContain("2026-08-30");
+  });
+
+  it("renders feed titles with ICU braces verbatim", async () => {
+    const { app } = await setup(
+      undefined,
+      "Tips {braces} & tricks",
+      "Story {braces} & details",
+    );
+    const response = await app.request("https://local.test/@feed_a", {
+      headers: { Accept: "text/html" },
+    });
+    const messageResponse = await app.request(
+      "https://local.test/@feed_a/post-1",
+      { headers: { Accept: "text/html" } },
+    );
+
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain(
+      "<title>Tips {braces} &amp; tricks · rss2.pub</title>",
+    );
+    expect(html).toContain("<h1>Tips {braces} &amp; tricks</h1>");
+    expect(html).toContain(
+      '<li aria-current="page"><span class="crumb-label">Tips {braces} &amp; tricks</span></li>',
+    );
+    expect(messageResponse.status).toBe(200);
+    const messageHtml = await messageResponse.text();
+    expect(messageHtml).toContain(
+      "<title>Story {braces} &amp; details · rss2.pub</title>",
+    );
+    expect(messageHtml).toContain("<h1>Story {braces} &amp; details</h1>");
   });
 
   it("links back to the root page from the profile, message, and remote-follow error pages", async () => {
@@ -145,15 +191,21 @@ describe("createFederationPages", () => {
     );
 
     const profileHtml = await profile.text();
-    expect(profileHtml).toContain('<a href="/"><span class="crumb-label">rss2.pub</span></a>');
+    expect(profileHtml).toContain(
+      '<a href="/"><span class="crumb-label">rss2.pub</span></a>',
+    );
     expect(profileHtml).toContain('action="/@feed_a/remote-follow"');
     expect(profileHtml).toContain('name="acct"');
 
     const postHtml = await post.text();
-    expect(postHtml).toContain('<a href="/"><span class="crumb-label">rss2.pub</span></a>');
+    expect(postHtml).toContain(
+      '<a href="/"><span class="crumb-label">rss2.pub</span></a>',
+    );
 
     expect(remoteFollowError.status).toBe(400);
-    expect(await remoteFollowError.text()).toContain('<a href="/"><span class="crumb-label">rss2.pub</span></a>');
+    expect(await remoteFollowError.text()).toContain(
+      '<a href="/"><span class="crumb-label">rss2.pub</span></a>',
+    );
   });
 
   it("renders an accessible breadcrumb trail and a dedicated remote-follow panel", async () => {
@@ -169,8 +221,12 @@ describe("createFederationPages", () => {
     // The breadcrumb is a real landmark, not a stray paragraph: a labelled
     // <nav>/<ol> with the current page marked by aria-current rather than
     // colour alone, and the feed's own name as the current crumb.
-    expect(profileHtml).toContain('<nav class="crumbs" aria-label="Breadcrumb">');
-    expect(profileHtml).toContain('<li aria-current="page"><span class="crumb-label">Example Feed</span></li>');
+    expect(profileHtml).toContain(
+      '<nav class="crumbs" aria-label="Breadcrumb">',
+    );
+    expect(profileHtml).toContain(
+      '<li aria-current="page"><span class="crumb-label">Example Feed</span></li>',
+    );
     // The remote-follow form is its own labelled panel, not a row crammed
     // into the profile header, and its submit control reads as a button
     // rather than a bare unstyled input.
@@ -184,14 +240,29 @@ describe("createFederationPages", () => {
     // A deeper page's trail links back up through the actor to the root,
     // with only the current page left unlinked.
     const postHtml = await post.text();
-    expect(postHtml).toContain('<a href="/@feed_a"><span class="crumb-label">@feed_a</span></a>');
-    expect(postHtml).toContain('<li aria-current="page"><span class="crumb-label">Article title</span></li>');
+    expect(postHtml).toContain(
+      '<a href="/@feed_a"><span class="crumb-label">@feed_a</span></a>',
+    );
+    expect(postHtml).toContain(
+      '<li aria-current="page"><span class="crumb-label">Article title</span></li>',
+    );
 
-    // The compact heading size is scoped to the new panel, not global: an
-    // unscoped h2 rule would also shrink the post list's own <h2> title
-    // links and any h2 a feed's sanitized content is allowed to carry.
-    expect(profileHtml).toContain(".panel h2 { font-size: 1.0625rem; }");
-    expect(profileHtml).not.toContain("\n  h2 { font-size");
+    // The compact heading size is scoped to the remote-follow component, not
+    // global: an unscoped rule would also shrink post titles and sanitized
+    // feed content. The shared stylesheet expresses it through the type token.
+    expect(profileHtml).toContain(
+      ".remote-follow h2 { font-size: var(--text-lg); }",
+    );
+    expect(profileHtml).toContain(
+      ".content ul, .content ol { padding-inline-start: var(--space-5); }",
+    );
+    expect(profileHtml).toContain(
+      ".content li > * + *, .content blockquote > * + * { margin-top: var(--space-3); }",
+    );
+    expect(profileHtml).toContain(
+      "border-inline-start: 1px solid var(--border);",
+    );
+    expect(profileHtml).not.toContain("\n  h2 { font-size: var(--text-lg)");
   });
 
   it("renders the remote-follow form and error page in Korean when ?lang=ko", async () => {
@@ -201,6 +272,10 @@ describe("createFederationPages", () => {
     });
     const remoteFollowError = await app.request(
       "https://local.test/@feed_a/remote-follow?lang=ko&acct=not-an-account",
+    );
+    const message = await app.request(
+      "https://local.test/@feed_a/post-1?lang=ko",
+      { headers: { Accept: "text/html" } },
     );
 
     const profileHtml = await profile.text();
@@ -214,6 +289,10 @@ describe("createFederationPages", () => {
     expect(errorHtml).toContain('<html lang="ko">');
     expect(errorHtml).toContain("원격 팔로우");
     expect(errorHtml).toContain("올바른 페디버스 계정을 입력하세요");
+
+    const messageHtml = await message.text();
+    expect(messageHtml).toContain('<html lang="ko">');
+    expect(messageHtml).toContain("원문 보기");
   });
 
   it("negotiates locale from a cookie/header and preserves it in the rendered form action", async () => {
@@ -266,7 +345,8 @@ describe("createFederationPages", () => {
   it("falls back to guessing authorize_interaction when the resolver finds no subscribe template", async () => {
     const { app } = await setup(
       createStubRemoteFollowResolver(async (account) =>
-        err({ type: "NoSubscribeTemplate", account })),
+        err({ type: "NoSubscribeTemplate", account }),
+      ),
     );
 
     const response = await app.request(
@@ -288,7 +368,9 @@ describe("createFederationPages", () => {
     );
 
     expect(prefixed.status).toBe(302);
-    expect(prefixed.headers.get("location")).toContain("https://remote.example/");
+    expect(prefixed.headers.get("location")).toContain(
+      "https://remote.example/",
+    );
   });
 
   it("rejects a bare domain or invalid remote-follow account without redirecting", async () => {
@@ -356,12 +438,18 @@ describe("createFederationPages", () => {
     const { app } = await setup();
 
     expect((await app.request("https://local.test/@missing")).status).toBe(404);
-    expect((await app.request("https://local.test/@feed_a/missing")).status)
-      .toBe(404);
-    expect((await app.request("https://local.test/@feed_a/followers")).status)
-      .toBe(404);
-    expect((await app.request("https://local.test/@feed_a", {
-      headers: { Accept: "application/activity+json" },
-    })).status).toBe(406);
+    expect(
+      (await app.request("https://local.test/@feed_a/missing")).status,
+    ).toBe(404);
+    expect(
+      (await app.request("https://local.test/@feed_a/followers")).status,
+    ).toBe(404);
+    expect(
+      (
+        await app.request("https://local.test/@feed_a", {
+          headers: { Accept: "application/activity+json" },
+        })
+      ).status,
+    ).toBe(406);
   });
 });

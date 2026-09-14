@@ -71,7 +71,7 @@ export const STYLE = `
     --on-success: #ffffff;
     --focus: #16161a;
 
-    /* Keep pure black/white alpha: tinted neutrals read as dirt on icon edges; pages-theme.ts mirrors this as --fed-image-outline. */
+    /* Keep pure black/white alpha: tinted neutrals read as dirt on icon edges. */
     --image-outline: oklch(0 0 0 / 0.1);
 
     /* Backing for a resolved external favicon (ADR-0010), painted on
@@ -85,11 +85,7 @@ export const STYLE = `
       --surface-2's own dark value), and this fixed white plate now hides
        it in both themes instead. The chip's own background keeps following
        --surface-2 for the no-icon/fallback state, which is entirely
-       first-party art and already reads fine in both themes. Restated by
-       hand in
-       src/infrastructure/federation/pages-theme.ts as --fed-avatar-plate
-       (same value) for the first-party actor pages, which cannot import
-       from src/web. */
+       first-party art and already reads fine in both themes. */
     --avatar-plate: #ffffff;
 
     --radius-xs: 0.375rem;
@@ -597,6 +593,52 @@ export const STYLE = `
     background: var(--accent-soft);
     border-color: color-mix(in srgb, var(--accent) 30%, var(--border));
   }
+
+  /* ---------- first-party actor pages ---------- */
+
+  /* This offset depends on main.shell keeping gap: var(--space-6). */
+  nav.crumbs { margin-bottom: calc(var(--space-6) * -1 + var(--space-4)); }
+  nav.crumbs ol {
+    list-style: none; display: flex; flex-wrap: wrap; align-items: center;
+    font-size: var(--text-sm);
+  }
+  nav.crumbs li { display: flex; align-items: center; min-width: 0; }
+  nav.crumbs li + li::before {
+    content: "›"; margin-inline: var(--space-2); color: var(--text-muted);
+  }
+  .crumb-label {
+    display: block; min-width: 0; max-width: 16rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  nav.crumbs a {
+    display: inline-flex; align-items: center; min-height: var(--tap);
+    padding-inline: var(--space-1); margin-inline: calc(var(--space-1) * -1);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted); text-decoration: none;
+  }
+  nav.crumbs a:hover { color: var(--accent-ink); background: var(--surface-2); }
+  nav.crumbs li[aria-current] { color: var(--text); font-weight: var(--weight-medium); }
+
+  .actor-profile, .actor-message-head { gap: var(--space-3); }
+  .actor-avatar {
+    width: calc(var(--space-7) + var(--space-4));
+    height: calc(var(--space-7) + var(--space-4));
+    margin-bottom: var(--space-1);
+  }
+  .actor-avatar svg { width: var(--space-6); height: var(--space-6); }
+  .remote-follow { gap: var(--space-3); }
+  .remote-follow h2 { font-size: var(--text-lg); }
+  .posts { display: grid; gap: var(--space-4); }
+  .actor-post, .actor-post-body { gap: var(--space-3); }
+  .content { overflow-wrap: anywhere; }
+  .content > * + * { margin-top: var(--space-3); }
+  .content ul, .content ol { padding-inline-start: var(--space-5); }
+  .content li > * + *, .content blockquote > * + * { margin-top: var(--space-3); }
+  .content blockquote {
+    border-inline-start: 1px solid var(--border);
+    padding-inline-start: var(--space-4);
+  }
+  .content pre { overflow-x: auto; }
 
   /* ---------- feedback ---------- */
 

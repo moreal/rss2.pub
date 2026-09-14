@@ -192,8 +192,7 @@ adapter.
   every foreground/background role pair a page renders clears WCAG 2.2 AA
   (4.5:1) in *both* themes, and no rule outside the `:root` blocks may name a
   raw colour. Retune a token and that test tells you if it still passes.
-  `src/infrastructure/federation/pages-theme.ts` restates the same palette for
-  first-party `/@handle` pages and must be updated alongside.
+  First-party actor pages render through `Layout` and the shared `styles.ts`.
   UI primitives (feed card, notice, forms, icons) live in `components.tsx` /
   `icons.tsx`; `pages.tsx` composes them and owns no styling of its own.
   Buttons come in three tiers and the page should use all three rather than
