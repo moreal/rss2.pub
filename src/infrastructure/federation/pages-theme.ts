@@ -45,6 +45,8 @@ export const FEDERATION_PAGE_THEME_CSS = `
        equivalent token), so "mirrors" above refers to the plate mechanism
        only, not a pixel-identical rendering. */
     --fed-avatar-plate: #ffffff;
+    /* Mirrors --image-outline in src/web/ui/styles.ts; must stay pure black/white alpha. */
+    --fed-image-outline: oklch(0 0 0 / 0.1);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -52,6 +54,7 @@ export const FEDERATION_PAGE_THEME_CSS = `
       --fed-surface: #141418;
       --fed-surface-2: #1d1d22;
       --fed-border: #2a2a31;
+      --fed-image-outline: oklch(1 0 0 / 0.1);
       --fed-border-strong: #3b3b44;
       --fed-text: #f0f0f3;
       --fed-muted: #a6a6b0;
@@ -68,6 +71,7 @@ export const FEDERATION_PAGE_THEME_CSS = `
     --fed-surface: #141418;
     --fed-surface-2: #1d1d22;
     --fed-border: #2a2a31;
+    --fed-image-outline: oklch(1 0 0 / 0.1);
     --fed-border-strong: #3b3b44;
     --fed-text: #f0f0f3;
     --fed-muted: #a6a6b0;

@@ -78,7 +78,7 @@ export const CheckIcon: FC<IconProps> = (props) => (
     <path
       fill="none"
       stroke="currentColor"
-      stroke-width="2.2"
+      stroke-width="2"
       stroke-linecap="round"
       stroke-linejoin="round"
       d="m5 12.5 4.5 4.5L19 7"

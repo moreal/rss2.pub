@@ -120,6 +120,7 @@ export const Layout: FC<
     ctx: PageContext;
     title?: MessageDescriptor | undefined;
     nav?: NavKey | undefined;
+    enter?: boolean | undefined;
   }>
 > = (props) => (
   <html lang={props.ctx.locale}>
@@ -169,7 +170,7 @@ export const Layout: FC<
           <LocaleNav ctx={props.ctx} />
         </div>
       </header>
-      <main id="main" class="shell">
+      <main id="main" class="shell" data-enter={props.enter || undefined}>
         {props.children}
       </main>
       <SiteFooter ctx={props.ctx} />

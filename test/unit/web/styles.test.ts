@@ -138,6 +138,14 @@ describe("stylesheet integrity", () => {
     expect(STYLE).not.toContain("${");
   });
 
+  it("keeps soft input rings for pointer focus only", () => {
+    expect(STYLE).toMatch(
+      /input:focus:not\(:focus-visible\) \{[^}]*box-shadow:/,
+    );
+    expect(STYLE).toMatch(/input:focus \{[^}]*border-color: var\(--accent\);[^}]*\}/);
+    expect(STYLE).not.toMatch(/input:focus \{[^}]*box-shadow:/);
+  });
+
   /**
    * The feed list clips its two identifiers — the handle and the source URL —
    * onto one line each rather than wrapping them. That only holds while every

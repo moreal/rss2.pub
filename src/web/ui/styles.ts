@@ -71,6 +71,9 @@ export const STYLE = `
     --on-success: #ffffff;
     --focus: #16161a;
 
+    /* Keep pure black/white alpha: tinted neutrals read as dirt on icon edges; pages-theme.ts mirrors this as --fed-image-outline. */
+    --image-outline: oklch(0 0 0 / 0.1);
+
     /* Backing for a resolved external favicon (ADR-0010), painted on
        .avatar img itself rather than the chip's own background — see the
        comment on that rule below for why. Deliberately fixed, not themed: a
@@ -101,6 +104,7 @@ export const STYLE = `
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     --dur-fast: 120ms;
     --dur-base: 200ms;
+    --stagger: 100ms;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -127,6 +131,7 @@ export const STYLE = `
       --success-border: #2f5340;
       --on-success: #0b0b0e;
       --focus: #f0f0f3;
+      --image-outline: oklch(1 0 0 / 0.1);
     }
   }
 
@@ -263,7 +268,10 @@ export const STYLE = `
      margin is what still holds the language links against the right edge
      instead of stranding them under the brand. */
   nav.lang { margin-inline-start: auto; }
-  nav.lang a, nav.lang span { padding-inline: var(--space-2); }
+  nav.lang a, nav.lang span {
+    min-width: var(--tap); padding-inline: var(--space-2);
+    justify-content: center;
+  }
 
   main.shell {
     flex: 1;
@@ -363,9 +371,14 @@ export const STYLE = `
       box-shadow var(--dur-fast) ease;
   }
   input::placeholder { color: var(--text-subtle); }
-  input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  /* Pointer focus keeps the soft ring; keyboard focus uses the same single
+     focus-visible ring as every other control. */
+  input:focus { border-color: var(--accent); }
+  input:focus:not(:focus-visible) { box-shadow: 0 0 0 3px var(--accent-soft); }
   input[aria-invalid="true"] { border-color: var(--danger); }
-  input[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--danger-bg); }
+  input[aria-invalid="true"]:focus:not(:focus-visible) {
+    box-shadow: 0 0 0 3px var(--danger-bg);
+  }
   @media (hover: hover) and (pointer: fine) {
     input[type="url"]:hover, input[type="search"]:hover, input[type="text"]:hover {
       border-color: var(--text-subtle);
@@ -382,7 +395,7 @@ export const STYLE = `
     text-decoration: none; white-space: nowrap; cursor: pointer;
     transition: background-color var(--dur-fast) ease,
       border-color var(--dur-fast) ease,
-      transform var(--dur-base) var(--ease-out);
+      transform var(--dur-fast) var(--ease-out);
   }
   .btn-primary { background: var(--accent); color: var(--on-accent); }
   .btn-primary:hover { background: var(--accent-hover); color: var(--on-accent); }
@@ -397,7 +410,7 @@ export const STYLE = `
   .btn-quiet:hover { background: var(--surface-2); color: var(--text); }
   .btn-sm { min-height: 2.25rem; font-size: var(--text-sm); padding-inline: var(--space-3); }
   .btn-icon { width: var(--tap); padding-inline: 0; flex: none; }
-  .btn:active { transform: scale(0.98); }
+  .btn:active { transform: scale(0.96); }
   .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
   /* Registering fetches the feed over the network, which takes seconds the
@@ -569,6 +582,7 @@ export const STYLE = `
   .avatar img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; background: var(--avatar-plate);
+    outline: 1px solid var(--image-outline); outline-offset: -1px;
   }
 
   .tag {
@@ -651,9 +665,20 @@ export const STYLE = `
     overflow-wrap: anywhere; user-select: all;
   }
   .copy-btn { flex: none; }
-  .copy-btn .icon-copied { display: none; }
-  .copy-btn[data-copied] .icon-copied { display: block; }
-  .copy-btn[data-copied] .icon-copy { display: none; }
+  .copy-icons {
+    position: relative; display: inline-grid;
+    width: 1rem; height: 1rem; flex: none;
+  }
+  .copy-icons .icon-copy, .copy-icons .icon-copied {
+    position: absolute; inset: 0;
+    transition-property: opacity, scale, filter;
+    transition-duration: var(--dur-base);
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+  .copy-icons .icon-copy { opacity: 1; scale: 1; filter: blur(0); }
+  .copy-icons .icon-copied { opacity: 0; scale: 0.25; filter: blur(4px); }
+  .copy-btn[data-copied] .icon-copy { opacity: 0; scale: 0.25; filter: blur(4px); }
+  .copy-btn[data-copied] .icon-copied { opacity: 1; scale: 1; filter: blur(0); }
   /* Confirmation swaps the whole fill rather than just the text colour: the
      button is primary now, and green-on-orange would be unreadable. The tick
      icon and the relabelled text carry the same news without the colour. */
@@ -664,18 +689,24 @@ export const STYLE = `
 
   /* ---------- motion ---------- */
 
+  /* Same-origin navigation already cross-fades the root. Only registration
+     results carry new outcome content that benefits from an entrance. */
   @media (prefers-reduced-motion: no-preference) {
-    main .page-head, main .panel {
+    main[data-enter] .page-head, main[data-enter] .panel {
       animation: enter 260ms var(--ease-out) both;
     }
-    main .panel { animation-delay: 40ms; }
+    main[data-enter] .page-head { animation-delay: 0ms; }
+    main[data-enter] > .panel:nth-of-type(1) { animation-delay: var(--stagger); }
+    main[data-enter] > .panel:nth-of-type(2) { animation-delay: calc(2 * var(--stagger)); }
   }
   @keyframes enter {
     from { opacity: 0; transform: translateY(0.4rem); }
     to { opacity: 1; transform: none; }
   }
   @media (prefers-reduced-motion: reduce) {
-    main .page-head, main .panel { animation: fade-in 140ms ease both; }
+    main[data-enter] .page-head, main[data-enter] .panel {
+      animation: fade-in 140ms ease both;
+    }
     .btn:active { transform: none; }
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

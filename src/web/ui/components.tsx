@@ -317,8 +317,10 @@ export const HandleToCopy: FC<{ ctx: PageContext; handle: string }> = (
         data-copy={full}
         data-copied-label={translate(props.ctx.i18n, copy.registerCopied)}
       >
-        <CopyIcon class="icon-copy" size={16} />
-        <CheckIcon class="icon-copied" size={16} />
+        <span class="copy-icons" aria-hidden="true">
+          <CopyIcon class="icon-copy" size={16} />
+          <CheckIcon class="icon-copied" size={16} />
+        </span>
         <span data-copy-label={copyLabel}>{copyLabel}</span>
       </button>
       <span class="sr-only" role="status" data-copy-status />

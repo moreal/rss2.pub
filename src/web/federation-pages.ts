@@ -66,6 +66,7 @@ const PAGE_CSS = `
   .avatar img {
     position: absolute; inset: 0; width: 100%; height: 100%;
     object-fit: cover; background: var(--fed-avatar-plate);
+    outline: 1px solid var(--fed-image-outline); outline-offset: -1px;
   }
   .posts { display: grid; gap: 1rem; }
   .content { overflow-wrap: anywhere; }

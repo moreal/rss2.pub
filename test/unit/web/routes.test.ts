@@ -185,7 +185,9 @@ describe("localized page chrome", () => {
 
   it("ships usable motion selectors and a reduced-motion alternative", async () => {
     const html = await bodyOf(webApp().request("/"));
-    expect(html).toContain("main .page-head, main .panel");
+    expect(html).toContain(
+      "main[data-enter] .page-head, main[data-enter] .panel",
+    );
     expect(html).toContain("@media (prefers-reduced-motion: reduce)");
   });
 

@@ -207,7 +207,7 @@ export const RegisterResultPage: FC<{
 }> = (props) => {
   const created = props.outcome.kind === "created";
   return (
-    <Layout ctx={props.ctx} title={copy.registerResultHeading}>
+    <Layout ctx={props.ctx} title={copy.registerResultHeading} enter>
       {/* The outcome *is* the page title — the document title keeps the
           generic "Feed registration" so history entries stay scannable. */}
       <div class="page-head">
