@@ -45,40 +45,42 @@ async function setup(
     sharedInboxUri: null,
     followedAt: new Date("2026-08-30T00:00:00Z"),
   });
-  if (includePosts) await federationObjects.upsertObject({
-    id: "post-1",
-    actorHandle: feed.handle,
-    kind: "article",
-    contentHtml:
-      "<p>Hello<script>alert(1)</script><strong>world</strong></p><ul><li>First item</li></ul><blockquote><p>a</p><p>b</p></blockquote>",
-    name: articleTitle,
-    summaryHtml: "<p>Short summary</p>",
-    sourceUrl: "https://source.test/posts/1",
-    language: "en",
-    toUris: ["https://www.w3.org/ns/activitystreams#Public"],
-    ccUris: [],
-    attributedToUris: ["https://local.test/ap/actor/feed_a"],
-    mentions: [],
-    publishedAt: new Date("2026-08-30T00:00:00Z"),
-    updatedAt: null,
-  });
-  if (includePosts) await federationObjects.upsertObject({
-    id: "post-2",
-    actorHandle: feed.handle,
-    kind: "note",
-    contentHtml:
-      "<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>",
-    name: "Breaking news",
-    summaryHtml: null,
-    sourceUrl: "https://source.test/posts/2",
-    language: "en",
-    toUris: ["https://www.w3.org/ns/activitystreams#Public"],
-    ccUris: [],
-    attributedToUris: ["https://local.test/ap/actor/feed_a"],
-    mentions: [],
-    publishedAt: new Date("2026-08-31T00:00:00Z"),
-    updatedAt: null,
-  });
+  if (includePosts)
+    await federationObjects.upsertObject({
+      id: "post-1",
+      actorHandle: feed.handle,
+      kind: "article",
+      contentHtml:
+        "<p>Hello<script>alert(1)</script><strong>world</strong></p><ul><li>First item</li></ul><blockquote><p>a</p><p>b</p></blockquote>",
+      name: articleTitle,
+      summaryHtml: "<p>Short summary</p>",
+      sourceUrl: "https://source.test/posts/1",
+      language: "en",
+      toUris: ["https://www.w3.org/ns/activitystreams#Public"],
+      ccUris: [],
+      attributedToUris: ["https://local.test/ap/actor/feed_a"],
+      mentions: [],
+      publishedAt: new Date("2026-08-30T00:00:00Z"),
+      updatedAt: null,
+    });
+  if (includePosts)
+    await federationObjects.upsertObject({
+      id: "post-2",
+      actorHandle: feed.handle,
+      kind: "note",
+      contentHtml:
+        '<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>\n<p><a href="https://source.test/posts/2" rel="nofollow noopener noreferrer">https://source.test/posts/2</a></p>',
+      name: "Breaking news",
+      summaryHtml: null,
+      sourceUrl: "https://source.test/posts/2",
+      language: "en",
+      toUris: ["https://www.w3.org/ns/activitystreams#Public"],
+      ccUris: [],
+      attributedToUris: ["https://local.test/ap/actor/feed_a"],
+      mentions: [],
+      publishedAt: new Date("2026-08-31T00:00:00Z"),
+      updatedAt: null,
+    });
   return {
     app: createFederationPages({
       origin: "https://local.test",
@@ -113,6 +115,7 @@ describe("createFederationPages", () => {
     expect(html).toContain("Article title");
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
+    expect(html).not.toContain("https://source.test/posts/2");
     expect(html).not.toContain(">Post<");
     expect(html).toContain('class="site-nav"');
     expect(html).toContain('class="site-footer"');
@@ -148,6 +151,37 @@ describe("createFederationPages", () => {
     expect(html).toContain('<a href="/@feed_a">Example Feed</a>');
     expect(html).toContain('class="btn btn-secondary"');
     expect(html).not.toContain('<nav class="crumbs"');
+
+    // Content that does not begin with renderer chrome remains untouched.
+    expect(html).toContain("<p>Hello<strong>world</strong></p>");
+  });
+
+  it("removes embedded Note chrome from previews and message bodies", async () => {
+    const { app } = await setup();
+    const profile = await app.request("https://local.test/@feed_a", {
+      headers: { Accept: "text/html" },
+    });
+    const message = await app.request("https://local.test/@feed_a/post-2", {
+      headers: { Accept: "text/html" },
+    });
+
+    const profileHtml = await profile.text();
+    expect(profileHtml).toContain('<div class="content"><p>Something happened today.</p></div>');
+    expect(profileHtml).not.toContain("https://source.test/posts/2");
+
+    const messageHtml = await message.text();
+    const bodyHtml = messageHtml.slice(
+      messageHtml.indexOf('<article class="panel actor-post-body">'),
+      messageHtml.indexOf("</article>"),
+    );
+    expect(bodyHtml).toContain("<p>Something happened today.</p>");
+    expect(bodyHtml).not.toContain("<strong>Breaking news</strong>");
+    expect(bodyHtml).not.toContain(
+      '<a href="https://source.test/posts/2" rel="nofollow noopener noreferrer">https://source.test/posts/2</a>',
+    );
+    expect(bodyHtml).toContain(
+      '<a class="btn btn-secondary" href="https://source.test/posts/2">View original</a>',
+    );
   });
 
   it("renders feed titles with ICU braces verbatim", async () => {
@@ -208,13 +242,13 @@ describe("createFederationPages", () => {
     expect(remoteFollowError.status).toBe(400);
     const errorHtml = await remoteFollowError.text();
     expect(errorHtml).not.toContain('<nav class="crumbs"');
-    expect(errorHtml).toContain(
-      "<title>Remote follow · rss2.pub</title>",
-    );
+    expect(errorHtml).toContain("<title>Remote follow · rss2.pub</title>");
     expect(errorHtml).toContain("<h1>Remote follow</h1>");
     expect(errorHtml).toContain('class="notice notice-error"');
-    expect(errorHtml).toContain('class="btn btn-quiet" href="/@feed_a"');
+    expect(errorHtml).toContain('class="btn btn-secondary" href="/@feed_a"');
     expect(errorHtml).toContain("Back to Example Feed");
+    expect(errorHtml).toContain(".actor-message-head .form-actions .btn {");
+    expect(errorHtml).toContain("white-space: normal; overflow-wrap: anywhere;");
   });
 
   it("renders a dedicated remote-follow panel and styled post author", async () => {
@@ -250,6 +284,15 @@ describe("createFederationPages", () => {
     );
     expect(profileHtml).toContain(
       ".actor-profile .handle {\n    white-space: normal; overflow: visible; text-overflow: clip;\n    overflow-wrap: anywhere;\n  }",
+    );
+    expect(profileHtml).toContain(
+      ".actor-profile { grid-template-columns: auto minmax(0, 1fr); }",
+    );
+    expect(profileHtml).toContain(
+      ".actor-author-name a:hover, .actor-author-name a:focus-visible {",
+    );
+    expect(profileHtml).toContain(
+      ".actor-post time, .actor-message-head time { font-size: var(--text-sm); }",
     );
     expect(profileHtml).toContain(
       ".content ul, .content ol { padding-inline-start: var(--space-5); }",
@@ -298,7 +341,12 @@ describe("createFederationPages", () => {
   });
 
   it("renders the shared empty-state pattern when an actor has no posts", async () => {
-    const { app } = await setup(undefined, "Example Feed", "Article title", false);
+    const { app } = await setup(
+      undefined,
+      "Example Feed",
+      "Article title",
+      false,
+    );
     const response = await app.request("https://local.test/@feed_a", {
       headers: { Accept: "text/html" },
     });
@@ -307,7 +355,9 @@ describe("createFederationPages", () => {
     const html = await response.text();
     expect(html).toContain('class="empty-state"');
     expect(html).toContain("No posts yet");
-    expect(html).toContain("Posts appear here after the next poll of the feed.");
+    expect(html).toContain(
+      "Posts appear here after the next poll of the feed.",
+    );
     expect(html).not.toContain('<ul class="posts"');
   });
 

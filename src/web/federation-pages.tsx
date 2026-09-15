@@ -169,7 +169,7 @@ const RemoteFollowErrorPage: FC<{
         </Notice>
         <div class="form-actions">
           <a
-            class="btn btn-quiet"
+            class="btn btn-secondary"
             href={`/@${encodeURIComponent(props.actorHandle)}`}
           >
             {translate(props.ctx.i18n, copy.federationBackToActor, {
@@ -187,11 +187,46 @@ function listPreviewHtml(object: StoredFederationObject): string {
   if (object.summaryHtml !== null) {
     return sanitizeFeedHtml(object.summaryHtml);
   }
+  const content = stripEmbeddedChrome(
+    sanitizeFeedHtml(object.contentHtml),
+    object,
+  );
   const snippet = truncateText(
-    stripHtml(object.contentHtml),
+    stripHtml(content),
     ContentPolicy.DEFAULT.teaserMaxChars,
   );
   return snippet.length === 0 ? "" : `<p>${escapeHtml(snippet)}</p>`;
+}
+
+/** Remove the title and source link embedded by the federation renderer. */
+function stripEmbeddedChrome(
+  sanitizedHtml: string,
+  object: StoredFederationObject,
+): string {
+  if (object.name === null) return sanitizedHtml;
+
+  const leading =
+    object.kind === "note"
+      ? /^\s*<p><strong>([^<]*)<\/strong><\/p>\s*/.exec(sanitizedHtml)
+      : /^\s*<h1>([^<]*)<\/h1>\s*/.exec(sanitizedHtml);
+  if (leading === null || leading[1] !== escapeHtml(object.name)) {
+    return sanitizedHtml;
+  }
+
+  const withoutTitle = sanitizedHtml.slice(leading[0].length);
+  if (object.sourceUrl === null) return withoutTitle;
+
+  const trailingSource =
+    /\s*<p><a href="([^"]+)"(?: [^>]*)?>[^<]*<\/a><\/p>\s*$/.exec(
+      withoutTitle,
+    );
+  if (
+    trailingSource === null ||
+    trailingSource[1] !== escapeHtml(object.sourceUrl)
+  ) {
+    return withoutTitle;
+  }
+  return withoutTitle.slice(0, -trailingSource[0].length);
 }
 
 function fallbackTitle(object: StoredFederationObject, i18n: I18n): string {
@@ -267,7 +302,12 @@ const MessagePage: FC<{
       </header>
       <article class="panel actor-post-body">
         <div class="content">
-          {raw(sanitizeFeedHtml(props.object.contentHtml))}
+          {raw(
+            stripEmbeddedChrome(
+              sanitizeFeedHtml(props.object.contentHtml),
+              props.object,
+            ),
+          )}
         </div>
         {source !== null && (
           <p>

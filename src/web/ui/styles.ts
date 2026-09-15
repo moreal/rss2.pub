@@ -597,10 +597,15 @@ export const STYLE = `
   /* ---------- first-party actor pages ---------- */
 
   .actor-profile, .actor-message-head { gap: var(--space-3); }
+  .actor-profile { grid-template-columns: auto minmax(0, 1fr); }
   .actor-profile > .actor-avatar {
+    grid-column: 1; grid-row: 1 / span 3;
     width: calc(var(--space-7) + var(--space-4));
     height: calc(var(--space-7) + var(--space-4));
     margin-bottom: var(--space-1);
+  }
+  .actor-profile > h1, .actor-profile > .feed-meta, .actor-profile > .content {
+    grid-column: 2;
   }
   .actor-profile > .actor-avatar svg { width: var(--space-6); height: var(--space-6); }
   .actor-profile .handle {
@@ -613,6 +618,19 @@ export const STYLE = `
   }
   .actor-author > div { min-width: 0; }
   .actor-author-name { font-weight: var(--weight-semibold); }
+  .actor-author-name a {
+    color: var(--text); font-weight: var(--weight-medium); text-decoration: none;
+  }
+  .actor-author-name a:hover, .actor-author-name a:focus-visible {
+    color: var(--text); text-decoration: underline;
+  }
+  .actor-post time, .actor-message-head time { font-size: var(--text-sm); }
+  /* The back link carries the feed's own title, which is unbounded; a
+     nowrap button would push the panel past a phone's viewport. */
+  .actor-message-head .form-actions .btn {
+    white-space: normal; overflow-wrap: anywhere; text-align: center;
+    min-width: 0; max-width: 100%;
+  }
   .remote-follow { gap: var(--space-3); }
   .remote-follow h2 { font-size: var(--text-lg); }
   .posts { display: grid; gap: var(--space-4); list-style: none; }
@@ -627,6 +645,15 @@ export const STYLE = `
     padding-inline-start: var(--space-4);
   }
   .content pre { overflow-x: auto; }
+
+  @media (max-width: 34rem) {
+    .actor-profile { grid-template-columns: minmax(0, 1fr); }
+    .actor-profile > .actor-avatar,
+    .actor-profile > h1,
+    .actor-profile > .feed-meta,
+    .actor-profile > .content { grid-column: 1; }
+    .actor-profile > .actor-avatar { grid-row: auto; }
+  }
 
   /* ---------- feedback ---------- */
 
