@@ -596,39 +596,27 @@ export const STYLE = `
 
   /* ---------- first-party actor pages ---------- */
 
-  /* This offset depends on main.shell keeping gap: var(--space-6). */
-  nav.crumbs { margin-bottom: calc(var(--space-6) * -1 + var(--space-4)); }
-  nav.crumbs ol {
-    list-style: none; display: flex; flex-wrap: wrap; align-items: center;
-    font-size: var(--text-sm);
-  }
-  nav.crumbs li { display: flex; align-items: center; min-width: 0; }
-  nav.crumbs li + li::before {
-    content: "›"; margin-inline: var(--space-2); color: var(--text-muted);
-  }
-  .crumb-label {
-    display: block; min-width: 0; max-width: 16rem;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  nav.crumbs a {
-    display: inline-flex; align-items: center; min-height: var(--tap);
-    padding-inline: var(--space-1); margin-inline: calc(var(--space-1) * -1);
-    border-radius: var(--radius-sm);
-    color: var(--text-muted); text-decoration: none;
-  }
-  nav.crumbs a:hover { color: var(--accent-ink); background: var(--surface-2); }
-  nav.crumbs li[aria-current] { color: var(--text); font-weight: var(--weight-medium); }
-
   .actor-profile, .actor-message-head { gap: var(--space-3); }
-  .actor-avatar {
+  .actor-profile > .actor-avatar {
     width: calc(var(--space-7) + var(--space-4));
     height: calc(var(--space-7) + var(--space-4));
     margin-bottom: var(--space-1);
   }
-  .actor-avatar svg { width: var(--space-6); height: var(--space-6); }
+  .actor-profile > .actor-avatar svg { width: var(--space-6); height: var(--space-6); }
+  .actor-profile .handle {
+    white-space: normal; overflow: visible; text-overflow: clip;
+    overflow-wrap: anywhere;
+  }
+  .actor-author {
+    display: grid; grid-template-columns: auto minmax(0, 1fr);
+    align-items: center; gap: var(--space-3); min-width: 0;
+  }
+  .actor-author > div { min-width: 0; }
+  .actor-author-name { font-weight: var(--weight-semibold); }
   .remote-follow { gap: var(--space-3); }
   .remote-follow h2 { font-size: var(--text-lg); }
-  .posts { display: grid; gap: var(--space-4); }
+  .posts { display: grid; gap: var(--space-4); list-style: none; }
+  .posts li { min-width: 0; }
   .actor-post, .actor-post-body { gap: var(--space-3); }
   .content { overflow-wrap: anywhere; }
   .content > * + * { margin-top: var(--space-3); }

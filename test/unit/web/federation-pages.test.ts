@@ -26,6 +26,7 @@ async function setup(
   remoteFollow?: RemoteFollowResolver,
   feedTitle = "Example Feed",
   articleTitle = "Article title",
+  includePosts = true,
 ) {
   const feeds = createInMemoryFeedRepository();
   const federationObjects = createInMemoryFederationRepository();
@@ -44,7 +45,7 @@ async function setup(
     sharedInboxUri: null,
     followedAt: new Date("2026-08-30T00:00:00Z"),
   });
-  await federationObjects.upsertObject({
+  if (includePosts) await federationObjects.upsertObject({
     id: "post-1",
     actorHandle: feed.handle,
     kind: "article",
@@ -61,7 +62,7 @@ async function setup(
     publishedAt: new Date("2026-08-30T00:00:00Z"),
     updatedAt: null,
   });
-  await federationObjects.upsertObject({
+  if (includePosts) await federationObjects.upsertObject({
     id: "post-2",
     actorHandle: feed.handle,
     kind: "note",
@@ -106,7 +107,9 @@ describe("createFederationPages", () => {
     expect(html).toContain("A useful feed");
     expect(html).toContain("https://source.test/feed.xml");
     expect(html).toContain("https://source.test/icon.png");
+    expect(html).toContain('onerror="this.remove()"');
     expect(html).toContain("1 follower");
+    expect(html).toContain('<p class="feed-meta"><span class="handle">');
     expect(html).toContain("Article title");
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
@@ -118,13 +121,8 @@ describe("createFederationPages", () => {
     const mainHtml = await main.text();
     expect(mainHtml).toContain("rss2.pub");
     expect(mainHtml).toContain("<title>rss2.pub</title>");
-    // The main actor's display name is itself the string "rss2.pub", the
-    // same label the root crumb uses; its current crumb must use @rss2pub
-    // instead so the trail does not read "rss2.pub › rss2.pub" with no
-    // way to tell which item is the actor page.
-    expect(mainHtml).toContain(
-      '<li aria-current="page"><span class="crumb-label">@rss2pub</span></li>',
-    );
+    expect(html).not.toContain('<nav class="crumbs"');
+    expect(mainHtml).not.toContain('<nav class="crumbs"');
   });
 
   it("renders sanitized Note/Article message pages and source links", async () => {
@@ -144,13 +142,18 @@ describe("createFederationPages", () => {
     const mainHtml = html.slice(html.indexOf("<main"), html.indexOf("</main>"));
     expect(mainHtml).not.toContain("<script");
     expect(html).toContain("https://source.test/posts/1");
-    expect(html).toContain("2026-08-30");
+    expect(html).toContain(
+      '<time class="quiet" datetime="2026-08-30T00:00:00.000Z">Aug 30, 2026</time>',
+    );
+    expect(html).toContain('<a href="/@feed_a">Example Feed</a>');
+    expect(html).toContain('class="btn btn-secondary"');
+    expect(html).not.toContain('<nav class="crumbs"');
   });
 
   it("renders feed titles with ICU braces verbatim", async () => {
     const { app } = await setup(
       undefined,
-      "Tips {braces} & tricks",
+      "Tips {braces} & <b>x</b>",
       "Story {braces} & details",
     );
     const response = await app.request("https://local.test/@feed_a", {
@@ -160,25 +163,28 @@ describe("createFederationPages", () => {
       "https://local.test/@feed_a/post-1",
       { headers: { Accept: "text/html" } },
     );
+    const remoteFollowError = await app.request(
+      "https://local.test/@feed_a/remote-follow?acct=not-an-account",
+    );
 
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain(
-      "<title>Tips {braces} &amp; tricks · rss2.pub</title>",
+      "<title>Tips {braces} &amp; &lt;b&gt;x&lt;/b&gt; · rss2.pub</title>",
     );
-    expect(html).toContain("<h1>Tips {braces} &amp; tricks</h1>");
-    expect(html).toContain(
-      '<li aria-current="page"><span class="crumb-label">Tips {braces} &amp; tricks</span></li>',
-    );
+    expect(html).toContain("<h1>Tips {braces} &amp; &lt;b&gt;x&lt;/b&gt;</h1>");
     expect(messageResponse.status).toBe(200);
     const messageHtml = await messageResponse.text();
     expect(messageHtml).toContain(
       "<title>Story {braces} &amp; details · rss2.pub</title>",
     );
     expect(messageHtml).toContain("<h1>Story {braces} &amp; details</h1>");
+    expect(await remoteFollowError.text()).toContain(
+      "Back to Tips {braces} &amp; &lt;b&gt;x&lt;/b&gt;",
+    );
   });
 
-  it("links back to the root page from the profile, message, and remote-follow error pages", async () => {
+  it("uses shared navigation and gives remote-follow errors a way back", async () => {
     const { app } = await setup();
     const profile = await app.request("https://local.test/@feed_a", {
       headers: { Accept: "text/html" },
@@ -191,24 +197,27 @@ describe("createFederationPages", () => {
     );
 
     const profileHtml = await profile.text();
-    expect(profileHtml).toContain(
-      '<a href="/"><span class="crumb-label">rss2.pub</span></a>',
-    );
+    expect(profileHtml).not.toContain('<nav class="crumbs"');
     expect(profileHtml).toContain('action="/@feed_a/remote-follow"');
     expect(profileHtml).toContain('name="acct"');
 
     const postHtml = await post.text();
-    expect(postHtml).toContain(
-      '<a href="/"><span class="crumb-label">rss2.pub</span></a>',
-    );
+    expect(postHtml).not.toContain('<nav class="crumbs"');
+    expect(postHtml).toContain('<a href="/@feed_a">Example Feed</a>');
 
     expect(remoteFollowError.status).toBe(400);
-    expect(await remoteFollowError.text()).toContain(
-      '<a href="/"><span class="crumb-label">rss2.pub</span></a>',
+    const errorHtml = await remoteFollowError.text();
+    expect(errorHtml).not.toContain('<nav class="crumbs"');
+    expect(errorHtml).toContain(
+      "<title>Remote follow · rss2.pub</title>",
     );
+    expect(errorHtml).toContain("<h1>Remote follow</h1>");
+    expect(errorHtml).toContain('class="notice notice-error"');
+    expect(errorHtml).toContain('class="btn btn-quiet" href="/@feed_a"');
+    expect(errorHtml).toContain("Back to Example Feed");
   });
 
-  it("renders an accessible breadcrumb trail and a dedicated remote-follow panel", async () => {
+  it("renders a dedicated remote-follow panel and styled post author", async () => {
     const { app } = await setup();
     const profile = await app.request("https://local.test/@feed_a", {
       headers: { Accept: "text/html" },
@@ -218,15 +227,6 @@ describe("createFederationPages", () => {
     });
 
     const profileHtml = await profile.text();
-    // The breadcrumb is a real landmark, not a stray paragraph: a labelled
-    // <nav>/<ol> with the current page marked by aria-current rather than
-    // colour alone, and the feed's own name as the current crumb.
-    expect(profileHtml).toContain(
-      '<nav class="crumbs" aria-label="Breadcrumb">',
-    );
-    expect(profileHtml).toContain(
-      '<li aria-current="page"><span class="crumb-label">Example Feed</span></li>',
-    );
     // The remote-follow form is its own labelled panel, not a row crammed
     // into the profile header, and its submit control reads as a button
     // rather than a bare unstyled input.
@@ -237,21 +237,19 @@ describe("createFederationPages", () => {
       profileHtml.indexOf('aria-labelledby="remote-follow-heading"'),
     );
 
-    // A deeper page's trail links back up through the actor to the root,
-    // with only the current page left unlinked.
     const postHtml = await post.text();
-    expect(postHtml).toContain(
-      '<a href="/@feed_a"><span class="crumb-label">@feed_a</span></a>',
-    );
-    expect(postHtml).toContain(
-      '<li aria-current="page"><span class="crumb-label">Article title</span></li>',
-    );
+    expect(postHtml).toContain('class="actor-author"');
+    expect(postHtml).toContain('<a href="/@feed_a">Example Feed</a>');
+    expect(postHtml).toContain("@feed_a@local.test");
 
     // The compact heading size is scoped to the remote-follow component, not
     // global: an unscoped rule would also shrink post titles and sanitized
     // feed content. The shared stylesheet expresses it through the type token.
     expect(profileHtml).toContain(
       ".remote-follow h2 { font-size: var(--text-lg); }",
+    );
+    expect(profileHtml).toContain(
+      ".actor-profile .handle {\n    white-space: normal; overflow: visible; text-overflow: clip;\n    overflow-wrap: anywhere;\n  }",
     );
     expect(profileHtml).toContain(
       ".content ul, .content ol { padding-inline-start: var(--space-5); }",
@@ -289,10 +287,28 @@ describe("createFederationPages", () => {
     expect(errorHtml).toContain('<html lang="ko">');
     expect(errorHtml).toContain("원격 팔로우");
     expect(errorHtml).toContain("올바른 페디버스 계정을 입력하세요");
+    expect(errorHtml).toContain("Example Feed 페이지로 돌아가기");
 
     const messageHtml = await message.text();
     expect(messageHtml).toContain('<html lang="ko">');
     expect(messageHtml).toContain("원문 보기");
+    expect(messageHtml).toContain(
+      '<time class="quiet" datetime="2026-08-30T00:00:00.000Z">2026. 8. 30.</time>',
+    );
+  });
+
+  it("renders the shared empty-state pattern when an actor has no posts", async () => {
+    const { app } = await setup(undefined, "Example Feed", "Article title", false);
+    const response = await app.request("https://local.test/@feed_a", {
+      headers: { Accept: "text/html" },
+    });
+
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('class="empty-state"');
+    expect(html).toContain("No posts yet");
+    expect(html).toContain("Posts appear here after the next poll of the feed.");
+    expect(html).not.toContain('<ul class="posts"');
   });
 
   it("negotiates locale from a cookie/header and preserves it in the rendered form action", async () => {

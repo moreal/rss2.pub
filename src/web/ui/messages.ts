@@ -251,11 +251,13 @@ export const copy = {
     message:
       "I turn Atom and RSS 2.0 feeds into followable accounts. Mention me with register or search commands.",
   },
-  federationBreadcrumbLabel: /*i18n*/ {
-    id: "federation.breadcrumb-label",
-    message: "Breadcrumb",
-    comment:
-      "Accessible label of the breadcrumb navigation on federation actor pages.",
+  federationNoPostsTitle: /*i18n*/ {
+    id: "federation.no-posts-title",
+    message: "No posts yet",
+  },
+  federationNoPostsBody: /*i18n*/ {
+    id: "federation.no-posts-body",
+    message: "Posts appear here after the next poll of the feed.",
   },
   federationRemoteFollowLabel: /*i18n*/ {
     id: "federation.remote-follow-label",
@@ -280,6 +282,10 @@ export const copy = {
   federationRemoteFollowInvalidAccount: /*i18n*/ {
     id: "federation.remote-follow-invalid-account",
     message: "Enter a valid Fediverse account, like you@instance.social.",
+  },
+  federationBackToActor: /*i18n*/ {
+    id: "federation.back-to-actor",
+    message: "Back to {name}",
   },
   // `as const` is load-bearing, not decoration: `translate()` reads each
   // message's literal text to decide whether ICU values are mandatory, and

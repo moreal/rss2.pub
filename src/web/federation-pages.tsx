@@ -2,7 +2,7 @@ import type { I18n } from "@lingui/core";
 import { Hono } from "hono";
 import type { Context, Env } from "hono";
 import { raw } from "hono/html";
-import type { FC, PropsWithChildren } from "hono/jsx";
+import type { FC } from "hono/jsx";
 import { ContentPolicy } from "../domain/content/content-policy.js";
 import { escapeHtml, stripHtml, truncateText } from "../domain/content/html.js";
 import { Feed } from "../domain/feed/feed.js";
@@ -25,6 +25,7 @@ import { isErr } from "../shared/result.js";
 import { i18nFor, translate } from "./i18n.js";
 import { negotiateLocale } from "./locale-middleware.js";
 import { LOCALE_QUERY_PARAM, resolveLocale } from "./locale.js";
+import { Notice } from "./ui/components.js";
 import { RssIcon } from "./ui/icons.js";
 import { Layout, type PageContext } from "./ui/layout.js";
 import { copy } from "./ui/messages.js";
@@ -53,30 +54,6 @@ function pageContext(
   };
 }
 
-/** A breadcrumb item; a trailing item without an href renders as the current page. */
-type Crumb = { readonly label: string; readonly href?: string };
-
-const Breadcrumbs: FC<{
-  trail: readonly Crumb[];
-  ariaLabel: string;
-}> = (props) => (
-  <nav class="crumbs" aria-label={props.ariaLabel}>
-    <ol>
-      {props.trail.map((item) => (
-        <li {...(item.href === undefined ? { "aria-current": "page" } : {})}>
-          {item.href === undefined ? (
-            <span class="crumb-label">{item.label}</span>
-          ) : (
-            <a href={item.href}>
-              <span class="crumb-label">{item.label}</span>
-            </a>
-          )}
-        </li>
-      ))}
-    </ol>
-  </nav>
-);
-
 function absoluteUrl(rawUrl: string | null): URL | null {
   if (rawUrl === null) return null;
   try {
@@ -100,21 +77,33 @@ function guessAuthorizeInteractionUrl(
   }
 }
 
-const ActorPage: FC<
-  PropsWithChildren<{
-    ctx: PageContext;
-    title: string | undefined;
-    trail: readonly Crumb[];
-  }>
-> = (props) => (
-  <Layout ctx={props.ctx} title={props.title}>
-    <Breadcrumbs
-      trail={props.trail}
-      ariaLabel={translate(props.ctx.i18n, copy.federationBreadcrumbLabel)}
-    />
-    {props.children}
-  </Layout>
+const ActorAvatar: FC<{
+  iconUrl: string | null;
+  variant: "profile" | "inline";
+}> = (props) => (
+  <span
+    class={props.variant === "profile" ? "avatar actor-avatar" : "avatar"}
+    aria-hidden="true"
+  >
+    <RssIcon size={props.variant === "profile" ? 32 : 18} />
+    {props.iconUrl !== null && (
+      <img
+        src={props.iconUrl}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onerror="this.remove()"
+      />
+    )}
+  </span>
 );
+
+function formatDate(locale: string, date: Date): string {
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
+}
 
 const RemoteFollowForm: FC<{
   handle: string;
@@ -161,29 +150,35 @@ const RemoteFollowForm: FC<{
 
 const RemoteFollowErrorPage: FC<{
   actorHandle: string;
+  actorName: string;
   ctx: PageContext;
 }> = (props) => {
   const title = translate(props.ctx.i18n, copy.federationRemoteFollowTitle);
+  const invalidAccount = translate(
+    props.ctx.i18n,
+    copy.federationRemoteFollowInvalidAccount,
+  );
   return (
-    <ActorPage
-      ctx={props.ctx}
-      title={title}
-      trail={[
-        { label: "rss2.pub", href: "/" },
-        {
-          label: `@${props.actorHandle}`,
-          href: `/@${encodeURIComponent(props.actorHandle)}`,
-        },
-        { label: title },
-      ]}
-    >
-      <header class="panel actor-message-head">
+    <Layout ctx={props.ctx} title={title}>
+      <div class="page-head">
         <h1>{title}</h1>
-        <p>
-          {translate(props.ctx.i18n, copy.federationRemoteFollowInvalidAccount)}
-        </p>
-      </header>
-    </ActorPage>
+      </div>
+      <section class="panel actor-message-head">
+        <Notice kind="error" live="alert">
+          <p>{invalidAccount}</p>
+        </Notice>
+        <div class="form-actions">
+          <a
+            class="btn btn-quiet"
+            href={`/@${encodeURIComponent(props.actorHandle)}`}
+          >
+            {translate(props.ctx.i18n, copy.federationBackToActor, {
+              name: props.actorName,
+            })}
+          </a>
+        </div>
+      </section>
+    </Layout>
   );
 };
 
@@ -226,39 +221,49 @@ const MessageCard: FC<{
         </a>
       </h2>
       {preview.length > 0 && <div class="content">{raw(preview)}</div>}
-      <p class="quiet">{props.object.publishedAt.toISOString()}</p>
+      <time class="quiet" datetime={props.object.publishedAt.toISOString()}>
+        {formatDate(props.i18n.locale, props.object.publishedAt)}
+      </time>
     </article>
   );
 };
 
 const MessagePage: FC<{
   handle: string;
+  actorName: string;
+  iconUrl: string | null;
   object: StoredFederationObject;
   ctx: PageContext;
 }> = (props) => {
   const title = fallbackTitle(props.object, props.ctx.i18n);
   const source = absoluteUrl(props.object.sourceUrl);
   return (
-    <ActorPage
-      ctx={props.ctx}
-      title={title}
-      trail={[
-        { label: "rss2.pub", href: "/" },
-        {
-          label: `@${props.handle}`,
-          href: `/@${encodeURIComponent(props.handle)}`,
-        },
-        { label: title },
-      ]}
-    >
+    <Layout ctx={props.ctx} title={title}>
       <header class="panel actor-message-head">
+        <div class="actor-author">
+          <ActorAvatar iconUrl={props.iconUrl} variant="inline" />
+          <div>
+            <p class="actor-author-name">
+              <a href={`/@${encodeURIComponent(props.handle)}`}>
+                {props.actorName}
+              </a>
+            </p>
+            <p class="feed-meta">
+              <span class="handle">
+                @{props.handle}@{props.ctx.host}
+              </span>
+            </p>
+          </div>
+        </div>
         <h1>{title}</h1>
         {props.object.summaryHtml !== null && (
           <div class="content">
             {raw(sanitizeFeedHtml(props.object.summaryHtml))}
           </div>
         )}
-        <p class="quiet">{props.object.publishedAt.toISOString()}</p>
+        <time class="quiet" datetime={props.object.publishedAt.toISOString()}>
+          {formatDate(props.ctx.i18n.locale, props.object.publishedAt)}
+        </time>
       </header>
       <article class="panel actor-post-body">
         <div class="content">
@@ -266,13 +271,13 @@ const MessagePage: FC<{
         </div>
         {source !== null && (
           <p>
-            <a href={source.href}>
+            <a class="btn btn-secondary" href={source.href}>
               {translate(props.ctx.i18n, copy.federationViewOriginal)}
             </a>
           </p>
         )}
       </article>
-    </ActorPage>
+    </Layout>
   );
 };
 
@@ -310,45 +315,52 @@ export function createFederationPages(deps: {
 
     const followers = await deps.federationObjects.countFollowers(rawHandle);
     const posts = await deps.federationObjects.listObjects(rawHandle, null, 20);
-    const currentCrumbLabel =
-      rawHandle === MAIN_ACTOR_HANDLE ? `@${rawHandle}` : name;
     return c.html(
-      <ActorPage
+      <Layout
         ctx={ctx}
         title={rawHandle === MAIN_ACTOR_HANDLE ? undefined : name}
-        trail={[{ label: "rss2.pub", href: "/" }, { label: currentCrumbLabel }]}
       >
         <header class="panel actor-profile">
-          <span class="avatar actor-avatar" aria-hidden="true">
-            <RssIcon size={32} />
-            {icon !== null && (
-              <img
-                src={icon}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                onerror="this.remove()"
-              />
-            )}
-          </span>
+          <ActorAvatar iconUrl={icon} variant="profile" />
           <h1>{name}</h1>
-          <p class="quiet">
-            @{rawHandle}@{host}
+          <p class="feed-meta">
+            <span class="handle">
+              @{rawHandle}@{host}
+            </span>
+            <span class="feed-stat">
+              {translate(ctx.i18n, copy.feedFollowers, { count: followers })}
+            </span>
           </p>
           <div class="content">{raw(summary)}</div>
-          <p>{translate(ctx.i18n, copy.feedFollowers, { count: followers })}</p>
         </header>
         <RemoteFollowForm
           handle={rawHandle}
           i18n={ctx.i18n}
           locale={ctx.locale}
         />
-        <section class="posts">
-          {posts.items.map((object) => (
-            <MessageCard handle={rawHandle} object={object} i18n={ctx.i18n} />
-          ))}
-        </section>
-      </ActorPage>,
+        {posts.items.length === 0 ? (
+          <div class="empty-state">
+            <p class="empty-title">
+              {translate(ctx.i18n, copy.federationNoPostsTitle)}
+            </p>
+            <p class="help">
+              {translate(ctx.i18n, copy.federationNoPostsBody)}
+            </p>
+          </div>
+        ) : (
+          <ul class="posts" role="list">
+            {posts.items.map((object) => (
+              <li>
+                <MessageCard
+                  handle={rawHandle}
+                  object={object}
+                  i18n={ctx.i18n}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Layout>,
     );
   });
 
@@ -357,19 +369,22 @@ export function createFederationPages(deps: {
     if (!actor.startsWith("@")) return c.notFound();
     const rawHandle = actor.slice(1);
     const ctx = pageContext(c, deps.origin, host);
+    let actorName = "rss2.pub";
     if (rawHandle !== MAIN_ACTOR_HANDLE) {
       const handle = Handle.create(rawHandle);
-      if (
-        isErr(handle) ||
-        (await deps.feeds.findByHandle(handle.value)) === null
-      ) {
-        return c.notFound();
-      }
+      if (isErr(handle)) return c.notFound();
+      const feed = await deps.feeds.findByHandle(handle.value);
+      if (feed === null) return c.notFound();
+      actorName = Feed.displayName(feed);
     }
     const account = RemoteFollowAccount.create(c.req.query("acct") ?? "");
     if (isErr(account)) {
       return c.html(
-        <RemoteFollowErrorPage actorHandle={rawHandle} ctx={ctx} />,
+        <RemoteFollowErrorPage
+          actorHandle={rawHandle}
+          actorName={actorName}
+          ctx={ctx}
+        />,
         400,
       );
     }
@@ -386,7 +401,11 @@ export function createFederationPages(deps: {
         );
     if (target === null) {
       return c.html(
-        <RemoteFollowErrorPage actorHandle={rawHandle} ctx={ctx} />,
+        <RemoteFollowErrorPage
+          actorHandle={rawHandle}
+          actorName={actorName}
+          ctx={ctx}
+        />,
         400,
       );
     }
@@ -400,14 +419,15 @@ export function createFederationPages(deps: {
     const handle = actor.slice(1);
     const id = c.req.param("id");
     if (id === "followers") return c.notFound();
+    let actorName = "rss2.pub";
+    let iconUrl: string | null = null;
     if (handle !== MAIN_ACTOR_HANDLE) {
       const parsed = Handle.create(handle);
-      if (
-        isErr(parsed) ||
-        (await deps.feeds.findByHandle(parsed.value)) === null
-      ) {
-        return c.notFound();
-      }
+      if (isErr(parsed)) return c.notFound();
+      const feed = await deps.feeds.findByHandle(parsed.value);
+      if (feed === null) return c.notFound();
+      actorName = Feed.displayName(feed);
+      iconUrl = feed.iconUrl;
     }
     const object = await deps.federationObjects.findObject(handle, id);
     return object === null
@@ -415,6 +435,8 @@ export function createFederationPages(deps: {
       : c.html(
           <MessagePage
             handle={handle}
+            actorName={actorName}
+            iconUrl={iconUrl}
             object={object}
             ctx={pageContext(c, deps.origin, host)}
           />,
