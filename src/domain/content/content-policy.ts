@@ -14,6 +14,7 @@ export type NotePost = {
   readonly title: string | null;
   readonly bodyHtml: string;
   readonly linkUrl: string | null;
+  readonly publishedAt: Date | null;
   readonly language: FeedLanguage | null;
 };
 
@@ -23,6 +24,7 @@ export type ArticlePost = {
   readonly summaryHtml: string;
   readonly contentHtml: string;
   readonly linkUrl: string | null;
+  readonly publishedAt: Date | null;
   readonly language: FeedLanguage | null;
 };
 
@@ -84,6 +86,7 @@ export function decidePostContent(
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
+      publishedAt: item.publishedAt,
       language: item.language,
     };
   }
@@ -101,6 +104,7 @@ export function decidePostContent(
     summaryHtml: teaser,
     contentHtml: item.contentHtml,
     linkUrl: item.link,
+    publishedAt: item.publishedAt,
     language: item.language,
   };
 }

@@ -69,6 +69,7 @@ describe("decidePostContent", () => {
       title: "Short",
       bodyHtml: "<p>tiny <strong>post</strong></p>",
       linkUrl: "https://a.co/1",
+      publishedAt: null,
       language: null,
     });
   });
@@ -87,6 +88,13 @@ describe("decidePostContent", () => {
     expect(decidePostContent(article, ContentPolicy.DEFAULT).language).toBe(
       "ko",
     );
+  });
+
+  it("carries the source publication date through to the published content", () => {
+    const publishedAt = new Date("2026-07-01T00:00:00Z");
+    const result = decidePostContent(item({ publishedAt }), ContentPolicy.DEFAULT);
+
+    expect(result).toMatchObject({ publishedAt });
   });
 
   it("measures length on stripped text, not raw HTML (boundary inclusive)", () => {

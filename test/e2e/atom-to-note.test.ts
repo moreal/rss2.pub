@@ -249,13 +249,9 @@ describe("Atom entry to ActivityPub Note", () => {
     expect(note["url"]).not.toBe(note["id"]);
   });
 
-  it("timestamps the Note with when the bridge published it", async () => {
+  it("timestamps the Note with the feed item's publication date", async () => {
     const { note } = await noteCreate(SOURCE_LINK);
-    // Deliberately NOT the Atom <published> value: the object is created when
-    // rss2.pub first federates the entry, and remote software orders
-    // timelines by that. The entry's own date survives as feed metadata.
-    expect(typeof note["published"]).toBe("string");
-    expect(Number.isNaN(Date.parse(String(note["published"])))).toBe(false);
+    expect(note["published"]).toBe("2026-07-01T00:00:00Z");
   });
 
   it("splits Note from Article at the note size limit (ADR-0005)", async () => {

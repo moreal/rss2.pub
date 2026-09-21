@@ -85,7 +85,7 @@ function initialObject(
     ccUris: [ctx.getFollowersUri(feed.handle).href],
     attributedToUris: attributionUris(ctx, feed, additionalAttributions),
     mentions: [],
-    publishedAt: now,
+    publishedAt: content.publishedAt ?? now,
     updatedAt: null,
   };
 }
@@ -108,6 +108,7 @@ function updatedObject(
       sourceUrl: content.linkUrl,
       language: content.language,
       attributedToUris,
+      publishedAt: content.publishedAt ?? existing.publishedAt,
       updatedAt: now,
     };
   }
@@ -121,6 +122,7 @@ function updatedObject(
     sourceUrl: content.linkUrl,
     language: content.language,
     attributedToUris,
+    publishedAt: content.publishedAt ?? existing.publishedAt,
     updatedAt: now,
   };
 }
