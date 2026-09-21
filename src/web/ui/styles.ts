@@ -610,7 +610,7 @@ export const STYLE = `
   .actor-profile > .actor-avatar svg { width: var(--space-6); height: var(--space-6); }
   .actor-profile .handle {
     white-space: normal; overflow: visible; text-overflow: clip;
-    overflow-wrap: anywhere;
+    overflow-wrap: anywhere; user-select: all;
   }
   .actor-author {
     display: grid; grid-template-columns: auto minmax(0, 1fr);

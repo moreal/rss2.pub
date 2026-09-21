@@ -283,7 +283,7 @@ describe("createFederationPages", () => {
       ".remote-follow h2 { font-size: var(--text-lg); }",
     );
     expect(profileHtml).toContain(
-      ".actor-profile .handle {\n    white-space: normal; overflow: visible; text-overflow: clip;\n    overflow-wrap: anywhere;\n  }",
+      ".actor-profile .handle {\n    white-space: normal; overflow: visible; text-overflow: clip;\n    overflow-wrap: anywhere; user-select: all;\n  }",
     );
     expect(profileHtml).toContain(
       ".actor-profile { grid-template-columns: auto minmax(0, 1fr); }",

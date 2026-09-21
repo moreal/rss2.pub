@@ -163,6 +163,12 @@ describe("stylesheet integrity", () => {
     );
   });
 
+  it("selects an account page handle as one copyable unit", () => {
+    expect(STYLE).toMatch(
+      /\.actor-profile \.handle \{[^}]*user-select: all/,
+    );
+  });
+
   /**
    * A feed's title and description are written by the feed, in whatever
    * language the feed is in — the `:lang(ko)` rule keyed to the *page* cannot
