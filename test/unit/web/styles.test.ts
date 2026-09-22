@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { STYLE } from "../../../src/web/ui/styles.js";
+import { parseHTML } from "linkedom";
+import { describe, expect, it, vi } from "vitest";
+import { COPY_SCRIPT, STYLE } from "../../../src/web/ui/styles.js";
 
 /**
  * The stylesheet's contract with accessibility, pinned.
@@ -163,9 +164,9 @@ describe("stylesheet integrity", () => {
     );
   });
 
-  it("selects an account page handle as one copyable unit", () => {
+  it("makes every account handle an atomic selection", () => {
     expect(STYLE).toMatch(
-      /\.actor-profile \.handle \{[^}]*user-select: all/,
+      /\.handle \{[^}]*user-select: all/,
     );
   });
 
@@ -191,5 +192,27 @@ describe("stylesheet integrity", () => {
     const withoutTokenBlocks = STYLE.replace(/:root \{[\s\S]*?\n {2}\}/g, "");
     expect(withoutTokenBlocks).not.toMatch(/#[0-9a-f]{3,8}\b/i);
     expect(withoutTokenBlocks).not.toMatch(/\b(rgb|hsl)a?\(/i);
+  });
+});
+
+describe("account handle selection", () => {
+  it("selects the complete marked handle after one click", () => {
+    const { document } = parseHTML(
+      '<span data-select-all="true">@example@rss2.test</span>',
+    );
+    const handle = document.querySelector("[data-select-all]");
+    expect(handle).not.toBeNull();
+
+    const addRange = vi.fn();
+    const selection = { removeAllRanges: vi.fn(), addRange };
+    const browserWindow = { getSelection: () => selection };
+    const run = new Function("document", "window", "navigator", COPY_SCRIPT);
+    run(document, browserWindow, {});
+    handle?.click();
+
+    expect(selection.removeAllRanges).toHaveBeenCalledOnce();
+    expect(addRange).toHaveBeenCalledOnce();
+    const range = addRange.mock.calls[0]?.[0];
+    expect(range?.commonAncestorContainer).toBe(handle);
   });
 });

@@ -24,7 +24,7 @@ import { isErr } from "../shared/result.js";
 import { i18nFor, translate } from "./i18n.js";
 import { negotiateLocale } from "./locale-middleware.js";
 import { LOCALE_QUERY_PARAM, resolveLocale } from "./locale.js";
-import { Notice } from "./ui/components.js";
+import { AccountHandle, Notice } from "./ui/components.js";
 import { RssIcon } from "./ui/icons.js";
 import { Layout, type PageContext } from "./ui/layout.js";
 import { copy } from "./ui/messages.js";
@@ -279,9 +279,7 @@ const MessagePage: FC<{
               </a>
             </p>
             <p class="feed-meta">
-              <span class="handle">
-                @{props.handle}@{props.ctx.host}
-              </span>
+              <AccountHandle handle={props.handle} host={props.ctx.host} />
             </p>
           </div>
         </div>
@@ -359,9 +357,7 @@ export function createFederationPages(deps: {
           <ActorAvatar iconUrl={icon} variant="profile" />
           <h1>{name}</h1>
           <p class="feed-meta">
-            <span class="handle">
-              @{rawHandle}@{host}
-            </span>
+            <AccountHandle handle={rawHandle} host={host} />
             <span class="feed-stat">
               {translate(ctx.i18n, copy.feedFollowers, { count: followers })}
             </span>

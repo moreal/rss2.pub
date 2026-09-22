@@ -548,6 +548,7 @@ export const STYLE = `
   .handle {
     position: relative; z-index: 1;
     font-family: var(--font-mono);
+    user-select: all;
   }
   /* Both identifiers are longer than a phone is wide, and both are secondary
      to the name above them. Wrapping them cost three lines per card and broke
@@ -610,7 +611,7 @@ export const STYLE = `
   .actor-profile > .actor-avatar svg { width: var(--space-6); height: var(--space-6); }
   .actor-profile .handle {
     white-space: normal; overflow: visible; text-overflow: clip;
-    overflow-wrap: anywhere; user-select: all;
+    overflow-wrap: anywhere;
   }
   .actor-author {
     display: grid; grid-template-columns: auto minmax(0, 1fr);
@@ -719,7 +720,7 @@ export const STYLE = `
     padding: var(--space-2) var(--space-3);
     background: var(--surface); border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
-    overflow-wrap: anywhere; user-select: all;
+    overflow-wrap: anywhere;
   }
   .copy-btn { flex: none; }
   .copy-icons {
@@ -841,6 +842,18 @@ export const PENDING_SCRIPT = `
  */
 export const COPY_SCRIPT = `
 (function () {
+  var handles = document.querySelectorAll("[data-select-all]");
+  Array.prototype.forEach.call(handles, function (handle) {
+    handle.addEventListener("click", function () {
+      var selection = window.getSelection();
+      if (!selection) return;
+      var range = document.createRange();
+      range.selectNodeContents(handle);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+  });
+
   if (!navigator.clipboard) return;
   var buttons = document.querySelectorAll("[data-copy]");
   var status = document.querySelector("[data-copy-status]");

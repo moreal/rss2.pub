@@ -391,7 +391,9 @@ describe("feed cards", () => {
   it("keeps the fediverse handle on the card, below the name", async () => {
     const html = await bodyOf(webApp().request("/"));
     const title = html.indexOf('href="/@example"');
-    expect(html.slice(title)).toContain("@example@rss2.test");
+    expect(html.slice(title)).toContain(
+      '<span class="handle" data-select-all="true">@example@rss2.test</span>',
+    );
   });
 
   it("renders legacy accounts without advertising article extraction", async () => {

@@ -13,6 +13,24 @@ import type { PageContext } from "./layout.js";
 import { copy } from "./messages.js";
 
 /**
+ * A complete fediverse account address. Keeping its markup and selection hook
+ * here prevents profile pages and feed cards from quietly drifting apart.
+ */
+export const AccountHandle: FC<{
+  handle: string;
+  host: string;
+  variant?: "plain" | "copy";
+}> = (props) => (
+  <span
+    class={props.variant === "copy" ? "handle handle-value" : "handle"}
+    data-select-all
+  >
+    @{props.handle}
+    {props.variant === "copy" && <wbr />}@{props.host}
+  </span>
+);
+
+/**
  * Feedback block. The kind is carried by an icon *shape* and a bold title as
  * well as by colour, so the state survives a monochrome screen or a reader
  * who cannot distinguish the hues.
@@ -118,9 +136,7 @@ export const FeedCard: FC<{
             </span>
           )}
           {props.omitHandle !== true && (
-            <span class="handle">
-              @{props.feed.handle}@{props.ctx.host}
-            </span>
+            <AccountHandle handle={props.feed.handle} host={props.ctx.host} />
           )}
           <span class="feed-src">{displayUrl(props.feed.url)}</span>
         </p>
@@ -306,10 +322,11 @@ export const HandleToCopy: FC<{ ctx: PageContext; handle: string }> = (
           where the address has a seam, instead of mid-domain ("…@rss2.p /
           ub"). <wbr> is a break opportunity only — it adds nothing to the
           selection, and the button copies from data-copy regardless. */}
-      <span class="handle-value">
-        @{props.handle}
-        <wbr />@{props.ctx.host}
-      </span>
+      <AccountHandle
+        handle={props.handle}
+        host={props.ctx.host}
+        variant="copy"
+      />
       <button
         type="button"
         class="btn btn-primary copy-btn"

@@ -109,7 +109,9 @@ describe("createFederationPages", () => {
     expect(html).toContain("https://source.test/icon.png");
     expect(html).toContain('onerror="this.remove()"');
     expect(html).toContain("1 follower");
-    expect(html).toContain('<p class="feed-meta"><span class="handle">');
+    expect(html).toContain(
+      '<p class="feed-meta"><span class="handle" data-select-all="true">',
+    );
     expect(html).toContain("Post title");
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
@@ -207,6 +209,9 @@ describe("createFederationPages", () => {
     expect(messageResponse.status).toBe(200);
     const messageHtml = await messageResponse.text();
     expect(messageHtml).toContain(
+      '<span class="handle" data-select-all="true">@feed_a@local.test</span>',
+    );
+    expect(messageHtml).toContain(
       "<title>Story {braces} &amp; details · rss2.pub</title>",
     );
     expect(messageHtml).toContain("<h1>Story {braces} &amp; details</h1>");
@@ -280,7 +285,7 @@ describe("createFederationPages", () => {
       ".remote-follow h2 { font-size: var(--text-lg); }",
     );
     expect(profileHtml).toContain(
-      ".actor-profile .handle {\n    white-space: normal; overflow: visible; text-overflow: clip;\n    overflow-wrap: anywhere; user-select: all;\n  }",
+      ".actor-profile .handle {\n    white-space: normal; overflow: visible; text-overflow: clip;\n    overflow-wrap: anywhere;\n  }",
     );
     expect(profileHtml).toContain(
       ".actor-profile { grid-template-columns: auto minmax(0, 1fr); }",
