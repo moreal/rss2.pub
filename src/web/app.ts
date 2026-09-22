@@ -18,7 +18,6 @@ import {
   createUnregisterFeed,
   type UnregisterFeed,
 } from "../application/unregister-feed.js";
-import { ContentPolicy } from "../domain/content/content-policy.js";
 import { PollPolicy } from "../domain/feed/poll-policy.js";
 import type { Clock } from "../domain/ports/clock.js";
 import type { Random } from "../domain/ports/random.js";
@@ -66,16 +65,6 @@ export async function createApp(config: AppConfig): Promise<App> {
       `invalid poll policy: ${JSON.stringify(pollPolicyResult.error)}`,
     );
   }
-  const contentPolicyResult = ContentPolicy.create({
-    noteMaxChars: config.noteMaxChars,
-    teaserMaxChars: config.teaserMaxChars,
-  });
-  if (isErr(contentPolicyResult)) {
-    throw new Error(
-      `invalid content policy: ${JSON.stringify(contentPolicyResult.error)}`,
-    );
-  }
-
   const sql = postgres(config.databaseUrl, { onnotice: () => {} });
   const db = drizzle(sql);
   await migrate(db, { migrationsFolder: "drizzle" });
@@ -141,7 +130,6 @@ export async function createApp(config: AppConfig): Promise<App> {
       random,
       pollPolicy: pollPolicyResult.value,
       iconRetryPolicy: ICON_RETRY_DEFAULT,
-      contentPolicy: contentPolicyResult.value,
     }),
   );
   const pollDueFeeds = createPollDueFeeds({ feeds, pollFeed, clock });

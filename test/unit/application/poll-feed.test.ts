@@ -3,7 +3,6 @@ import {
   createPollDueFeeds,
   createPollFeed,
 } from "../../../src/application/poll-feed.js";
-import { ContentPolicy } from "../../../src/domain/content/content-policy.js";
 import { AttributionCandidates } from "../../../src/domain/feed/author-uri.js";
 import { FeedId } from "../../../src/domain/feed/feed.js";
 import { ResolvedActorUri } from "../../../src/domain/ports/actor-resolver.js";
@@ -62,7 +61,6 @@ function setup(params: { feedUrl?: string; fullContentEnabled?: boolean } = {}) 
     random: fixedRandom(),
     iconRetryPolicy: ICON_RETRY_DEFAULT,
     pollPolicy,
-    contentPolicy: ContentPolicy.DEFAULT,
   });
   return {
     url: feed.url,
@@ -128,11 +126,10 @@ describe("PollFeed", () => {
 
     const report = unwrap(await pollFeed.execute(feed.id));
     expect(report).toMatchObject({ status: "polled", published: 2 });
-    expect(
-      federation.published.map(({ content }) =>
-        content.kind === "note" ? content.title : content.name,
-      ),
-    ).toEqual(["oldest", "newest"]);
+    expect(federation.published.map(({ content }) => content.title)).toEqual([
+      "oldest",
+      "newest",
+    ]);
 
     const saved = await feeds.findById(feed.id);
     expect(saved?.title).toBe("Titled Feed");
@@ -227,9 +224,7 @@ describe("PollFeed", () => {
 
     await pollFeed.execute(feed.id);
     const [published] = federation.published;
-    expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
-      "<p>teaser</p>",
-    );
+    expect(published?.content.bodyHtml).toBe("<p>teaser</p>");
   });
 
   it("publishes Atom content for legacy full accounts without fetching the article", async () => {
@@ -255,9 +250,7 @@ describe("PollFeed", () => {
 
     await pollFeed.execute(feed.id);
     const [published] = federation.published;
-    expect(published?.content.kind === "note" && published.content.bodyHtml).toBe(
-      "<p>teaser</p>",
-    );
+    expect(published?.content.bodyHtml).toBe("<p>teaser</p>");
     fetcher.respondWith(
       feed.url,
       ok(fetchedFeed({
@@ -271,9 +264,7 @@ describe("PollFeed", () => {
     );
     expect(unwrap(await pollFeed.execute(feed.id)).updated).toBe(1);
     const [updated] = federation.updated;
-    expect(updated?.content.kind === "note" && updated.content.bodyHtml).toBe(
-      "<p>edited Atom content</p>",
-    );
+    expect(updated?.content.bodyHtml).toBe("<p>edited Atom content</p>");
     expect(unwrap(await pollFeed.execute(feed.id)).updated).toBe(0);
     expect(federation.published).toHaveLength(1);
     expect(federation.updated).toHaveLength(1);
@@ -629,7 +620,7 @@ describe("PollFeed content updates", () => {
     expect(federation.updated).toHaveLength(1);
     expect(federation.updated[0]?.messageUri).toBe(messageUri);
     const content = federation.updated[0]?.content;
-    expect(content?.kind === "note" && content.title).toBe("v2");
+    expect(content?.title).toBe("v2");
   });
 
   it("retries a failed update without losing the pending change", async () => {

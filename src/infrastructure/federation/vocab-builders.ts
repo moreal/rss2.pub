@@ -1,6 +1,5 @@
 import type { ActorKeyPair, Context } from "@fedify/fedify";
 import {
-  Article,
   Create,
   Endpoints,
   Image,
@@ -41,9 +40,7 @@ function messageUri(
   record: StoredFederationObject,
 ): URL {
   const values = { identifier: record.actorHandle, id: record.id };
-  return record.kind === "note"
-    ? ctx.getObjectUri(Note, values)
-    : ctx.getObjectUri(Article, values);
+  return ctx.getObjectUri(Note, values);
 }
 
 export function buildLocalActor(
@@ -98,7 +95,7 @@ export function buildActorUpdate(
 export function buildMessage(
   ctx: Context<void>,
   record: StoredFederationObject,
-): Note | Article {
+): Note {
   const sourceUrl = record.sourceUrl === null ? null : urlOf(record.sourceUrl);
   const values = {
     id: messageUri(ctx, record),
@@ -129,10 +126,8 @@ export function buildMessage(
       ? null
       : toTemporalInstant(record.updatedAt),
   };
-  if (record.kind === "note") return new Note(values);
-  return new Article({
+  return new Note({
     ...values,
-    name: record.name === null ? null : languageValue(record.name, record.language),
     summary: record.summaryHtml === null
       ? null
       : languageValue(record.summaryHtml, record.language),

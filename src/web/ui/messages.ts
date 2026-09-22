@@ -237,11 +237,6 @@ export const copy = {
     message: "Post",
     comment: "Fallback title for an untitled Note on an actor page.",
   },
-  federationArticleFallback: /*i18n*/ {
-    id: "federation.article-fallback",
-    message: "Article",
-    comment: "Fallback title for an untitled Article on an actor page.",
-  },
   federationViewOriginal: /*i18n*/ {
     id: "federation.view-original",
     message: "View original",

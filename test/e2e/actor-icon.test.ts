@@ -47,8 +47,6 @@ beforeAll(async () => {
     pollMaxIntervalSeconds: 3600,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
-    noteMaxChars: 2000,
-    teaserMaxChars: 200,
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",

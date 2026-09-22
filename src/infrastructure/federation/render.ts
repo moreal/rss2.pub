@@ -1,8 +1,5 @@
 import sanitizeHtml from "sanitize-html";
-import type {
-  ArticlePost,
-  NotePost,
-} from "../../domain/content/content-policy.js";
+import type { PostContent } from "../../domain/content/post-content.js";
 import { escapeHtml } from "../../domain/content/html.js";
 import type { Feed } from "../../domain/feed/feed.js";
 
@@ -35,7 +32,7 @@ function linkParagraph(url: string): string {
 }
 
 /** Note body: inlined bold title (WriteFreely style) + content + permalink. */
-export function renderNoteHtml(post: NotePost): string {
+export function renderNoteHtml(post: PostContent): string {
   const parts: string[] = [];
   if (post.title !== null) {
     parts.push(`<p><strong>${escapeHtml(post.title)}</strong></p>`);
@@ -44,24 +41,6 @@ export function renderNoteHtml(post: NotePost): string {
   if (body.length > 0) parts.push(body);
   if (post.linkUrl !== null) parts.push(linkParagraph(post.linkUrl));
   return parts.join("\n");
-}
-
-/**
- * Article content: the title is ALSO embedded as <h1> for software that
- * renders `content` (Misskey family); the object-level `name`/`summary` are
- * applied separately by the vocab builder for Mastodon's title+teaser+link view.
- */
-export function renderArticleHtml(post: ArticlePost): string {
-  const parts = [
-    `<h1>${escapeHtml(post.name)}</h1>`,
-    sanitizeFeedHtml(post.contentHtml),
-  ];
-  if (post.linkUrl !== null) parts.push(linkParagraph(post.linkUrl));
-  return parts.join("\n");
-}
-
-export function renderArticleSummaryHtml(post: ArticlePost): string {
-  return sanitizeFeedHtml(post.summaryHtml);
 }
 
 /** Actor profile summary for a feed bot. */

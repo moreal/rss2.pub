@@ -20,8 +20,6 @@ export type AppConfig = {
   readonly pollMaxIntervalSeconds: number;
   readonly pollMaxBackoffSeconds: number;
   readonly schedulerTickMs: number;
-  readonly noteMaxChars: number;
-  readonly teaserMaxChars: number;
   /** True when serving behind a reverse proxy that sets X-Forwarded-*. */
   readonly behindProxy: boolean;
   /** TEST ONLY (ALLOW_PRIVATE_ADDRESS=true): disables the SSRF guard. */
@@ -122,11 +120,6 @@ export function loadConfig(
   }
   const schedulerTickMs = integer(env, "SCHEDULER_TICK_MS", 60_000);
   if (!schedulerTickMs.ok) return schedulerTickMs;
-  const noteMaxChars = integer(env, "NOTE_MAX_CHARS", 2000);
-  if (!noteMaxChars.ok) return noteMaxChars;
-  const teaserMaxChars = integer(env, "TEASER_MAX_CHARS", 200);
-  if (!teaserMaxChars.ok) return teaserMaxChars;
-
   let logLevel: LogLevel = "info";
   const rawLogLevel = env["LOG_LEVEL"];
   if (rawLogLevel !== undefined && rawLogLevel.trim() !== "") {
@@ -164,8 +157,6 @@ export function loadConfig(
     pollMaxIntervalSeconds: pollMaxIntervalSeconds.value,
     pollMaxBackoffSeconds: pollMaxBackoffSeconds.value,
     schedulerTickMs: schedulerTickMs.value,
-    noteMaxChars: noteMaxChars.value,
-    teaserMaxChars: teaserMaxChars.value,
     behindProxy: env["BEHIND_PROXY"] === "true",
     allowPrivateAddress: env["ALLOW_PRIVATE_ADDRESS"] === "true",
     logLevel,

@@ -84,7 +84,8 @@ export function pollRetryPolicy(policy: PollPolicy): RetryBudget {
     baseSeconds: policy.intervalSeconds,
     ceilingSeconds: policy.maxBackoffSeconds,
     // A registered feed is the whole point of the registration: back off, but
-    // never abandon it. Only favicon and article fetches give up.
+    // never abandon it. Best-effort auxiliary fetches such as favicons can
+    // give up, but polling the registered feed cannot.
     maxAttempts: null,
   };
 }

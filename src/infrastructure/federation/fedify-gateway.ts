@@ -1,14 +1,13 @@
 import type { Context, Federation } from "@fedify/fedify";
 import {
   type Activity,
-  Article,
   Delete,
   Note,
   PUBLIC_COLLECTION,
   Tombstone,
 } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
-import type { PostContent } from "../../domain/content/content-policy.js";
+import type { PostContent } from "../../domain/content/post-content.js";
 import { Feed } from "../../domain/feed/feed.js";
 import type { ItemKey } from "../../domain/feed/feed-item.js";
 import type { Clock } from "../../domain/ports/clock.js";
@@ -29,11 +28,7 @@ import type {
   FederationRepository,
   StoredFederationObject,
 } from "./model.js";
-import {
-  renderArticleHtml,
-  renderArticleSummaryHtml,
-  renderNoteHtml,
-} from "./render.js";
+import { renderNoteHtml } from "./render.js";
 import {
   buildActorUpdate,
   buildCreate,
@@ -81,14 +76,9 @@ function initialObject(
   return {
     id,
     actorHandle: feed.handle,
-    kind: content.kind,
-    contentHtml: content.kind === "note"
-      ? renderNoteHtml(content)
-      : renderArticleHtml(content),
-    name: content.kind === "article" ? content.name : content.title,
-    summaryHtml: content.kind === "article"
-      ? renderArticleSummaryHtml(content)
-      : null,
+    contentHtml: renderNoteHtml(content),
+    name: content.title,
+    summaryHtml: null,
     sourceUrl: content.linkUrl,
     language: content.language,
     toUris: [PUBLIC_COLLECTION.href],
@@ -106,29 +96,11 @@ function updatedObject(
   content: PostContent,
   now: Date,
 ): StoredFederationObject {
-  const contentHtml = content.kind === "note"
-    ? renderNoteHtml(content)
-    : renderArticleHtml(content);
-  if (existing.kind === "note") {
-    return {
-      ...existing,
-      contentHtml,
-      name: content.kind === "note" ? content.title : null,
-      summaryHtml: null,
-      sourceUrl: content.linkUrl,
-      language: content.language,
-      attributedToUris,
-      publishedAt: content.publishedAt ?? existing.publishedAt,
-      updatedAt: now,
-    };
-  }
   return {
     ...existing,
-    contentHtml,
-    name: content.kind === "article" ? content.name : content.title,
-    summaryHtml: content.kind === "article"
-      ? renderArticleSummaryHtml(content)
-      : null,
+    contentHtml: renderNoteHtml(content),
+    name: content.title,
+    summaryHtml: null,
     sourceUrl: content.linkUrl,
     language: content.language,
     attributedToUris,
@@ -227,8 +199,7 @@ export function createFedifyGateway(deps: {
       try {
         const parsed = ctx.parseUri(new URL(messageUri));
         if (parsed?.type !== "object"
-          || (parsed.typeId.href !== Note.typeId.href
-            && parsed.typeId.href !== Article.typeId.href)
+          || parsed.typeId.href !== Note.typeId.href
           || parsed.values.identifier !== feed.handle
           || parsed.values.id === undefined) {
           throw new Error(`message URI is not owned by ${feed.handle}: ${messageUri}`);

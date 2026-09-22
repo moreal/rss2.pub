@@ -146,7 +146,6 @@ describe("createFedifyGateway", () => {
       authorUris: [],
     }));
     const content = {
-      kind: "note" as const,
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
@@ -203,7 +202,6 @@ describe("createFedifyGateway", () => {
     }));
 
     const published = unwrap(await gateway.publish(feed, item.key, {
-      kind: "note",
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
@@ -215,7 +213,7 @@ describe("createFedifyGateway", () => {
     const stored = objectId === undefined
       ? null
       : await repository.findObject(feed.handle, objectId);
-    expect(stored).toMatchObject({ kind: "note", name: "Real item title" });
+    expect(stored).toMatchObject({ name: "Real item title" });
   });
 
   it("stores the feed item's publication date on a new object", async () => {
@@ -249,7 +247,6 @@ describe("createFedifyGateway", () => {
       authorUris: [],
     }));
     const content = {
-      kind: "note" as const,
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
@@ -266,7 +263,7 @@ describe("createFedifyGateway", () => {
     expect(stored?.publishedAt).toEqual(new Date("2026-07-01T00:00:00Z"));
   });
 
-  it("updates content without changing the stored object kind or URI", async () => {
+  it("updates Note content without changing its URI", async () => {
     const feeds = createInMemoryFeedRepository();
     const repository = createInMemoryFederationRepository();
     const feed = makeFeed({ handle: "feed_a" });
@@ -301,7 +298,6 @@ describe("createFedifyGateway", () => {
       authorUris: [],
     }));
     const published = unwrap(await gateway.publish(feed, item.key, {
-      kind: "note",
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
@@ -311,10 +307,8 @@ describe("createFedifyGateway", () => {
 
     clock.set(new Date("2026-08-31T00:00:00Z"));
     unwrap(await gateway.update(feed, published.messageUri, {
-      kind: "article",
-      name: "Long article",
-      summaryHtml: "<p>Summary</p>",
-      contentHtml: "<p>Changed</p>",
+      title: "Long post",
+      bodyHtml: "<p>Changed</p>",
       linkUrl: "https://source.test/changed",
       publishedAt: new Date("2026-07-02T00:00:00Z"),
       language: null,
@@ -325,14 +319,14 @@ describe("createFedifyGateway", () => {
       ? null
       : await repository.findObject(feed.handle, objectId);
     expect(stored).toMatchObject({
-      kind: "note",
-      name: null,
+      name: "Long post",
       summaryHtml: null,
       sourceUrl: "https://source.test/changed",
       publishedAt: new Date("2026-07-02T00:00:00Z"),
       updatedAt: new Date("2026-08-31T00:00:00Z"),
     });
-    expect(stored?.contentHtml).toContain("<h1>Long article</h1>");
+    expect(stored?.contentHtml).toContain("<strong>Long post</strong>");
+    expect(stored?.contentHtml).toContain("<p>Changed</p>");
     expect(sent[1]).toBeInstanceOf(Update);
     expect((sent[1] instanceof Update ? sent[1].objectId?.href : null))
       .toBe(published.messageUri);
@@ -373,7 +367,6 @@ describe("createFedifyGateway", () => {
       authorUris: [],
     }));
     const content = {
-      kind: "note" as const,
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,
@@ -468,7 +461,6 @@ describe("createFedifyGateway", () => {
       authorUris: [],
     }));
     unwrap(await gateway.publish(feed, item.key, {
-      kind: "note",
       title: item.title,
       bodyHtml: item.contentHtml,
       linkUrl: item.link,

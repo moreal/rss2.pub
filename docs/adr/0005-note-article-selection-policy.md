@@ -1,6 +1,6 @@
 # ADR-0005: Note/Article 자동 선택 정책
 
-- Status: accepted (2026-07-26)
+- Status: superseded by ADR-0016 (2026-09-22; accepted 2026-07-26)
 - Context: docs/PLAN.md §5 (2026-07 조사 — Mastodon/Misskey 소스, 주요 브리지 관행)
 
 ## 결정

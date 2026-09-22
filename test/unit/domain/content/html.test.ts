@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   decodeEntities,
   escapeHtml,
-  firstParagraph,
   stripHtml,
   truncateText,
 } from "../../../../src/domain/content/html.js";
@@ -36,26 +35,6 @@ describe("stripHtml", () => {
 
   it("decodes entities in the extracted text", () => {
     expect(stripHtml("<p>fish &amp; chips</p>")).toBe("fish & chips");
-  });
-});
-
-describe("firstParagraph", () => {
-  it("returns the inner HTML of the first <p>", () => {
-    expect(firstParagraph("<p>first <em>one</em></p><p>second</p>")).toBe(
-      "first <em>one</em>",
-    );
-  });
-
-  it("handles <p> tags with attributes", () => {
-    expect(firstParagraph('<p class="lead">a</p><p>b</p>')).toBe("a");
-  });
-
-  it("falls back to the first blank-line block for plain text", () => {
-    expect(firstParagraph("para one\n\npara two")).toBe("para one");
-  });
-
-  it("returns null when no block is smaller than the whole", () => {
-    expect(firstParagraph("just a single run of text")).toBeNull();
   });
 });
 

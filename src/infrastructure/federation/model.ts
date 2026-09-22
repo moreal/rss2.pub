@@ -26,7 +26,6 @@ export type StoredMention = {
 export type StoredFederationObject = {
   readonly id: string;
   readonly actorHandle: string;
-  readonly kind: "note" | "article";
   readonly contentHtml: string;
   readonly name: string | null;
   readonly summaryHtml: string | null;

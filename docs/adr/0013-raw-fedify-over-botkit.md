@@ -21,18 +21,18 @@ Fedify dispatcher와 저장 모델을 소유하는 편이 단순하다.
 - actor keys, followers, emitted objects를 PostgreSQL typed tables에 저장한다.
 - outgoing activity는 `PostgresMessageQueue`를 통해 전달한다.
 - 기존 BotKit URI 형태와 main actor 명령 및 HTML actor/message page 동작을 유지한다.
-- 자동 시작 시 과거 BotKit repository 데이터는 migration하지 않는다.
-  2026-09-08 운영 장애 확인 후, 남아 있는 공개 feed 객체·팔로워·미생성 actor 키는
-  검토된 일회성 복구 절차로 이관할 수 있도록 보완했다.
+- 과거 BotKit repository 데이터는 migration하지 않는다. 정식 출시 전 데이터는
+  개발 데이터베이스 초기화로 폐기한다.
 
 ## 저장 원칙
 
 - actor별 RSA와 Ed25519 key를 lazy-create하고 영속화한다.
 - follower의 actor/inbox/shared inbox를 local actor별로 저장하고 Follow/Undo를 멱등 처리한다.
-- emitted object는 JSON-LD snapshot이 아니라 Note/Article을 재구성할 typed fields로 저장한다.
+- emitted object는 JSON-LD snapshot이 아니라 Note를 재구성할 typed fields로 저장한다
+  (ADR-0016이 기존 Note/Article 구분을 제거).
 - feed ID와 item key에서 안정적인 object ID를 만들어 publish 재시도가 같은 URI와 Create
   activity ID를 사용하게 한다.
-- 최초 object kind와 URI는 Update에서도 유지한다.
+- Note object URI는 Update에서도 유지한다.
 
 ## 결과
 

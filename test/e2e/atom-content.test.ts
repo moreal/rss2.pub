@@ -51,8 +51,6 @@ beforeAll(async () => {
     pollMaxIntervalSeconds: 3600,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
-    noteMaxChars: 2000,
-    teaserMaxChars: 200,
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",
@@ -152,14 +150,14 @@ describe("Atom entry content publication", () => {
     if (legacy) {
       const feed = await createDrizzleFeedRepository(database.db).findByUrl(url, true);
       if (feed === null) throw new Error("missing legacy fixture feed");
-      // Model an earlier deployment's published articles and overdue retry state.
+      // Model an earlier deployment's published objects and overdue retry state.
       await database.db.update(publishedItems).set({
         fullContentUsed: true,
         extractFailures: 3,
         extractNextAttemptAt: new Date(0),
       }).where(eq(publishedItems.feedId, feed.id));
       await database.db.update(federationObjects).set({
-        contentHtml: "<p>Previously extracted article</p>",
+        contentHtml: "<p>Previously extracted page</p>",
       }).where(eq(federationObjects.actorHandle, handle));
       const before = await database.db.select().from(federationObjects)
         .where(eq(federationObjects.actorHandle, handle));

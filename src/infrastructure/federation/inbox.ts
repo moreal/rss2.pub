@@ -1,7 +1,6 @@
 import type { Context, Federation } from "@fedify/fedify";
 import {
   Accept,
-  Article,
   type Actor,
   Create,
   Follow,
@@ -236,7 +235,7 @@ export function createInboxHandlers(deps: InboxHandlerDependencies) {
         || create.id === null
         || create.actorId === null) return;
       const object = await create.getObject(ctx);
-      if (!(object instanceof Note) && !(object instanceof Article)) return;
+      if (!(object instanceof Note)) return;
 
       const mainActor = ctx.getActorUri(MAIN_ACTOR_HANDLE);
       const audience = [...object.toIds, ...object.ccIds];
@@ -262,7 +261,6 @@ export function createInboxHandlers(deps: InboxHandlerDependencies) {
       const record = {
         id,
         actorHandle: MAIN_ACTOR_HANDLE,
-        kind: "note" as const,
         contentHtml: rendered.html,
         name: null,
         summaryHtml: null,

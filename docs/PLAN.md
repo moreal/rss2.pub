@@ -106,21 +106,16 @@ Containerfile로 빌드한다.
 - 대소문자 무시 조회(마스토돈/미스키 동작)를 전제로 소문자만 발급, 충돌은 매 핸들에
   붙는 해시로 회피(ADR-0004).
 
-### 5. 콘텐츠 매핑: Note vs Article
+### 5. 콘텐츠 매핑: Note
 
-조사 결론: **마스토돈은 Article의 `content`를 절대 렌더링하지 않는다**
-(4.3+에서 `<h2>제목</h2>` + HTML `summary` + 링크만 표시). 반면 Misskey/Akkoma/Lemmy는
-전문을 렌더링. WordPress ActivityPub 플러그인도 2025년부터 "자동 타입 선택"이 기본.
+확정 정책(ADR-0016): 모든 Atom entry를 길이와 관계없이 `Note`로 게시한다.
 
-확정 정책 (도메인 서비스 `ContentPolicy`로 구현):
-
-- **짧은 글** (임계값 이하, 기본 **2,000자**): `Note` — 제목을 본문 선두에 강조로
-  인라인(WriteFreely 방식) + 원문 링크 첨부. 마스토돈에서 전문 표시됨.
-  (마스토돈은 원격 글을 서버 측에서 자르지 않고 UI에서 접기만 하며, Misskey는
-  8,192자에서 절단하므로 2,000자는 안전 범위.)
-- **긴 글**: `Article` — `name`(제목) + `summary`(HTML 티저) + `content`(전문) + `url`.
-  마스토돈은 제목+티저+링크, Misskey 계열은 전문을 봄. 티저는 첫 문단(없으면 첫 200자).
-- 임계값·티저 길이는 피드별 설정 가능하게 값 객체로 모델링.
+- 제목은 `content` 선두에 강조로 인라인하고, 정제된 Atom 본문 전문과 원문 링크를
+  이어 붙인다.
+- `url`은 원래 entry 링크를 가리킨다.
+- ActivityStreams `summary`는 티저로 만들지 않고 실제 content warning에만 사용한다.
+- 서버별 최대 본문 길이를 협상하는 ActivityPub 규격이 없으므로 rss2.pub이 본문을
+  선제적으로 자르지 않는다. 수신 구현의 자체 한도는 해당 구현이 처리한다.
 
 ### 6. PostgreSQL 운용 방안
 
@@ -190,7 +185,7 @@ src/
   shared/          # Result, Brand 등 순수 타입 유틸 (의존성 0)
   domain/
     feed/          # Feed 애그리거트: FeedId, FeedUrl(canonical), Handle, FeedItem, ItemId
-    content/       # ContentPolicy(Note/Article 결정), PostContent 값 객체
+    content/       # Atom entry를 Note용 PostContent로 투영
     follower/      # 팔로워 통계(추천 랭킹용 읽기 모델)
     ports/         # FeedRepository, ItemRepository, FeedFetcher, FederationGateway, Clock
   application/     # 유스케이스: RegisterFeed, SearchFeeds, PollFeed, PublishItem,
@@ -222,7 +217,7 @@ packages/
 |---|---|
 | 등록된 Feed | FeedRepository 기반 동적 `Service` actor (`acct:{handle}@{host}`) |
 | 메인 액터 | 정적 `Service` actor `acct:rss2pub@{host}`, inbox listener로 명령 처리 |
-| FeedItem 발행 | FederationGateway가 저장한 Note/Article + Create fan-out |
+| FeedItem 발행 | FederationGateway가 저장한 Note + Create fan-out |
 | Atom author | lookup으로 확인된 Actor를 local feed actor 뒤의 `attributedTo`에 추가 |
 | Follow | inbox listener가 멱등 저장 후 Accept |
 | 팔로워 수 | domain feed count + federation_followers의 실제 insert/delete로 조정 |
@@ -239,7 +234,7 @@ packages/
 
 ## 테스트 전략
 
-- **unit** (`test/unit`): 도메인(핸들 정규화, ContentPolicy, 중복 판정)·애플리케이션
+- **unit** (`test/unit`): 도메인(핸들 정규화, PostContent 투영, 중복 판정)·애플리케이션
   (유스케이스, 명령 파서). 포트는 인메모리 구현/스텁. 외부 I/O 없음.
 - **e2e** (`test/e2e`): 실제 서버를 임시 포트로 기동 — WebFinger → 피드 액터 문서 →
   픽스처 Atom 폴링 → outbox/프로필 반영, 웹 UI 페이지(검색/추천), NodeInfo. Atom과 remote
@@ -256,14 +251,14 @@ packages/
   기능 추가 워크플로.
 - `.claude/agents/domain-reviewer.md`: 의존 방향·타입 규율 위반 검사 서브에이전트.
 - `docs/adr/`: 본 문서의 결정들(Atom-only, raw Fedify, 복수 attribution, Effect 보류,
-  Nix, 핸들, Note/Article)을 ADR로 분리 기록 — 에이전트가 과거 결정을 재발명하지 않도록.
+  Nix, 핸들, Note 발행)을 ADR로 분리 기록 — 에이전트가 과거 결정을 재발명하지 않도록.
 
 ## 마일스톤
 
 - ✅ **M0 — 환경/오케스트레이션**: yarn 프로젝트, TS strict, Vitest, flake.nix devShell +
   direnv, GitHub Actions(nix develop 경유), CLAUDE.md/AGENTS.md, skills, ADR 뼈대.
 - ✅ **M1 — 도메인 우선**: shared(Result/Brand) → domain 전체 + 단위 테스트
-  (핸들 정규화·ContentPolicy·아이템 동일성 판정이 핵심).
+  (핸들 정규화·PostContent 투영·아이템 동일성 판정이 핵심).
 - ✅ **M2 — 애플리케이션**: 유스케이스 + 명령 파서 + 단위 테스트.
 - ✅ **M3 — 연합**: BotKit 스파이크(HTML 본문 경로 → RawHtmlText로 해결, ADR-0007) →
   federation 어댑터, 폴링 스케줄러, PostgreSQL 영속화(Drizzle + testcontainers), E2E 1차.
@@ -306,7 +301,7 @@ packages/
 - 데이터베이스: **PostgreSQL 단일 인스턴스로 통일** — 도메인/first-party federation
   tables는 Drizzle ORM, KV/MQ는 `@fedify/postgres` (운용 방안 §6).
   CockroachDB는 차기 과제로 보류(§6 말미 기록).
-- Note/Article 임계값: 기본 **2,000자**. 티저(summary)는 첫 문단(없으면 첫 200자).
+- 모든 Atom entry는 길이와 관계없이 전문을 담은 Note로 발행한다(ADR-0016).
 
 ## 미결 사항
 

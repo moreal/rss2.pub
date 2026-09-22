@@ -113,7 +113,6 @@ export const federationObjects = pgTable(
   {
     actorHandle: text("actor_handle").notNull(),
     id: text("id").notNull(),
-    kind: text("kind").notNull(),
     contentHtml: text("content_html").notNull(),
     name: text("name"),
     summaryHtml: text("summary_html"),

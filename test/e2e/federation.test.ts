@@ -50,8 +50,6 @@ beforeAll(async () => {
     pollMaxIntervalSeconds: 1,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
-    noteMaxChars: 2000,
-    teaserMaxChars: 200,
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",
@@ -199,7 +197,7 @@ describe("federation e2e", () => {
     expect(response.status).toBe(200);
   });
 
-  it("publishes new items to the outbox on poll — Note and titled Article", async () => {
+  it("publishes short and long items to the outbox as Notes", async () => {
     await app.scheduler.tick();
 
     const actor = await fetchAp(`${base}/ap/actor/${feedHandle}`);
@@ -209,10 +207,10 @@ describe("federation e2e", () => {
     const objects = await Promise.all(
       activities.map((activity) => resolveItem(activity["object"])),
     );
-    const note = objects.find((o) => o["type"] === "Note");
-    const article = objects.find((o) => o["type"] === "Article");
+    const note = objects.find((o) => o["url"] === "https://blog.example/short");
+    const longNote = objects.find((o) => o["url"] === "https://blog.example/long");
 
-    expect(note, "short item becomes a Note").toBeDefined();
+    expect(note?.["type"]).toBe("Note");
     expect(note?.["content"]).toContain("<strong>Short Post</strong>");
     expect(note?.["content"]).toContain("tiny <strong>update</strong>");
     expect(note?.["content"]).toContain("https://blog.example/short");
@@ -221,12 +219,12 @@ describe("federation e2e", () => {
     // rss2.pub's own message page.
     expect(note?.["url"]).toBe("https://blog.example/short");
 
-    expect(article, "long item becomes an Article").toBeDefined();
-    expect(article?.["name"]).toBe("Long Post");
-    expect(article?.["summary"]).toContain("lead paragraph of the long post");
-    expect(article?.["content"]).toContain("<h1>Long Post</h1>");
-    expect(article?.["content"]).toContain("word word");
-    expect(article?.["url"]).toBe("https://blog.example/long");
+    expect(longNote?.["type"]).toBe("Note");
+    expect(longNote?.["name"]).toBeUndefined();
+    expect(longNote?.["summary"]).toBeUndefined();
+    expect(longNote?.["content"]).toContain("<strong>Long Post</strong>");
+    expect(longNote?.["content"]).toContain("word word");
+    expect(longNote?.["url"]).toBe("https://blog.example/long");
   });
 
   it("still publishes when a feed item's link is not an absolute URL", async () => {

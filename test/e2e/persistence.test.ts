@@ -286,7 +286,6 @@ describe("DrizzleFederationRepository", () => {
     const storedObject: StoredFederationObject = {
       id: "stable-object-id",
       actorHandle: "persistent_feed",
-      kind: "article",
       contentHtml: "<p>First version</p>",
       name: "Persistent title",
       summaryHtml: "<p>Summary</p>",
@@ -372,8 +371,6 @@ describe("application restart", () => {
         pollMaxIntervalSeconds: 60,
     pollMaxBackoffSeconds: 86_400,
         schedulerTickMs: 3_600_000,
-        noteMaxChars: 2000,
-        teaserMaxChars: 200,
         behindProxy: false,
         allowPrivateAddress: true,
         logLevel: "warning",

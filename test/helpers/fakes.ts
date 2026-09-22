@@ -1,4 +1,4 @@
-import type { PostContent } from "../../src/domain/content/content-policy.js";
+import type { PostContent } from "../../src/domain/content/post-content.js";
 import {
   type CacheValidators,
   Feed,

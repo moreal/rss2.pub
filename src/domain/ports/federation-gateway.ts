@@ -1,6 +1,6 @@
 import type { Brand } from "../../shared/brand.js";
 import type { Result } from "../../shared/result.js";
-import type { PostContent } from "../content/content-policy.js";
+import type { PostContent } from "../content/post-content.js";
 import type { Feed, FeedId } from "../feed/feed.js";
 import type { ItemKey } from "../feed/feed-item.js";
 import type { ResolvedActorUri } from "./actor-resolver.js";

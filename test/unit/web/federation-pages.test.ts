@@ -25,7 +25,7 @@ function createStubRemoteFollowResolver(
 async function setup(
   remoteFollow?: RemoteFollowResolver,
   feedTitle = "Example Feed",
-  articleTitle = "Article title",
+  postTitle = "Post title",
   includePosts = true,
 ) {
   const feeds = createInMemoryFeedRepository();
@@ -49,11 +49,10 @@ async function setup(
     await federationObjects.upsertObject({
       id: "post-1",
       actorHandle: feed.handle,
-      kind: "article",
       contentHtml:
-        "<p>Hello<script>alert(1)</script><strong>world</strong></p><ul><li>First item</li></ul><blockquote><p>a</p><p>b</p></blockquote>",
-      name: articleTitle,
-      summaryHtml: "<p>Short summary</p>",
+        `<p><strong>${postTitle}</strong></p><p>Hello<script>alert(1)</script><strong>world</strong></p><ul><li>First item</li></ul><blockquote><p>a</p><p>b</p></blockquote>`,
+      name: postTitle,
+      summaryHtml: null,
       sourceUrl: "https://source.test/posts/1",
       language: "en",
       toUris: ["https://www.w3.org/ns/activitystreams#Public"],
@@ -67,7 +66,6 @@ async function setup(
     await federationObjects.upsertObject({
       id: "post-2",
       actorHandle: feed.handle,
-      kind: "note",
       contentHtml:
         '<p><strong>Breaking news</strong></p>\n<p>Something happened today.</p>\n<p><a href="https://source.test/posts/2" rel="nofollow noopener noreferrer">https://source.test/posts/2</a></p>',
       name: "Breaking news",
@@ -112,7 +110,7 @@ describe("createFederationPages", () => {
     expect(html).toContain('onerror="this.remove()"');
     expect(html).toContain("1 follower");
     expect(html).toContain('<p class="feed-meta"><span class="handle">');
-    expect(html).toContain("Article title");
+    expect(html).toContain("Post title");
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
     expect(html).not.toContain("https://source.test/posts/2");
@@ -128,7 +126,7 @@ describe("createFederationPages", () => {
     expect(mainHtml).not.toContain('<nav class="crumbs"');
   });
 
-  it("renders sanitized Note/Article message pages and source links", async () => {
+  it("renders sanitized Note message pages and source links", async () => {
     const { app } = await setup();
     const response = await app.request("https://local.test/@feed_a/post-1", {
       headers: { Accept: "text/html" },
@@ -137,8 +135,7 @@ describe("createFederationPages", () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain('<html lang="en">');
-    expect(html).toContain("Article title");
-    expect(html).toContain("Short summary");
+    expect(html).toContain("Post title");
     expect(html).toContain("<strong>world</strong>");
     expect(html).toContain("<ul><li>First item</li></ul>");
     expect(html).toContain("<blockquote><p>a</p><p>b</p></blockquote>");
@@ -344,7 +341,7 @@ describe("createFederationPages", () => {
     const { app } = await setup(
       undefined,
       "Example Feed",
-      "Article title",
+      "Post title",
       false,
     );
     const response = await app.request("https://local.test/@feed_a", {

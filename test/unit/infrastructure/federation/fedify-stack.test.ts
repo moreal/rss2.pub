@@ -9,16 +9,14 @@ import { makeFeed } from "../../../helpers/fakes.js";
 
 function storedObject(
   id: string,
-  kind: StoredFederationObject["kind"],
   publishedAt: string,
 ): StoredFederationObject {
   return {
     id,
     actorHandle: "feed_a",
-    kind,
     contentHtml: `<p>${id}</p>`,
-    name: kind === "article" ? `Title ${id}` : null,
-    summaryHtml: kind === "article" ? `<p>Summary ${id}</p>` : null,
+    name: `Title ${id}`,
+    summaryHtml: null,
     sourceUrl: `https://source.test/${id}`,
     language: null,
     toUris: ["https://www.w3.org/ns/activitystreams#Public"],
@@ -40,10 +38,10 @@ async function fixtureStack() {
     url: "https://source.test/feed.xml",
   }));
   await federationObjects.upsertObject(
-    storedObject("older-note", "note", "2026-08-29T00:00:00Z"),
+    storedObject("older-note", "2026-08-29T00:00:00Z"),
   );
   await federationObjects.upsertObject(
-    storedObject("newer-article", "article", "2026-08-30T00:00:00Z"),
+    storedObject("newer-note", "2026-08-30T00:00:00Z"),
   );
   await federationObjects.addFollower({
     localHandle: "feed_a",
@@ -108,7 +106,7 @@ describe("createFedifyStack", () => {
     });
   });
 
-  it("dispatches stored Note, Article, Create, and refuses wrong-kind paths", async () => {
+  it("dispatches stored Note and Create objects", async () => {
     const stack = await fixtureStack();
 
     expect((await fetchActivity(
@@ -117,7 +115,7 @@ describe("createFedifyStack", () => {
     )).status).toBe(200);
     expect((await fetchActivity(
       stack,
-      "/ap/actor/feed_a/article/newer-article",
+      "/ap/actor/feed_a/note/newer-note",
     )).status).toBe(200);
     expect((await fetchActivity(
       stack,
@@ -146,7 +144,7 @@ describe("createFedifyStack", () => {
     );
 
     expect(outbox.status).toBe(200);
-    expect(await outbox.text()).toContain("newer-article");
+    expect(await outbox.text()).toContain("newer-note");
     expect(followers.status).toBe(200);
     expect(await followers.text()).toContain("https://remote.test/users/alice");
     expect(nodeInfo.status).toBe(200);

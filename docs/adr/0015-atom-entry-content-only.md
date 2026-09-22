@@ -11,7 +11,8 @@ rss2.pub은 Atom 피드가 제공한 내용을 전달한다. 원문 웹페이지
 
 - entry의 지원되는 인라인 `content`를 본문으로 사용하고, 없으면 `summary`를 사용한다.
   외부 `content src`는 기존 Atom consumer profile대로 가져오지 않는다.
-- 기존 HTML 정제, 상대 URL 해석, 언어·저자 처리 및 Note/Article 분류는 유지한다.
+- 기존 HTML 정제, 상대 URL 해석, 언어·저자 처리를 유지한다. 게시 타입은
+  ADR-0016에 따라 길이와 관계없이 Note로 통일한다.
 - 신규 등록은 URL당 기본 계정 하나만 만든다. 웹의 full 옵션과 배지, 봇 도움말의
   full 안내를 제거한다. 오래된 폼의 `full` 필드와 명령의 `full` 토큰은 무시한다.
 - 기존 full 계정의 ID·핸들·키·팔로워는 유지한다. `fullContentEnabled`는 기존 식별자를

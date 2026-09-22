@@ -1,0 +1,1 @@
+ALTER TABLE "federation_objects" DROP COLUMN "kind";

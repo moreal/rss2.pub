@@ -39,7 +39,6 @@ function objectRecord(
   return {
     id,
     actorHandle: "feed_a",
-    kind: "note",
     contentHtml: `<p>${id}</p>`,
     name: null,
     summaryHtml: null,

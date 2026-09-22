@@ -23,11 +23,6 @@ function keyAlgorithmOf(raw: string): StoredKeyAlgorithm {
   throw new Error(`corrupt federation_actor_keys row: unknown algorithm ${raw}`);
 }
 
-function objectKindOf(raw: string): StoredFederationObject["kind"] {
-  if (raw === "note" || raw === "article") return raw;
-  throw new Error(`corrupt federation_objects row: unknown kind ${raw}`);
-}
-
 function keyRowToRecord(row: KeyRow): StoredKeyPair {
   return {
     localHandle: row.localHandle,
@@ -45,7 +40,6 @@ function followerRowToRecord(row: FollowerRow): StoredFollower {
 function objectRowToRecord(row: ObjectRow): StoredFederationObject {
   return {
     ...row,
-    kind: objectKindOf(row.kind),
     toUris: [...row.toUris],
     ccUris: [...row.ccUris],
     attributedToUris: [...row.attributedToUris],

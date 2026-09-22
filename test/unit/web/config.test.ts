@@ -15,8 +15,6 @@ describe("loadConfig", () => {
       pollMaxIntervalSeconds: 1800,
       pollMaxBackoffSeconds: 86_400,
       schedulerTickMs: 60_000,
-      noteMaxChars: 2000,
-      teaserMaxChars: 200,
       logLevel: "info",
       logFormat: "console",
     });

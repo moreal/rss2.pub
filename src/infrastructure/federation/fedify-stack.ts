@@ -4,7 +4,7 @@ import {
   type KvStore,
   type MessageQueue,
 } from "@fedify/fedify";
-import { Article, Create, Note } from "@fedify/vocab";
+import { Create, Note } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
 import type { CommandHandler } from "../../application/handle-command.js";
@@ -107,16 +107,7 @@ export function createFedifyStack(deps: {
     async (ctx, values) => {
       if (await descriptorOf(values.identifier) === null) return null;
       const record = await deps.repository.findObject(values.identifier, values.id);
-      return record?.kind === "note" ? buildMessage(ctx, record) : null;
-    },
-  );
-  federation.setObjectDispatcher(
-    Article,
-    "/ap/actor/{identifier}/article/{id}",
-    async (ctx, values) => {
-      if (await descriptorOf(values.identifier) === null) return null;
-      const record = await deps.repository.findObject(values.identifier, values.id);
-      return record?.kind === "article" ? buildMessage(ctx, record) : null;
+      return record === null ? null : buildMessage(ctx, record);
     },
   );
   federation.setObjectDispatcher(

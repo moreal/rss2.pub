@@ -1,7 +1,4 @@
-import {
-  type ContentPolicy,
-  decidePostContent,
-} from "../domain/content/content-policy.js";
+import { postContentFrom } from "../domain/content/post-content.js";
 import { Feed, type FeedId, FeedTitle } from "../domain/feed/feed.js";
 import {
   AttributionCandidates,
@@ -160,7 +157,6 @@ export function createPollFeed(deps: {
   readonly random: Random;
   readonly pollPolicy: PollPolicy;
   readonly iconRetryPolicy: RetryPolicy;
-  readonly contentPolicy: ContentPolicy;
 }): PollFeed {
   return {
     async execute(feedId) {
@@ -297,7 +293,7 @@ export function createPollFeed(deps: {
         const result = await deps.federation.publish(
           feed,
           item.key,
-          decidePostContent(item, deps.contentPolicy),
+          postContentFrom(item),
           attributions,
         );
         if (result.ok) {
@@ -328,7 +324,7 @@ export function createPollFeed(deps: {
         const result = await deps.federation.update(
           feed,
           record.messageUri,
-          decidePostContent(item, deps.contentPolicy),
+          postContentFrom(item),
           attributions,
         );
         if (result.ok) {

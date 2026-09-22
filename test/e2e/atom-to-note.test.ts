@@ -17,9 +17,6 @@ import { atomFixture } from "./helpers/fixtures.js";
 const AP_ACCEPT = "application/activity+json";
 const PUBLIC = "https://www.w3.org/ns/activitystreams#Public";
 
-/** Small on purpose, so the Note/Article boundary is reachable in a fixture. */
-const NOTE_MAX_CHARS = 200;
-
 async function getFreePort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const probe = createServer();
@@ -63,8 +60,6 @@ beforeAll(async () => {
     pollMaxIntervalSeconds: 3600,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
-    noteMaxChars: NOTE_MAX_CHARS,
-    teaserMaxChars: 100,
     behindProxy: false,
     allowPrivateAddress: false,
     logLevel: "warning",
@@ -98,7 +93,7 @@ beforeAll(async () => {
           updated: "2026-07-03T00:00:00Z",
         },
         {
-          id: "urn:e2e:article",
+          id: "urn:e2e:long-note",
           link: "https://blog.example/long",
           title: "Long Post",
           contentHtml: `<p>${"padding ".repeat(60)}</p>`,
@@ -254,18 +249,20 @@ describe("Atom entry to ActivityPub Note", () => {
     expect(note["published"]).toBe("2026-07-01T00:00:00Z");
   });
 
-  it("splits Note from Article at the note size limit (ADR-0005)", async () => {
+  it("publishes every entry as a Note without a generated summary", async () => {
     const activities = await outboxActivities();
     const objects = await Promise.all(
       activities.map((activity) => resolveItem(activity["object"])),
     );
-    const articles = objects.filter((object) => object["type"] === "Article");
-    const notes = objects.filter((object) => object["type"] === "Note");
+    expect(objects).toHaveLength(3);
+    for (const note of objects) {
+      expect(note["type"]).toBe("Note");
+      expect(note["name"]).toBeUndefined();
+      expect(note["summary"]).toBeUndefined();
+    }
 
-    // Only the entry whose text passes NOTE_MAX_CHARS becomes an Article.
-    expect(articles).toHaveLength(1);
-    expect(notes).toHaveLength(2);
-    expect(articles[0]?.["name"]).toBe("Long Post");
-    for (const note of notes) expect(note["name"]).toBeUndefined();
+    const { note: longNote } = await noteCreate("https://blog.example/long");
+    expect(String(longNote["content"])).toContain("padding padding");
+    expect(String(longNote["content"])).toContain("<strong>Long Post</strong>");
   });
 });

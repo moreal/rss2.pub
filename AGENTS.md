@@ -133,7 +133,7 @@ adapter.
 | Hand-rolled `Result`, no Effect-TS (revisit at Effect v4 LTS) | ADR-0002 |
 | Nix devShell only; no app packaging with Nix yet | ADR-0003 |
 | Handle normalization: `[a-z0-9_]`, mandatory hash suffix, max 30 | ADR-0004 |
-| Note ≤ 2,000 chars, Article beyond; teaser = first paragraph | ADR-0005 |
+| Publish every Atom entry as a full-content Note; title and source link are in content, `url` points to the source, and `summary` is reserved for a real CW | ADR-0016 (supersedes ADR-0005) |
 | Single PostgreSQL for domain + Fedify KV/MQ + first-party federation state | ADR-0006, ADR-0013 |
 | Lingui i18n without macros: explicit-ID descriptors, compiled `.ts` catalogs | ADR-0008 |
 | Publish Atom entry content, falling back to summary; no article fetching or new full variant. Preserve legacy full actor identities and followers. | ADR-0015 (supersedes ADR-0009) |
@@ -156,7 +156,7 @@ adapter.
   `listen()`/`Federation.startQueue()` promise resolves only when listening
   stops — never `await` it.
 - `src/infrastructure/federation/fedify-stack.ts` owns the stable paths:
-  `/ap/actor/{identifier}`, actor inbox/outbox/followers, Note/Article/Create
+  `/ap/actor/{identifier}`, actor inbox/outbox/followers, Note/Create
   object routes, and the shared inbox. `fedify-gateway.ts` persists before
   delivery; `inbox.ts` owns Follow/Undo and main-actor commands.
 - Actor RSA and Ed25519 keys, followers, and objects live in

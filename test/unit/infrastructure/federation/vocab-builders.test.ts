@@ -4,7 +4,6 @@ import {
   MemoryKvStore,
 } from "@fedify/fedify";
 import {
-  Article,
   Create,
   LanguageString,
   Note,
@@ -28,16 +27,13 @@ async function collect<T>(items: AsyncIterable<T>): Promise<T[]> {
   return collected;
 }
 
-function storedObject(
-  kind: StoredFederationObject["kind"] = "note",
-): StoredFederationObject {
+function storedObject(): StoredFederationObject {
   return {
     id: "object-1",
     actorHandle: "feed_a",
-    kind,
     contentHtml: "<p>Hello</p>",
-    name: kind === "article" ? "Article title" : "Note title",
-    summaryHtml: kind === "article" ? "<p>Summary</p>" : null,
+    name: "Note title",
+    summaryHtml: null,
     sourceUrl: "https://source.test/posts/1",
     language: "en",
     toUris: ["https://www.w3.org/ns/activitystreams#Public"],
@@ -64,11 +60,6 @@ async function builderContext() {
   federation.setObjectDispatcher(
     Note,
     "/ap/actor/{identifier}/note/{id}",
-    () => null,
-  );
-  federation.setObjectDispatcher(
-    Article,
-    "/ap/actor/{identifier}/article/{id}",
     () => null,
   );
   federation.setObjectDispatcher(
@@ -224,9 +215,9 @@ describe("vocab builders", () => {
     expect(await collect(message.getTags())).toEqual([]);
   });
 
-  it("keeps the stored Article kind and wraps it in Create and Update", async () => {
+  it("includes a stored CW summary and wraps the Note in Create and Update", async () => {
     const ctx = await builderContext();
-    const record = storedObject("article");
+    const record = { ...storedObject(), summaryHtml: "<p>Content warning</p>" };
 
     const message = buildMessage(ctx, record);
     const create = buildCreate(ctx, record);
@@ -236,9 +227,11 @@ describe("vocab builders", () => {
       new URL("https://local.test/ap/actor/feed_a/update/revision-1"),
     );
 
-    expect(message).toBeInstanceOf(Article);
-    expect(message.name).toEqual(new LanguageString("Article title", "en"));
-    expect(message.summary).toEqual(new LanguageString("<p>Summary</p>", "en"));
+    expect(message).toBeInstanceOf(Note);
+    expect(message.name).toBeNull();
+    expect(message.summary).toEqual(
+      new LanguageString("<p>Content warning</p>", "en"),
+    );
     expect(create).toBeInstanceOf(Create);
     expect(create.id?.href).toBe("https://local.test/ap/actor/feed_a/create/object-1");
     expect(create.actorId?.href).toBe("https://local.test/ap/actor/feed_a");

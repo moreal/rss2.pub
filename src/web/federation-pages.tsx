@@ -3,7 +3,6 @@ import { Hono } from "hono";
 import type { Context, Env } from "hono";
 import { raw } from "hono/html";
 import type { FC } from "hono/jsx";
-import { ContentPolicy } from "../domain/content/content-policy.js";
 import { escapeHtml, stripHtml, truncateText } from "../domain/content/html.js";
 import { Feed } from "../domain/feed/feed.js";
 import { Handle } from "../domain/feed/handle.js";
@@ -105,6 +104,8 @@ function formatDate(locale: string, date: Date): string {
   }).format(date);
 }
 
+const POST_PREVIEW_MAX_CHARS = 200;
+
 const RemoteFollowForm: FC<{
   handle: string;
   i18n: I18n;
@@ -193,7 +194,7 @@ function listPreviewHtml(object: StoredFederationObject): string {
   );
   const snippet = truncateText(
     stripHtml(content),
-    ContentPolicy.DEFAULT.teaserMaxChars,
+    POST_PREVIEW_MAX_CHARS,
   );
   return snippet.length === 0 ? "" : `<p>${escapeHtml(snippet)}</p>`;
 }
@@ -205,10 +206,9 @@ function stripEmbeddedChrome(
 ): string {
   if (object.name === null) return sanitizedHtml;
 
-  const leading =
-    object.kind === "note"
-      ? /^\s*<p><strong>([^<]*)<\/strong><\/p>\s*/.exec(sanitizedHtml)
-      : /^\s*<h1>([^<]*)<\/h1>\s*/.exec(sanitizedHtml);
+  const leading = /^\s*<p><strong>([^<]*)<\/strong><\/p>\s*/.exec(
+    sanitizedHtml,
+  );
   if (leading === null || leading[1] !== escapeHtml(object.name)) {
     return sanitizedHtml;
   }
@@ -231,12 +231,7 @@ function stripEmbeddedChrome(
 
 function fallbackTitle(object: StoredFederationObject, i18n: I18n): string {
   if (object.name !== null) return object.name;
-  return translate(
-    i18n,
-    object.kind === "note"
-      ? copy.federationPostFallback
-      : copy.federationArticleFallback,
-  );
+  return translate(i18n, copy.federationPostFallback);
 }
 
 const MessageCard: FC<{

@@ -1,8 +1,7 @@
 /**
- * Minimal HTML text utilities for content-size decisions and teasers.
- * Deliberately regex-based: the domain needs "roughly how much text" and
- * "the first paragraph", not a spec-compliant DOM — rendering fidelity is an
- * adapter concern.
+ * Minimal HTML text utilities. Deliberately regex-based: callers need plain
+ * text for fingerprints and short web previews, not a spec-compliant DOM.
+ * Rendering fidelity is an adapter concern.
  */
 
 const NAMED_ENTITIES: Readonly<Record<string, string>> = {
@@ -37,20 +36,6 @@ export function stripHtml(html: string): string {
     .replace(/<style[\s\S]*?<\/style\s*>/gi, " ");
   const withoutTags = withoutBlocks.replace(/<[^>]+>/g, " ");
   return decodeEntities(withoutTags).replace(/\s+/g, " ").trim();
-}
-
-/**
- * Inner HTML of the first `<p>` block; for tag-less content, the first
- * blank-line-separated block. Returns null when there is no block smaller
- * than the whole content (caller then falls back to plain-text truncation).
- */
-export function firstParagraph(html: string): string | null {
-  const paragraph = /<p(?:\s[^>]*)?>([\s\S]*?)<\/p\s*>/i.exec(html)?.[1]?.trim();
-  if (paragraph !== undefined && paragraph.length > 0) return paragraph;
-
-  const block = html.split(/\n\s*\n/, 1)[0]?.trim() ?? "";
-  if (block.length > 0 && block.length < html.trim().length) return block;
-  return null;
 }
 
 export function escapeHtml(text: string): string {
