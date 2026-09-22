@@ -14,6 +14,7 @@ import {
 import { describe, expect, it } from "vitest";
 import type { StoredFederationObject } from "../../../../src/infrastructure/federation/model.js";
 import {
+  buildActorUpdate,
   buildCreate,
   buildLocalActor,
   buildMessage,
@@ -119,6 +120,52 @@ describe("vocab builders", () => {
     expect(await collect(actor.getAssertionMethods())).toHaveLength(2);
     expect((await collect(actor.getAttachments()))[0]?.name?.toString())
       .toBe("Feed");
+  });
+
+  it("wraps a local Service in a public Update addressed to its followers", async () => {
+    const ctx = await builderContext();
+    const actor = buildLocalActor(
+      ctx,
+      {
+        handle: "feed_a",
+        name: "Example feed",
+        summaryHtml: "<p>Mirrored Atom feed</p>",
+        profileUrl: new URL("https://local.test/@feed_a"),
+        homepageUrl: new URL("https://source.test/"),
+        iconUrl: new URL("https://source.test/favicon.ico"),
+      },
+      await ctx.getActorKeyPairs("feed_a"),
+    );
+
+    const update = buildActorUpdate(
+      ctx,
+      actor,
+      new URL("https://local.test/ap/actor/feed_a/update/revision-1"),
+    );
+
+    expect(update).toBeInstanceOf(Update);
+    expect(update.id?.href).toBe(
+      "https://local.test/ap/actor/feed_a/update/revision-1",
+    );
+    expect(update.actorId?.href).toBe(actor.id?.href);
+    expect(update.objectId?.href).toBe(actor.id?.href);
+    expect(update.toIds.map((uri) => uri.href)).toEqual([
+      "https://www.w3.org/ns/activitystreams#Public",
+    ]);
+    expect(update.ccIds.map((uri) => uri.href)).toEqual([
+      "https://local.test/ap/actor/feed_a/followers",
+    ]);
+    expect(await update.toJsonLd()).toMatchObject({
+      type: "Update",
+      object: {
+        id: "https://local.test/ap/actor/feed_a",
+        type: "Service",
+        icon: {
+          type: "Image",
+          url: "https://source.test/favicon.ico",
+        },
+      },
+    });
   });
 
   it("builds a language-tagged public Note from its stored record", async () => {

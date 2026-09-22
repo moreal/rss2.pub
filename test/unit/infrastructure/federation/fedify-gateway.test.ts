@@ -9,10 +9,108 @@ import { createFedifyStack } from "../../../../src/infrastructure/federation/fed
 import { createInMemoryFederationRepository } from "../../../../src/infrastructure/persistence/in-memory-federation-repository.js";
 import { createInMemoryFeedRepository } from "../../../../src/infrastructure/persistence/in-memory-feed-repository.js";
 import { fixedClock, makeFeed, mutableClock } from "../../../helpers/fakes.js";
-import { unwrap } from "../../../helpers/result.js";
+import { unwrap, unwrapErr } from "../../../helpers/result.js";
 
 describe("createFedifyGateway", () => {
   const actorUri = (raw: string) => unwrap(ResolvedActorUri.create(raw));
+
+  it("sends each changed actor profile and suppresses an unchanged one", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const repository = createInMemoryFederationRepository();
+    const feed = makeFeed({
+      handle: "feed_a",
+      title: "Example feed",
+      description: "Example description",
+      iconUrl: "https://source.test/icon.png",
+    });
+    await feeds.save(feed);
+    const stack = createFedifyStack({
+      kv: new MemoryKvStore(),
+      feeds,
+      followerTracker: createFollowerTracker({ feeds }),
+      repository,
+      softwareVersion: "0.1.0",
+      allowPrivateAddress: true,
+    });
+    const sent: { senderHandle: string; activity: Activity }[] = [];
+    const gateway = createFedifyGateway({
+      federation: stack.federation,
+      repository,
+      origin: "https://local.test",
+      clock: fixedClock(new Date("2026-08-30T00:00:00Z")),
+      sendActivity: async (senderHandle, _recipients, activity) => {
+        sent.push({ senderHandle, activity });
+      },
+    });
+
+    const first = unwrap(await gateway.updateActor(feed));
+    const second = unwrap(await gateway.updateActor({
+      ...feed,
+      actorProfileFingerprint: first.profileFingerprint,
+    }));
+    const changed = unwrap(await gateway.updateActor({
+      ...feed,
+      iconUrl: makeFeed({ iconUrl: "https://source.test/new-icon.png" }).iconUrl,
+      actorProfileFingerprint: first.profileFingerprint,
+    }));
+
+    expect(first).toMatchObject({ sent: true });
+    expect(first.profileFingerprint).toMatch(/^[0-9a-f]{64}$/);
+    expect(second).toEqual({
+      sent: false,
+      profileFingerprint: first.profileFingerprint,
+    });
+    expect(changed).toMatchObject({ sent: true });
+    expect(changed.profileFingerprint).not.toBe(first.profileFingerprint);
+    expect(sent).toHaveLength(2);
+    expect(sent[0]?.senderHandle).toBe("feed_a");
+    const update = sent[0]?.activity;
+    expect(update).toBeInstanceOf(Update);
+    expect(update instanceof Update ? update.objectId?.href : null).toBe(
+      "https://local.test/ap/actor/feed_a",
+    );
+  });
+
+  it("returns an enqueue error without advancing the retry fingerprint", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const repository = createInMemoryFederationRepository();
+    const feed = makeFeed({
+      handle: "feed_a",
+      iconUrl: "https://source.test/icon.png",
+    });
+    await feeds.save(feed);
+    const stack = createFedifyStack({
+      kv: new MemoryKvStore(),
+      feeds,
+      followerTracker: createFollowerTracker({ feeds }),
+      repository,
+      softwareVersion: "0.1.0",
+      allowPrivateAddress: true,
+    });
+    let fail = true;
+    let attempts = 0;
+    const gateway = createFedifyGateway({
+      federation: stack.federation,
+      repository,
+      origin: "https://local.test",
+      clock: fixedClock(new Date("2026-08-30T00:00:00Z")),
+      sendActivity: async () => {
+        attempts++;
+        if (fail) throw new Error("queue unavailable");
+      },
+    });
+
+    const error = unwrapErr(await gateway.updateActor(feed));
+    fail = false;
+    const retried = unwrap(await gateway.updateActor(feed));
+
+    expect(error).toMatchObject({
+      type: "FederationDeliveryFailed",
+      message: "queue unavailable",
+    });
+    expect(retried).toMatchObject({ sent: true });
+    expect(attempts).toBe(2);
+  });
 
   it("reuses one object and Create identity for repeated publish attempts", async () => {
     const feeds = createInMemoryFeedRepository();

@@ -7,6 +7,7 @@ import {
   LanguageString,
   Mention,
   Note,
+  PUBLIC_COLLECTION,
   PropertyValue,
   Service,
   Update,
@@ -74,6 +75,23 @@ export function buildLocalActor(
     publicKey: rsa?.cryptographicKey ?? null,
     assertionMethods: keyPairs.map((pair) => pair.multikey),
     url: descriptor.profileUrl,
+  });
+}
+
+export function buildActorUpdate(
+  _ctx: Context<void>,
+  actor: Service,
+  activityId: URL,
+): Update {
+  if (actor.id === null || actor.followersId === null) {
+    throw new Error("local actor is missing its canonical ID or followers collection");
+  }
+  return new Update({
+    id: activityId,
+    actor: actor.id,
+    object: actor,
+    tos: [PUBLIC_COLLECTION],
+    ccs: [actor.followersId],
   });
 }
 

@@ -191,22 +191,34 @@ export function createPollFeed(deps: {
       }
 
       if (fetched.value.status === "not-modified") {
-        await deps.feeds.save(
-          afterSuccessfulPoll(feed, {
-            validators: feed.validators,
-            now,
-            policy: deps.pollPolicy,
-            // A 304 is the definition of a quiet poll: stretch the interval.
-            changed: false,
-            jitterRatio: deps.random.ratio(),
-          }),
-        );
+        const scheduled = afterSuccessfulPoll(feed, {
+          validators: feed.validators,
+          now,
+          policy: deps.pollPolicy,
+          // A 304 is the definition of a quiet poll: stretch the interval.
+          changed: false,
+          jitterRatio: deps.random.ratio(),
+        });
+        await deps.feeds.save(scheduled);
+        const actorUpdate = await deps.federation.updateActor(scheduled);
+        if (
+          actorUpdate.ok
+          && actorUpdate.value.profileFingerprint
+            !== scheduled.actorProfileFingerprint
+        ) {
+          await deps.feeds.save(
+            Feed.withActorProfileFingerprint(
+              scheduled,
+              actorUpdate.value.profileFingerprint,
+            ),
+          );
+        }
         return ok({
           feedId: feed.id,
           status: "not-modified",
           published: 0,
           updated: 0,
-          publishErrors: [],
+          publishErrors: actorUpdate.ok ? [] : [actorUpdate.error.message],
           attributionErrors: [],
           iconErrors: [],
           fetchError: null,
@@ -347,15 +359,33 @@ export function createPollFeed(deps: {
         iconUrl: icon.iconUrl,
         language: currentLanguage,
       });
-      await deps.feeds.save(
-        afterSuccessfulPoll(Feed.withIconRetry(withMetadata, icon.retry), {
+      const scheduled = afterSuccessfulPoll(
+        Feed.withIconRetry(withMetadata, icon.retry),
+        {
           validators: fetched.value.validators,
           now,
           policy: deps.pollPolicy,
           changed: publishedRecords.length > 0 || updatedCount > 0,
           jitterRatio: deps.random.ratio(),
-        }),
+        },
       );
+      await deps.feeds.save(scheduled);
+      const actorUpdate = await deps.federation.updateActor(scheduled);
+      if (actorUpdate.ok) {
+        if (
+          actorUpdate.value.profileFingerprint
+            !== scheduled.actorProfileFingerprint
+        ) {
+          await deps.feeds.save(
+            Feed.withActorProfileFingerprint(
+              scheduled,
+              actorUpdate.value.profileFingerprint,
+            ),
+          );
+        }
+      } else {
+        publishErrors.push(actorUpdate.error.message);
+      }
 
       return ok({
         feedId: feed.id,

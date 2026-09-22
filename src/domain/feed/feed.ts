@@ -69,6 +69,8 @@ export type Feed = {
   readonly fullContentEnabled: boolean;
   /** Actor avatar, resolved from the channel link's favicon (ADR-0010). */
   readonly iconUrl: IconUrl | null;
+  /** Fingerprint of the actor metadata last enqueued for federation delivery. */
+  readonly actorProfileFingerprint: string | null;
   /** Favicon resolution is one outbound request per attempt on a site that
    * may never serve one; without this it retried on every poll forever. */
   readonly iconRetry: RetryState;
@@ -104,6 +106,7 @@ export const Feed = {
       // Resolved later, on the first poll (ADR-0010) — registration only
       // proves the feed document is reachable, it never fetches the site.
       iconUrl: null,
+      actorProfileFingerprint: null,
       iconRetry: { failures: 0, nextAttemptAt: null },
       // Unlike iconUrl, already present in the same document fetched to
       // register — no extra request needed, so it is set immediately.
@@ -138,6 +141,10 @@ export const Feed = {
   /** Records the outcome of a favicon attempt (ADR-0010 give-up counter). */
   withIconRetry(feed: Feed, iconRetry: RetryState): Feed {
     return { ...feed, iconRetry };
+  },
+
+  withActorProfileFingerprint(feed: Feed, fingerprint: string): Feed {
+    return { ...feed, actorProfileFingerprint: fingerprint };
   },
 
   displayName(feed: Feed): string {

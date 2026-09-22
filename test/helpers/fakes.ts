@@ -206,6 +206,8 @@ export function fakeActorResolver(): FakeActorResolver {
 }
 
 export type CapturingFederation = FederationGateway & {
+  readonly actorUpdateAttempts: Feed[];
+  readonly actorUpdates: Feed[];
   readonly publishAttempts: {
     feed: Feed;
     itemKey: ItemKey;
@@ -228,6 +230,7 @@ export type CapturingFederation = FederationGateway & {
   readonly deletedActors: Feed[];
   failNextPublishesWith(message: string | null): void;
   failNextUpdatesWith(message: string | null): void;
+  failNextActorUpdatesWith(message: string | null): void;
 };
 
 export function capturingFederation(): CapturingFederation {
@@ -251,19 +254,41 @@ export function capturingFederation(): CapturingFederation {
     additionalAttributions: readonly ResolvedActorUri[];
   }[] = [];
   const deletedActors: Feed[] = [];
+  const actorUpdateAttempts: Feed[] = [];
+  const actorUpdates: Feed[] = [];
   let publishFailure: string | null = null;
   let updateFailure: string | null = null;
+  let actorUpdateFailure: string | null = null;
   let counter = 0;
   return {
     publishAttempts,
     published,
     updated,
     deletedActors,
+    actorUpdateAttempts,
+    actorUpdates,
     failNextPublishesWith(message) {
       publishFailure = message;
     },
     failNextUpdatesWith(message) {
       updateFailure = message;
+    },
+    failNextActorUpdatesWith(message) {
+      actorUpdateFailure = message;
+    },
+    async updateActor(feed) {
+      actorUpdateAttempts.push(feed);
+      if (actorUpdateFailure !== null) {
+        return err({
+          type: "FederationDeliveryFailed",
+          feedId: feed.id,
+          message: actorUpdateFailure,
+        });
+      }
+      const profileFingerprint = `fake:${feed.title ?? ""}:${feed.description ?? ""}:${feed.iconUrl ?? ""}`;
+      const sent = profileFingerprint !== feed.actorProfileFingerprint;
+      if (sent) actorUpdates.push(feed);
+      return ok({ profileFingerprint, sent });
     },
     async publish(
       feed,

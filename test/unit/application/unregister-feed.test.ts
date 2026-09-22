@@ -56,6 +56,7 @@ describe("UnregisterFeed", () => {
   it("still removes local state when Delete propagation fails", async () => {
     const { feeds, feed, federation } = await setup();
     const failing: FederationGateway = {
+      updateActor: federation.updateActor,
       publish: federation.publish,
       update: federation.update,
       deleteActor: async (f) =>

@@ -422,7 +422,7 @@ describe("PollFeed author attribution", () => {
 
 describe("PollFeed icon resolution (ADR-0010)", () => {
   it("resolves the actor icon from the channel link on the first poll", async () => {
-    const { feed, feeds, fetcher, faviconResolver, pollFeed } = setup();
+    const { feed, feeds, fetcher, federation, faviconResolver, pollFeed } = setup();
     await feeds.save(feed);
     fetcher.respondWith(
       feed.url,
@@ -437,6 +437,62 @@ describe("PollFeed icon resolution (ADR-0010)", () => {
     expect(faviconResolver.calls).toEqual(["https://a.co/"]);
     const saved = await feeds.findById(feed.id);
     expect(saved?.iconUrl).toBe("https://a.co/favicon.ico");
+    expect(saved?.actorProfileFingerprint).toBe(
+      "fake:::https://a.co/favicon.ico",
+    );
+    expect(federation.actorUpdates[0]?.iconUrl).toBe(
+      "https://a.co/favicon.ico",
+    );
+  });
+
+  it("backfills an existing actor profile after a not-modified response", async () => {
+    const { feeds, fetcher, federation, pollFeed } = setup();
+    const feed = makeFeed({ iconUrl: "https://a.co/existing-icon.png" });
+    await feeds.save(feed);
+    fetcher.respondWith(feed.url, ok({ status: "not-modified" }));
+
+    await pollFeed.execute(feed.id);
+
+    expect(federation.actorUpdates).toHaveLength(1);
+    expect(federation.actorUpdates[0]).toMatchObject({
+      id: feed.id,
+      iconUrl: "https://a.co/existing-icon.png",
+      actorProfileFingerprint: null,
+    });
+    expect((await feeds.findById(feed.id))?.actorProfileFingerprint).toBe(
+      "fake:::https://a.co/existing-icon.png",
+    );
+  });
+
+  it("retries actor profile delivery without discarding resolved metadata", async () => {
+    const { feed, feeds, fetcher, federation, faviconResolver, pollFeed } = setup();
+    await feeds.save(feed);
+    fetcher.respondWith(
+      feed.url,
+      ok(fetchedFeed({ link: "https://a.co/" })),
+    );
+    faviconResolver.respondWith(
+      "https://a.co/",
+      ok({ iconUrl: "https://a.co/favicon.ico" }),
+    );
+    federation.failNextActorUpdatesWith("inbox unreachable");
+
+    const failed = unwrap(await pollFeed.execute(feed.id));
+    expect(failed.publishErrors).toContain("inbox unreachable");
+    expect((await feeds.findById(feed.id))).toMatchObject({
+      iconUrl: "https://a.co/favicon.ico",
+      actorProfileFingerprint: null,
+    });
+
+    federation.failNextActorUpdatesWith(null);
+    fetcher.respondWith(feed.url, ok({ status: "not-modified" }));
+    const retried = unwrap(await pollFeed.execute(feed.id));
+
+    expect(retried.publishErrors).toEqual([]);
+    expect(federation.actorUpdateAttempts).toHaveLength(2);
+    expect((await feeds.findById(feed.id))?.actorProfileFingerprint).toBe(
+      "fake:::https://a.co/favicon.ico",
+    );
   });
 
   it("never re-fetches once an icon is already set", async () => {

@@ -9,7 +9,7 @@ import {
 } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { PostContent } from "../../domain/content/content-policy.js";
-import type { Feed } from "../../domain/feed/feed.js";
+import { Feed } from "../../domain/feed/feed.js";
 import type { ItemKey } from "../../domain/feed/feed-item.js";
 import type { Clock } from "../../domain/ports/clock.js";
 import type { ResolvedActorUri } from "../../domain/ports/actor-resolver.js";
@@ -20,6 +20,10 @@ import {
   type PublishedMessage,
 } from "../../domain/ports/federation-gateway.js";
 import { err, ok, type Result } from "../../shared/result.js";
+import {
+  actorProfileFingerprint,
+  localActorDescriptor,
+} from "./actor-profile.js";
 import { stableObjectId } from "./identity.js";
 import type {
   FederationRepository,
@@ -30,7 +34,13 @@ import {
   renderArticleSummaryHtml,
   renderNoteHtml,
 } from "./render.js";
-import { buildCreate, buildMessage, buildUpdate } from "./vocab-builders.js";
+import {
+  buildActorUpdate,
+  buildCreate,
+  buildLocalActor,
+  buildMessage,
+  buildUpdate,
+} from "./vocab-builders.js";
 
 const logger = getLogger(["rss2pub", "federation"]);
 
@@ -165,6 +175,29 @@ export function createFedifyGateway(deps: {
   }
 
   return {
+    async updateActor(feed) {
+      try {
+        const descriptor = localActorDescriptor(ctx, feed);
+        const profileFingerprint = actorProfileFingerprint(descriptor);
+        if (profileFingerprint === feed.actorProfileFingerprint) {
+          return ok({ profileFingerprint, sent: false });
+        }
+        const actor = buildLocalActor(
+          ctx,
+          descriptor,
+          await ctx.getActorKeyPairs(feed.handle),
+        );
+        const activityId = new URL(
+          `/ap/actor/${encodeURIComponent(feed.handle)}/update/${crypto.randomUUID()}`,
+          deps.origin,
+        );
+        await send(feed.handle, buildActorUpdate(ctx, actor, activityId));
+        return ok({ profileFingerprint, sent: true });
+      } catch (cause) {
+        return failure(feed, cause);
+      }
+    },
+
     async publish(
       feed: Feed,
       itemKey: ItemKey,

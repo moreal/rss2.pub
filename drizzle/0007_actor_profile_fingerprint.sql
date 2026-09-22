@@ -1,0 +1,1 @@
+ALTER TABLE "feeds" ADD COLUMN "actor_profile_fingerprint" text;

@@ -29,6 +29,8 @@ export const feeds = pgTable(
     description: text("description"),
     // Actor avatar resolved from the channel link's favicon (ADR-0010).
     iconUrl: text("icon_url"),
+    // Last actor metadata version successfully enqueued to followers.
+    actorProfileFingerprint: text("actor_profile_fingerprint"),
     // Atom feed-root xml:lang (ADR-0011).
     language: text("language"),
     registeredAt: timestamp("registered_at", { withTimezone: true }).notNull(),

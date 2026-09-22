@@ -49,6 +49,7 @@ function rowToFeed(row: FeedRow): Feed {
       row.iconUrl === null
         ? null
         : parseOrCorrupt(IconUrl.create(row.iconUrl), "iconUrl"),
+    actorProfileFingerprint: row.actorProfileFingerprint,
     language:
       row.language === null
         ? null
@@ -74,6 +75,7 @@ function feedToRow(feed: Feed): Omit<FeedRow, "followerCount"> {
     title: feed.title,
     description: feed.description,
     iconUrl: feed.iconUrl,
+    actorProfileFingerprint: feed.actorProfileFingerprint,
     language: feed.language,
     registeredAt: feed.registeredAt,
     etag: feed.validators.etag,

@@ -6,7 +6,6 @@ import {
 } from "@fedify/fedify";
 import { Article, Create, Note } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
-import { Feed } from "../../domain/feed/feed.js";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
 import type { CommandHandler } from "../../application/handle-command.js";
 import { Handle } from "../../domain/feed/handle.js";
@@ -17,12 +16,14 @@ import { MAIN_ACTOR_HANDLE } from "./identity.js";
 import { registerInboxListeners } from "./inbox.js";
 import { getActorKeyPairs } from "./keys.js";
 import type { FederationRepository } from "./model.js";
-import { renderFeedProfileHtml } from "./render.js";
+import {
+  type LocalActorDescriptorSeed,
+  localActorDescriptorSeed,
+} from "./actor-profile.js";
 import {
   buildCreate,
   buildLocalActor,
   buildMessage,
-  type LocalActorDescriptor,
 } from "./vocab-builders.js";
 
 const logger = getLogger(["rss2pub", "federation"]);
@@ -35,8 +36,6 @@ export type FedifyStack = {
   readonly federation: Federation<void>;
   startQueue(): void;
 };
-
-type ActorDescriptorSeed = Omit<LocalActorDescriptor, "profileUrl">;
 
 export function createFedifyStack(deps: {
   readonly kv: KvStore;
@@ -60,7 +59,9 @@ export function createFedifyStack(deps: {
     ...(deps.allowPrivateAddress === true ? { allowPrivateAddress: true } : {}),
   });
 
-  async function descriptorOf(identifier: string): Promise<ActorDescriptorSeed | null> {
+  async function descriptorOf(
+    identifier: string,
+  ): Promise<LocalActorDescriptorSeed | null> {
     if (identifier === MAIN_ACTOR_HANDLE) {
       return {
         handle: MAIN_ACTOR_HANDLE,
@@ -74,13 +75,7 @@ export function createFedifyStack(deps: {
     if (isErr(parsed)) return null;
     const feed = await deps.feeds.findByHandle(parsed.value);
     if (feed === null) return null;
-    return {
-      handle: feed.handle,
-      name: Feed.displayName(feed),
-      summaryHtml: renderFeedProfileHtml(feed),
-      homepageUrl: new URL(feed.url),
-      iconUrl: feed.iconUrl === null ? null : new URL(feed.iconUrl),
-    };
+    return localActorDescriptorSeed(feed);
   }
 
   const actorCallbacks = federation.setActorDispatcher(

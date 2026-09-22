@@ -39,6 +39,12 @@ RSS/Atom `channel`의 `link`(피드가 가리키는 원본 웹사이트) 쪽에�
 - **실패는 조용히 무시**: 사이트가 응답하지 않거나 아이콘을 못 찾으면
   `Feed.iconUrl`은 `null`로 남고 발행/폴링 자체를 막지 않는다 — `ContentExtractor`
   (ADR-0009)와 동일한 실패 처리 철학.
+- **원격 프로필 갱신 (2026-09-22 보완)**: 폴링에서 아이콘을 포함한 액터
+  메타데이터가 바뀌면 `Update { object: Service }`를 팔로워에게 보낸다. 마지막으로
+  성공적으로 전달 큐에 넣은 프로필의 fingerprint를 피드와 함께 저장하고, 전송
+  실패 시 fingerprint를 갱신하지 않아 다음 폴링에서 재시도한다. 기존 행의
+  fingerprint는 `null`이므로 이 동작을 도입한 뒤 첫 성공 폴링에서 한 번
+  backfill된다. 변경이 없는 프로필은 다시 보내지 않는다.
 
 ## 고려한 대안
 
@@ -66,10 +72,14 @@ RSS/Atom `channel`의 `link`(피드가 가리키는 원본 웹사이트) 쪽에�
   `<link rel>` 파싱(이미 `readability-extractor.ts`가 쓰는 조합 재사용), 실패 시
   `/favicon.ico` HEAD 프로브.
 - `application/poll-feed.ts`: `feed.iconUrl === null`이고 채널 링크가 있을 때만
-  `FaviconResolver.resolve()` 호출.
-- `infrastructure/federation/botkit-stack.ts`: 동적 봇 디스패처가
-  `icon: feed.iconUrl ? new URL(feed.iconUrl) : undefined`를 반환.
-- `infrastructure/persistence/schema.ts`: `icon_url text` 컬럼(nullable) 추가.
+  `FaviconResolver.resolve()` 호출하고, 성공한 폴링에서 액터 프로필 Update를
+  동기화한다.
+- `infrastructure/federation/fedify-stack.ts`와 `actor-profile.ts`: 액터
+  디스패처와 Update가 같은 프로필 descriptor를 사용한다.
+- `infrastructure/federation/fedify-gateway.ts`: descriptor fingerprint가 마지막
+  성공값과 다를 때만 액터 Update를 팔로워에게 전송한다.
+- `infrastructure/persistence/schema.ts`: `icon_url text`와 nullable
+  `actor_profile_fingerprint text` 컬럼을 저장한다.
 
 ## 재검토 조건
 

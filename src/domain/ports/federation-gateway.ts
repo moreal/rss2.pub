@@ -24,11 +24,18 @@ export type PublishedMessage = {
   readonly messageUri: MessageUri;
 };
 
+export type ActorUpdate = {
+  readonly profileFingerprint: string;
+  readonly sent: boolean;
+};
+
 /**
  * Outbound federation port: everything the application layer may ask the
  * ActivityPub stack to do. Fedify and vocabulary types stay behind this boundary.
  */
 export type FederationGateway = {
+  /** Sends changed actor metadata to followers, or no-ops when already delivered. */
+  updateActor(feed: Feed): Promise<Result<ActorUpdate, FederationError>>;
   /** Publishes one post as the feed's actor, fanning out to followers. */
   publish(
     feed: Feed,
