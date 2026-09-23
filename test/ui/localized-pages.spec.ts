@@ -348,6 +348,19 @@ test("200% text at 320px reflows home, search, and registration result with reac
     const documentWidth: number = await page.evaluate(
       "document.documentElement.scrollWidth",
     );
+    if (documentWidth > 320) {
+      const overflowingElements: unknown = await page.evaluate(
+        "Array.from(document.querySelectorAll('body *'))"
+        + ".map(element => { const r = element.getBoundingClientRect(); return {"
+        + "tag: element.tagName, className: element.getAttribute('class'),"
+        + "text: element.textContent?.trim().slice(0, 40),"
+        + "left: Math.round(r.left), right: Math.round(r.right),"
+        + "width: Math.round(r.width) }; })"
+        + ".filter(element => element.right > 320 && element.width > 0)"
+        + ".slice(0, 20)",
+      );
+      console.log(`${path} overflowing elements: ${JSON.stringify(overflowingElements)}`);
+    }
     expect.soft(documentWidth, `${path} with 200% text`).toBeLessThanOrEqual(320);
 
     await languageButton(page).click();
