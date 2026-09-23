@@ -36,10 +36,10 @@ there is no supported import path from an earlier private installation.
    should pin a version tag or digest.
 5. Publish release notes from the matching changelog section. For any schema
    change, include the bundled `db:migrate` command, backup, and upgrade instructions from
-   [the migration policy](DATABASE_MIGRATIONS.md).
+   [the migration policy](https://docs.rss2.pub/database-migrations).
 
 Do not publish a tag while the quality gate is red. A successful container
 build alone is not a release check.
 
 Documentation deploys separately on `main` through GitHub Pages. For domain
-setup and checks, see the [documentation deployment guide](DEPLOYMENT.md).
+setup and checks, see the [documentation deployment guide](https://github.com/moreal/rss2.pub/blob/main/docs/DEPLOYMENT.md).

@@ -41,7 +41,7 @@ docker compose --env-file selfhost.env -f compose.selfhost.yml up -d app
 예시는 웹 서버를 `127.0.0.1:8000`에만 바인딩합니다. 같은 호스트에서 HTTPS
 리버스 프록시를 앞에 두세요. PostgreSQL은 Compose 네트워크 안에서만 접근할 수
 있고 데이터는 `postgres-data` 볼륨에 보관됩니다. 업그레이드 전에 PostgreSQL을
-통해 볼륨을 백업하세요. [마이그레이션 정책](./DATABASE_MIGRATIONS.md)도
+통해 볼륨을 백업하세요. [마이그레이션 정책](https://docs.rss2.pub/ko/database-migrations)도
 참고하세요. 다른 플랫폼에서는 같은 환경 변수를 릴리스 컨테이너와 외부
 PostgreSQL 서비스에 적용할 수 있습니다.
 

@@ -36,11 +36,11 @@
    태그만 따라갑니다. GHCR 패키지가 공개적으로 읽히는지 확인하세요. 운영자는
    버전 태그 또는 digest를 고정해야 합니다.
 5. 해당 변경 기록 절에서 릴리스 노트를 발행하세요. 스키마 변경이 있다면
-   [마이그레이션 정책](./DATABASE_MIGRATIONS.md)의 백업·업그레이드 안내와
+   [마이그레이션 정책](https://docs.rss2.pub/ko/database-migrations)의 백업·업그레이드 안내와
    포함된 `db:migrate` 명령을 적으세요.
 
 품질 검사가 실패한 상태에서는 태그를 발행하지 마세요. 컨테이너 빌드 성공만으로
 릴리스가 검증되지는 않습니다.
 
 문서는 `main`에서 GitHub Pages로 별도 배포됩니다. 도메인 설정과 확인 절차는
-[문서 배포 안내](../DEPLOYMENT.md)를 참고하세요.
+[문서 배포 안내](https://github.com/moreal/rss2.pub/blob/main/docs/DEPLOYMENT.md)를 참고하세요.

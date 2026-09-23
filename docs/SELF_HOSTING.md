@@ -41,7 +41,7 @@ docker compose --env-file selfhost.env -f compose.selfhost.yml up -d app
 The example binds the web server only to `127.0.0.1:8000`; put an HTTPS reverse
 proxy on the same host in front of it. PostgreSQL is available only inside the
 Compose network and persists in the `postgres-data` volume. Back up that volume
-through PostgreSQL before upgrades; see [migration policy](DATABASE_MIGRATIONS.md).
+through PostgreSQL before upgrades; see [migration policy](https://docs.rss2.pub/database-migrations).
 For a different platform, use the same environment variables with the release
 container and an external PostgreSQL service.
 

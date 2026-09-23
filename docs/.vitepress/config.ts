@@ -14,7 +14,7 @@ export default defineConfig({
     "ko/DATABASE_MIGRATIONS.md": "ko/database-migrations.md",
     "ko/RELEASING.md": "ko/releasing.md",
   },
-  srcExclude: ["adr/**", "superpowers/**", "design/**", "PLAN.md"],
+  srcExclude: ["adr/**", "superpowers/**", "design/**", "PLAN.md", "DEPLOYMENT.md"],
   locales: {
     root: {
       label: "English",
