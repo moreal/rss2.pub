@@ -16,6 +16,9 @@ there is no supported import path from an earlier private installation.
   move shipped items to a dated `## [X.Y.Z] - YYYY-MM-DD` section. Include
   operator actions, configuration changes, and migration risks alongside
   user-facing changes. Explain breaking changes and their upgrade path.
+- Update `docs/ko/changelog.md` for the same release, and update the Korean
+  operator guides whenever their English instructions change. Build both
+  locales with `yarn docs:build` before tagging.
 - A release tag is immutable. If a release is faulty, publish a new version;
   never replace an existing tag or image version.
 
@@ -37,3 +40,6 @@ there is no supported import path from an earlier private installation.
 
 Do not publish a tag while the quality gate is red. A successful container
 build alone is not a release check.
+
+Documentation deploys separately on `main` through GitHub Pages. For domain
+setup and checks, see the [documentation deployment guide](DEPLOYMENT.md).

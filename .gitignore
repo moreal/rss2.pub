@@ -4,6 +4,10 @@ coverage/
 test-results/
 playwright-report/
 storybook-static/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/node_modules/
+docs/.yarn/
 .direnv/
 .worktrees/
 result

@@ -1,7 +1,7 @@
 # Changelog
 
 Notable user-facing and operator-facing changes are recorded here. Releases use
-the format described in [the release policy](docs/RELEASING.md).
+the format described in [the release policy](https://docs.rss2.pub/releasing).
 
 ## [Unreleased]
 
@@ -13,6 +13,7 @@ the format described in [the release policy](docs/RELEASING.md).
 - Public-address checks for feed and favicon fetches, including redirect targets.
 - Anonymous registration budgets for attempts, daily additions, stored feeds,
   concurrent fetches, and web request bodies.
+- English and Korean documentation at `docs.rss2.pub`.
 
 ### Changed
 
