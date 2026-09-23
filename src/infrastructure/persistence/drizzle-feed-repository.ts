@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
 import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import {
   type CacheValidators,
@@ -132,6 +132,14 @@ export function createDrizzleFeedRepository(db: Database): FeedRepository {
       return firstOrNull(
         await db.select().from(feeds).where(eq(feeds.handle, handle)).limit(1),
       );
+    },
+
+    async registrationCounts(since) {
+      const rows = await db.select({
+        total: sql<number>`count(*)::integer`,
+        recent: sql<number>`count(*) filter (where ${gte(feeds.registeredAt, since)})::integer`,
+      }).from(feeds);
+      return rows[0] ?? { total: 0, recent: 0 };
     },
 
     async listDue(now) {

@@ -34,5 +34,7 @@ export function registerErrorMessage(
       return translate(i18n, copy.registerErrorFeedUnreachable, {
         message: failure.message,
       });
+    case "RegistrationUnavailable":
+      return translate(i18n, copy.registerErrorUnavailable);
   }
 }

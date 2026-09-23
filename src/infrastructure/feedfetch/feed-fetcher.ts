@@ -17,6 +17,7 @@ import type {
 } from "../../domain/ports/feed-fetcher.js";
 import { err, ok, type Result } from "../../shared/result.js";
 import { mapRss2Entry, rss2ParseErrorMessage } from "./rss2-mapping.js";
+import { fetchPublicUrl } from "./public-fetch.js";
 
 const ACCEPT =
   "application/atom+xml, application/rss+xml, application/xml;q=0.9, text/xml;q=0.8";
@@ -159,6 +160,8 @@ export function createFeedFetcher(options?: {
   readonly timeoutMs?: number;
   readonly userAgent?: string;
   readonly maxResponseBytes?: number;
+  readonly allowPrivateAddress?: boolean;
+  readonly fetchImpl?: typeof fetch;
 }): FeedFetcher {
   const timeoutMs = options?.timeoutMs ?? 30_000;
   const userAgent =
@@ -184,10 +187,12 @@ export function createFeedFetcher(options?: {
       let response: Response;
       let bodyResult: ReadBodyResult;
       try {
-        response = await fetch(url, {
+        response = await fetchPublicUrl(url, {
           headers,
-          redirect: "follow",
           signal: AbortSignal.timeout(timeoutMs),
+        }, {
+          allowPrivateAddress: options?.allowPrivateAddress === true,
+          ...(options?.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),
         });
         if (response.status === 304) return ok({ status: "not-modified" });
         if (!response.ok) {
@@ -233,4 +238,3 @@ export function createFeedFetcher(options?: {
     },
   };
 }
-

@@ -152,6 +152,9 @@ beforeAll(async () => {
     pollMaxIntervalSeconds: 1,
     pollMaxBackoffSeconds: 60,
     schedulerTickMs: 3_600_000,
+    registrationDailyLimit: 20,
+    registrationTotalLimit: 1000,
+    registrationAttemptsPerHour: 60,
     behindProxy: false,
     // Both sides talk over 127.0.0.1, so the SSRF guard must stand down for
     // signature key fetches — this is exactly what the flag exists for.

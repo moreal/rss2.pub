@@ -18,6 +18,7 @@ export type FeedRepository = {
   /** A URL may be registered once per content mode (ADR-0009). */
   findByUrl(url: FeedUrl, fullContentEnabled?: boolean): Promise<Feed | null>;
   findByHandle(handle: Handle): Promise<Feed | null>;
+  registrationCounts(since: Date): Promise<{ readonly total: number; readonly recent: number }>;
   /** Feeds whose nextPollAt is at or before `now`. */
   listDue(now: Date): Promise<Feed[]>;
   /** Case-insensitive match over handle, title, description, and URL. */

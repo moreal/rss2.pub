@@ -9418,6 +9418,7 @@ __metadata:
     "@fedify/fedify": "npm:~2.3.5"
     "@fedify/postgres": "npm:^2.3.3"
     "@fedify/vocab": "npm:~2.3.5"
+    "@fedify/vocab-runtime": "npm:2.3.6"
     "@hono/node-server": "npm:^2.0.11"
     "@js-temporal/polyfill": "npm:^0.5.1"
     "@lingui/cli": "npm:^6.6.0"
@@ -9454,6 +9455,7 @@ __metadata:
     storybook-solidjs-vite: "npm:10.7.2"
     tsx: "npm:^4.23.1"
     typescript: "npm:^7.0.2"
+    undici: "npm:7.18.2"
     vite: "npm:8.3.0"
     vite-plugin-solid: "npm:3.0.0-next.27"
     vitest: "npm:^4.1.10"
@@ -10470,6 +10472,13 @@ __metadata:
   version: 8.3.0
   resolution: "undici-types@npm:8.3.0"
   checksum: 10c0/c8aa7e2fbebfce519654dafadc0ece59be888d2ccaf180fb4495da875e7b536d2456345c384069c7e6f3e9c9ab7435f074957da306f142343eee86ff8048855a
+  languageName: node
+  linkType: hard
+
+"undici@npm:7.18.2":
+  version: 7.18.2
+  resolution: "undici@npm:7.18.2"
+  checksum: 10c0/4ff0722799f5e06fde5d1e58d318b1d78ba9a477836ad3e7374e9ac30ca20d1ab3282952d341635bf69b8e74b5c1cf366e595b3a96810e0dbf74e622dad7b5f9
   languageName: node
   linkType: hard
 

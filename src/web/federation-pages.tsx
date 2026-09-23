@@ -164,6 +164,7 @@ function messageDetailModel(
 
 export function createFederationPages(deps: {
   readonly origin: string;
+  readonly sourceUrl?: string | undefined;
   readonly feeds: FeedRepository;
   readonly federationObjects: FederationRepository;
   readonly remoteFollow: RemoteFollowResolver;
@@ -176,7 +177,7 @@ export function createFederationPages(deps: {
     const actor = c.req.param("actor");
     if (!actor.startsWith("@")) return c.notFound();
     const rawHandle = actor.slice(1);
-    const ctx = pageContext(c, { origin: deps.origin, host });
+    const ctx = pageContext(c, { origin: deps.origin, host, sourceUrl: deps.sourceUrl });
     let name: string;
     let summary: SanitizedHtml;
     let icon: string | null;
@@ -231,7 +232,7 @@ export function createFederationPages(deps: {
     const actor = c.req.param("actor");
     if (!actor.startsWith("@")) return c.notFound();
     const rawHandle = actor.slice(1);
-    const ctx = pageContext(c, { origin: deps.origin, host });
+    const ctx = pageContext(c, { origin: deps.origin, host, sourceUrl: deps.sourceUrl });
     let actorName = "rss2.pub";
     if (rawHandle !== MAIN_ACTOR_HANDLE) {
       const handle = Handle.create(rawHandle);
@@ -286,7 +287,7 @@ export function createFederationPages(deps: {
     }
     const object = await deps.federationObjects.findObject(handle, id);
     if (object === null) return c.notFound();
-    const ctx = pageContext(c, { origin: deps.origin, host });
+    const ctx = pageContext(c, { origin: deps.origin, host, sourceUrl: deps.sourceUrl });
     const model = messageDetailModel(handle, actorName, iconUrl, object, ctx);
     return c.html(
       <Layout ctx={ctx} title={model.title}>{raw(renderMessageDetail(model))}</Layout>,

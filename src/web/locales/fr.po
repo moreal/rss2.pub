@@ -15,22 +15,22 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:197
+#: src/web/ui/messages.ts:201
 msgid "search.results-count"
 msgstr "{count, plural, one {# flux correspond à « {query} »} other {# flux correspondent à « {query} »}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:231
+#: src/web/ui/messages.ts:235
 msgid "feed.followers"
 msgstr "{count, plural, one {# abonné} other {# abonnés}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:137
+#: src/web/ui/messages.ts:141
 msgid "register.result-exists-title"
 msgstr "Déjà enregistré"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:281
+#: src/web/ui/messages.ts:285
 msgid "federation.back-to-actor"
 msgstr "Retour à {name}"
 
@@ -41,17 +41,17 @@ msgid "layout.footer-bot"
 msgstr "Compte du bot : {handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:162
+#: src/web/ui/messages.ts:166
 msgid "register.copied"
 msgstr "Copié"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:158
+#: src/web/ui/messages.ts:162
 msgid "register.copy-button"
 msgstr "Copier"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:149
+#: src/web/ui/messages.ts:153
 msgid "register.next-copy"
 msgstr "Copiez ce nom de compte."
 
@@ -61,17 +61,17 @@ msgid "register.error-feed-unreachable"
 msgstr "Impossible de lire un flux Atom ou RSS 2.0 à cette adresse : {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:277
+#: src/web/ui/messages.ts:281
 msgid "federation.remote-follow-invalid-account"
 msgstr "Saisissez un compte du fédivers valide, par exemple vous@instance.social."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:129
+#: src/web/ui/messages.ts:133
 msgid "register.result-created-title"
 msgstr "Flux enregistré"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:125
+#: src/web/ui/messages.ts:129
 msgid "register.result-heading"
 msgstr "Enregistrement du flux"
 
@@ -81,7 +81,7 @@ msgid "register.url-label"
 msgstr "URL du flux"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:267
+#: src/web/ui/messages.ts:271
 msgid "federation.remote-follow-button"
 msgstr "Suivre"
 
@@ -97,12 +97,12 @@ msgstr "Suivez les flux Atom et RSS 2.0 depuis le fédivers."
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:257
+#: src/web/ui/messages.ts:261
 msgid "federation.remote-follow-label"
 msgstr "Suivre depuis votre compte du fédivers"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:145
+#: src/web/ui/messages.ts:149
 msgid "register.next-heading"
 msgstr "Suivez-le depuis votre compte du fédivers"
 
@@ -112,7 +112,7 @@ msgid "layout.nav-home"
 msgstr "Accueil"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:244
+#: src/web/ui/messages.ts:248
 msgid "federation.main-actor-summary"
 msgstr "Je transforme les flux Atom et RSS 2.0 en comptes que vous pouvez suivre. Mentionnez-moi avec les commandes register ou search."
 
@@ -129,27 +129,32 @@ msgstr "URL du flux manquante."
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:216
+#: src/web/ui/messages.ts:220
 msgid "feed.popular-heading"
 msgstr "Flux les plus suivis"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:203
+#: src/web/ui/messages.ts:125
+msgid "register.error-unavailable"
+msgstr "Les nouvelles inscriptions sont actuellement limitées. Réessayez plus tard."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
 msgid "search.empty-title"
 msgstr "Aucun flux ne correspond à « {query} »"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:221
+#: src/web/ui/messages.ts:225
 msgid "feed.popular-empty"
 msgstr "Aucun flux enregistré pour le moment"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:253
 msgid "federation.no-posts-title"
 msgstr "Aucune publication pour le moment"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:207
+#: src/web/ui/messages.ts:211
 msgid "search.empty-hint"
 msgstr "La recherche porte uniquement sur les flux déjà enregistrés. Essayez un mot-clé plus court ou enregistrez ce flux vous-même."
 
@@ -159,7 +164,7 @@ msgid "register.error-unsupported-protocol"
 msgstr "Seuls les flux http(s) sont pris en charge (protocole reçu : {protocol})."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:166
+#: src/web/ui/messages.ts:170
 msgid "register.open-profile"
 msgstr "Ouvrir la page du compte"
 
@@ -169,18 +174,18 @@ msgid "register.error-hint"
 msgstr "Ouvrez l’adresse dans un navigateur pour vérifier qu’elle renvoie un flux et non une page web, puis réessayez."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:153
+#: src/web/ui/messages.ts:157
 msgid "register.next-follow"
 msgstr "Collez-le dans le champ de recherche de Mastodon ou de votre application, puis sélectionnez « Suivre »."
 
 #. Fallback title for an untitled Note on an actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:239
 msgid "federation.post-fallback"
 msgstr "Publication"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:253
+#: src/web/ui/messages.ts:257
 msgid "federation.no-posts-body"
 msgstr "Les publications apparaîtront ici après la prochaine vérification du flux."
 
@@ -196,7 +201,7 @@ msgid "register.heading"
 msgstr "Enregistrer un flux"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:212
+#: src/web/ui/messages.ts:216
 msgid "search.empty-action"
 msgstr "Enregistrer un flux"
 
@@ -206,7 +211,7 @@ msgid "home.lede"
 msgstr "Enregistrez un flux pour lui créer un compte dans le fédivers. Suivez ce compte depuis Mastodon ou une autre application : chaque nouvelle publication apparaîtra dans votre fil."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:170
+#: src/web/ui/messages.ts:174
 msgid "register.another"
 msgstr "Enregistrer un autre flux"
 
@@ -228,7 +233,7 @@ msgstr "Enregistrement…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:271
+#: src/web/ui/messages.ts:275
 msgid "federation.remote-follow-title"
 msgstr "Suivre depuis une autre instance"
 
@@ -239,7 +244,7 @@ msgstr "rss2.pub transforme les flux en comptes du fédivers que tout le monde p
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:182
+#: src/web/ui/messages.ts:186
 msgid "search.placeholder"
 msgstr "rust, météo, example.com"
 
@@ -249,23 +254,23 @@ msgid "layout.nav-search"
 msgstr "Recherche"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:174
+#: src/web/ui/messages.ts:178
 msgid "search.heading"
 msgstr "Recherche"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:197
 msgid "search.button"
 msgstr "Rechercher"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:178
+#: src/web/ui/messages.ts:182
 msgid "search.label"
 msgstr "Rechercher dans les flux enregistrés"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:225
+#: src/web/ui/messages.ts:229
 msgid "feed.popular-more"
 msgstr "Voir plus de flux"
 
@@ -302,28 +307,28 @@ msgid "register.url-help"
 msgstr "L’adresse du flux Atom ou RSS 2.0 lui-même, et non celle du site web. Elle se termine souvent par /atom, /feed ou .xml."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:141
+#: src/web/ui/messages.ts:145
 msgid "register.result-exists"
 msgstr "Ce flux publie déjà depuis son propre compte du fédivers."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:133
+#: src/web/ui/messages.ts:137
 msgid "register.result-created"
 msgstr "Ce flux publie désormais depuis son propre compte du fédivers."
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:188
+#: src/web/ui/messages.ts:192
 msgid "search.help"
 msgstr "Saisissez une partie du nom, de la description ou de l’adresse d’un flux."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:244
 msgid "federation.view-original"
 msgstr "Voir l’original"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:262
+#: src/web/ui/messages.ts:266
 msgid "federation.remote-follow-placeholder"
 msgstr "vous@instance.social"

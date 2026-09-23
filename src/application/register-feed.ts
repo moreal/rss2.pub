@@ -13,6 +13,7 @@ import { Handle } from "../domain/feed/handle.js";
 import type { Clock } from "../domain/ports/clock.js";
 import type { FeedFetcher } from "../domain/ports/feed-fetcher.js";
 import type { FeedRepository } from "../domain/ports/feed-repository.js";
+import type { RegistrationGate } from "../domain/ports/registration-gate.js";
 import { err, isOk, ok, type Result } from "../shared/result.js";
 
 export type RegisterFeedError =
@@ -21,7 +22,8 @@ export type RegisterFeedError =
       readonly type: "FeedUnreachable";
       readonly url: FeedUrl;
       readonly message: string;
-    };
+    }
+  | { readonly type: "RegistrationUnavailable"; readonly retryAfterSeconds: number | null };
 
 export type RegisterFeedResult = {
   readonly feed: Feed;
@@ -56,6 +58,8 @@ export function createRegisterFeed(deps: {
   readonly feeds: FeedRepository;
   readonly fetcher: FeedFetcher;
   readonly clock: Clock;
+  readonly gate: RegistrationGate;
+  readonly limits: { readonly daily: number; readonly total: number };
 }): RegisterFeed {
   return {
     async execute(rawUrl) {
@@ -63,34 +67,51 @@ export function createRegisterFeed(deps: {
       if (!urlResult.ok) return urlResult;
       const url = urlResult.value;
 
-      const existing = await deps.feeds.findByUrl(url);
-      if (existing !== null) return ok({ feed: existing, created: false });
-
-      const fetched = await deps.fetcher.fetch(url, NO_VALIDATORS);
-      if (!fetched.ok) {
-        return err({
-          type: "FeedUnreachable",
-          url,
-          message: fetched.error.message,
-        });
+      const lease = await deps.gate.tryAcquire();
+      if (lease === null) {
+        return err({ type: "RegistrationUnavailable", retryAfterSeconds: 30 });
       }
-      const metadata =
-        fetched.value.status === "fetched"
-          ? fetched.value.feed
-          : { title: null, description: null, language: null };
+      try {
+        // The permit covers both existing-feed lookups and new network work.
+        const registered = await deps.feeds.findByUrl(url);
+        if (registered !== null) return ok({ feed: registered, created: false });
+        const since = new Date(deps.clock.now().getTime() - 24 * 60 * 60 * 1000);
+        const counts = await deps.feeds.registrationCounts(since);
+        if (counts.total >= deps.limits.total) {
+          return err({ type: "RegistrationUnavailable", retryAfterSeconds: null });
+        }
+        if (counts.recent >= deps.limits.daily) {
+          return err({ type: "RegistrationUnavailable", retryAfterSeconds: 3600 });
+        }
 
-      const handle = Handle.fromFeedUrl(url);
+        const fetched = await deps.fetcher.fetch(url, NO_VALIDATORS);
+        if (!fetched.ok) {
+          return err({
+            type: "FeedUnreachable",
+            url,
+            message: fetched.error.message,
+          });
+        }
+        const metadata =
+          fetched.value.status === "fetched"
+            ? fetched.value.feed
+            : { title: null, description: null, language: null };
 
-      const feed = Feed.register({
-        url,
-        handle,
-        title: titleFrom(metadata.title),
-        description: metadata.description,
-        language: languageFrom(metadata.language),
-        now: deps.clock.now(),
-      });
-      await deps.feeds.save(feed);
-      return ok({ feed, created: true });
+        const handle = Handle.fromFeedUrl(url);
+
+        const feed = Feed.register({
+          url,
+          handle,
+          title: titleFrom(metadata.title),
+          description: metadata.description,
+          language: languageFrom(metadata.language),
+          now: deps.clock.now(),
+        });
+        await deps.feeds.save(feed);
+        return ok({ feed, created: true });
+      } finally {
+        await lease.release();
+      }
     },
   };
 }

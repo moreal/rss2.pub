@@ -15,6 +15,9 @@ describe("loadConfig", () => {
       pollMaxIntervalSeconds: 1800,
       pollMaxBackoffSeconds: 86_400,
       schedulerTickMs: 60_000,
+      registrationDailyLimit: 20,
+      registrationTotalLimit: 1000,
+      registrationAttemptsPerHour: 60,
       logLevel: "info",
       logFormat: "console",
     });
@@ -45,6 +48,28 @@ describe("loadConfig", () => {
     expect(unwrapErr(loadConfig({}))).toMatchObject({ key: "DATABASE_URL" });
   });
 
+  it("requires an explicit public origin in production", () => {
+    expect(unwrapErr(loadConfig({ ...BASE, NODE_ENV: "production" }))).toMatchObject({ key: "ORIGIN" });
+    expect(unwrapErr(loadConfig({ ...BASE, NODE_ENV: "production", ORIGIN: "http://bridge.example" })))
+      .toMatchObject({ key: "ORIGIN" });
+    expect(loadConfig({ ...BASE, NODE_ENV: "production", ORIGIN: "https://bridge.example" })).toMatchObject({ ok: true });
+  });
+
+  it("does not permit private-address fetches in production", () => {
+    expect(unwrapErr(loadConfig({
+      ...BASE,
+      NODE_ENV: "production",
+      ORIGIN: "https://bridge.example",
+      ALLOW_PRIVATE_ADDRESS: "true",
+    }))).toMatchObject({ key: "ALLOW_PRIVATE_ADDRESS" });
+  });
+
+  it("accepts an absolute HTTPS source URL for self-hosted forks", () => {
+    expect(unwrap(loadConfig({ ...BASE, SOURCE_URL: "https://code.example/fork" })).sourceUrl)
+      .toBe("https://code.example/fork");
+    expect(unwrapErr(loadConfig({ ...BASE, SOURCE_URL: "javascript:alert(1)" }))).toMatchObject({ key: "SOURCE_URL" });
+  });
+
   it("derives host from ORIGIN and rejects malformed origins", () => {
     const config = unwrap(loadConfig({ ...BASE, ORIGIN: "https://rss2.pub" }));
     expect(config.origin).toBe("https://rss2.pub");
@@ -68,6 +93,12 @@ describe("loadConfig", () => {
     expect(unwrapErr(loadConfig({ ...BASE, PORT: "0" }))).toMatchObject({
       key: "PORT",
     });
+    expect(unwrapErr(loadConfig({ ...BASE, REGISTRATION_DAILY_LIMIT: "0" })))
+      .toMatchObject({ key: "REGISTRATION_DAILY_LIMIT" });
+    expect(unwrapErr(loadConfig({ ...BASE, REGISTRATION_TOTAL_LIMIT: "many" })))
+      .toMatchObject({ key: "REGISTRATION_TOTAL_LIMIT" });
+    expect(unwrapErr(loadConfig({ ...BASE, REGISTRATION_ATTEMPTS_PER_HOUR: "0" })))
+      .toMatchObject({ key: "REGISTRATION_ATTEMPTS_PER_HOUR" });
   });
 
   it("parses LOG_LEVEL case-insensitively and rejects unknown levels", () => {

@@ -5,12 +5,32 @@ import type {
   ResolvedFavicon,
 } from "../../domain/ports/favicon-resolver.js";
 import { err, ok, type Result } from "../../shared/result.js";
+import { fetchPublicUrl } from "../feedfetch/public-fetch.js";
 
 function messageOf(cause: unknown): string {
   return cause instanceof Error ? cause.message : String(cause);
 }
 
 type ParsedDocument = ReturnType<typeof parseHTML>["document"];
+const MAX_HTML_BYTES = 1024 * 1024;
+
+async function readBoundedHtml(body: ReadableStream<Uint8Array> | null): Promise<string> {
+  if (body === null) return "";
+  const reader = body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let html = "";
+  let bytes = 0;
+  while (true) {
+    const chunk = await reader.read();
+    if (chunk.done) return html + decoder.decode();
+    bytes += chunk.value.byteLength;
+    if (bytes > MAX_HTML_BYTES) {
+      await reader.cancel().catch(() => undefined);
+      throw new Error(`favicon HTML exceeds ${MAX_HTML_BYTES} bytes`);
+    }
+    html += decoder.decode(chunk.value, { stream: true });
+  }
+}
 
 /** Higher-priority rels first — `apple-touch-icon` is typically much higher
  * resolution than a bare `favicon.ico`, which matters for an actor avatar. */
@@ -39,6 +59,8 @@ function sizeScore(sizes: string | null): number {
 export function createHtmlFaviconResolver(options?: {
   readonly timeoutMs?: number;
   readonly userAgent?: string;
+  readonly allowPrivateAddress?: boolean;
+  readonly fetchImpl?: typeof fetch;
 }): FaviconResolver {
   const timeoutMs = options?.timeoutMs ?? 15_000;
   // A bare "rss2.pub (+url)" UA gets 403'd by
@@ -50,11 +72,13 @@ export function createHtmlFaviconResolver(options?: {
 
   async function respondsOk(url: string): Promise<boolean> {
     try {
-      const response = await fetch(url, {
+      const response = await fetchPublicUrl(url, {
         method: "HEAD",
         headers: { "user-agent": userAgent },
-        redirect: "follow",
         signal: AbortSignal.timeout(timeoutMs),
+      }, {
+        allowPrivateAddress: options?.allowPrivateAddress === true,
+        ...(options?.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),
       });
       return response.ok;
     } catch {
@@ -88,11 +112,14 @@ export function createHtmlFaviconResolver(options?: {
   return {
     async resolve(pageUrl): Promise<Result<ResolvedFavicon, ResolveFaviconError>> {
       let html: string;
+      let finalPageUrl = pageUrl;
       try {
-        const response = await fetch(pageUrl, {
+        const response = await fetchPublicUrl(pageUrl, {
           headers: { accept: "text/html", "user-agent": userAgent },
-          redirect: "follow",
           signal: AbortSignal.timeout(timeoutMs),
+        }, {
+          allowPrivateAddress: options?.allowPrivateAddress === true,
+          ...(options?.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),
         });
         if (!response.ok) {
           return err({
@@ -101,16 +128,17 @@ export function createHtmlFaviconResolver(options?: {
             message: `HTTP ${response.status}`,
           });
         }
-        html = await response.text();
+        html = await readBoundedHtml(response.body);
+        finalPageUrl = response.url || pageUrl;
       } catch (cause) {
         return err({ type: "RequestFailed", url: pageUrl, message: messageOf(cause) });
       }
 
       const { document } = parseHTML(html);
-      const declared = bestIconLink(document, pageUrl);
+      const declared = bestIconLink(document, finalPageUrl);
       if (declared !== null) return ok({ iconUrl: declared });
 
-      const fallback = new URL("/favicon.ico", pageUrl).href;
+      const fallback = new URL("/favicon.ico", finalPageUrl).href;
       if (await respondsOk(fallback)) return ok({ iconUrl: fallback });
 
       return err({ type: "NotFound", url: pageUrl });

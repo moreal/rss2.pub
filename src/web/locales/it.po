@@ -15,22 +15,22 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:197
+#: src/web/ui/messages.ts:201
 msgid "search.results-count"
 msgstr "{count, plural, one {# feed corrisponde a «{query}»} other {# feed corrispondono a «{query}»}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:231
+#: src/web/ui/messages.ts:235
 msgid "feed.followers"
 msgstr "{count, plural, one {# follower} other {# follower}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:137
+#: src/web/ui/messages.ts:141
 msgid "register.result-exists-title"
 msgstr "Già registrato"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:281
+#: src/web/ui/messages.ts:285
 msgid "federation.back-to-actor"
 msgstr "Torna a {name}"
 
@@ -41,17 +41,17 @@ msgid "layout.footer-bot"
 msgstr "Account del bot: {handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:162
+#: src/web/ui/messages.ts:166
 msgid "register.copied"
 msgstr "Copiato"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:158
+#: src/web/ui/messages.ts:162
 msgid "register.copy-button"
 msgstr "Copia"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:149
+#: src/web/ui/messages.ts:153
 msgid "register.next-copy"
 msgstr "Copia questo nome account."
 
@@ -61,17 +61,17 @@ msgid "register.error-feed-unreachable"
 msgstr "Impossibile leggere un feed Atom o RSS 2.0 a questo indirizzo: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:277
+#: src/web/ui/messages.ts:281
 msgid "federation.remote-follow-invalid-account"
 msgstr "Inserisci un account Fediverse valido, per esempio tu@instance.social."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:129
+#: src/web/ui/messages.ts:133
 msgid "register.result-created-title"
 msgstr "Feed registrato"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:125
+#: src/web/ui/messages.ts:129
 msgid "register.result-heading"
 msgstr "Registrazione del feed"
 
@@ -81,7 +81,7 @@ msgid "register.url-label"
 msgstr "URL del feed"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:267
+#: src/web/ui/messages.ts:271
 msgid "federation.remote-follow-button"
 msgstr "Segui"
 
@@ -97,12 +97,12 @@ msgstr "Segui i feed Atom e RSS 2.0 dal Fediverse."
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:257
+#: src/web/ui/messages.ts:261
 msgid "federation.remote-follow-label"
 msgstr "Segui dal tuo account Fediverse"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:145
+#: src/web/ui/messages.ts:149
 msgid "register.next-heading"
 msgstr "Seguilo dal tuo account Fediverse"
 
@@ -112,7 +112,7 @@ msgid "layout.nav-home"
 msgstr "Home"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:244
+#: src/web/ui/messages.ts:248
 msgid "federation.main-actor-summary"
 msgstr "Trasformo i feed Atom e RSS 2.0 in account da seguire. Menzionami con i comandi register o search."
 
@@ -129,27 +129,32 @@ msgstr "URL del feed mancante."
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:216
+#: src/web/ui/messages.ts:220
 msgid "feed.popular-heading"
 msgstr "Feed più seguiti"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:203
+#: src/web/ui/messages.ts:125
+msgid "register.error-unavailable"
+msgstr "Le nuove registrazioni sono attualmente limitate. Riprova più tardi."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
 msgid "search.empty-title"
 msgstr "Nessun feed corrisponde a «{query}»"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:221
+#: src/web/ui/messages.ts:225
 msgid "feed.popular-empty"
 msgstr "Nessun feed ancora registrato"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:253
 msgid "federation.no-posts-title"
 msgstr "Ancora nessun post"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:207
+#: src/web/ui/messages.ts:211
 msgid "search.empty-hint"
 msgstr "Puoi cercare solo i feed già registrati. Prova una parola chiave più breve oppure registra tu questo feed."
 
@@ -159,7 +164,7 @@ msgid "register.error-unsupported-protocol"
 msgstr "Sono supportati solo feed http(s) (protocollo ricevuto: {protocol})."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:166
+#: src/web/ui/messages.ts:170
 msgid "register.open-profile"
 msgstr "Apri la pagina dell’account"
 
@@ -169,18 +174,18 @@ msgid "register.error-hint"
 msgstr "Apri l’indirizzo in un browser per verificare che restituisca un feed anziché una pagina web, poi riprova."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:153
+#: src/web/ui/messages.ts:157
 msgid "register.next-follow"
 msgstr "Incollalo nella casella di ricerca di Mastodon o dell’app che usi e premi «Segui»."
 
 #. Fallback title for an untitled Note on an actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:239
 msgid "federation.post-fallback"
 msgstr "Post"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:253
+#: src/web/ui/messages.ts:257
 msgid "federation.no-posts-body"
 msgstr "I post appariranno qui dopo il prossimo controllo del feed."
 
@@ -196,7 +201,7 @@ msgid "register.heading"
 msgstr "Registra un feed"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:212
+#: src/web/ui/messages.ts:216
 msgid "search.empty-action"
 msgstr "Registra un feed"
 
@@ -206,7 +211,7 @@ msgid "home.lede"
 msgstr "Registra un feed per trasformarlo in un account Fediverse. Segui quell’account da Mastodon o da un’altra app e ogni nuovo post comparirà nella tua timeline."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:170
+#: src/web/ui/messages.ts:174
 msgid "register.another"
 msgstr "Registra un altro feed"
 
@@ -228,7 +233,7 @@ msgstr "Registrazione…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:271
+#: src/web/ui/messages.ts:275
 msgid "federation.remote-follow-title"
 msgstr "Segui da un’altra istanza"
 
@@ -239,7 +244,7 @@ msgstr "rss2.pub trasforma i feed in account Fediverse che chiunque può seguire
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:182
+#: src/web/ui/messages.ts:186
 msgid "search.placeholder"
 msgstr "rust, meteo, example.com"
 
@@ -249,23 +254,23 @@ msgid "layout.nav-search"
 msgstr "Cerca"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:174
+#: src/web/ui/messages.ts:178
 msgid "search.heading"
 msgstr "Cerca"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:197
 msgid "search.button"
 msgstr "Cerca"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:178
+#: src/web/ui/messages.ts:182
 msgid "search.label"
 msgstr "Cerca tra i feed registrati"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:225
+#: src/web/ui/messages.ts:229
 msgid "feed.popular-more"
 msgstr "Vedi altri feed"
 
@@ -302,28 +307,28 @@ msgid "register.url-help"
 msgstr "L’indirizzo del feed Atom o RSS 2.0 stesso, non quello del sito web. Spesso termina con /atom, /feed o .xml."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:141
+#: src/web/ui/messages.ts:145
 msgid "register.result-exists"
 msgstr "Questo feed pubblica già tramite il proprio account Fediverse."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:133
+#: src/web/ui/messages.ts:137
 msgid "register.result-created"
 msgstr "Questo feed ora pubblica tramite il proprio account Fediverse."
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:188
+#: src/web/ui/messages.ts:192
 msgid "search.help"
 msgstr "Digita parte del nome, della descrizione o dell’indirizzo di un feed."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:244
 msgid "federation.view-original"
 msgstr "Visualizza originale"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:262
+#: src/web/ui/messages.ts:266
 msgid "federation.remote-follow-placeholder"
 msgstr "tu@instance.social"

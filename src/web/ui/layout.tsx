@@ -27,8 +27,6 @@ const FAVICON = `data:image/svg+xml,${encodeURIComponent(
 
 const SITE_NAME = "rss2.pub";
 
-const SOURCE_URL = "https://github.com/moreal/rss2.pub";
-
 /**
  * Username of the static command actor. Duplicated from federation identity
  * rather than imported so this UI leaf does not pull infrastructure into its
@@ -124,7 +122,7 @@ const SiteFooter: FC<{ ctx: PageContext }> = (props) => (
             ),
           })}
         </span>
-        <a href={SOURCE_URL} rel="noopener">
+        <a href={props.ctx.sourceUrl} rel="noopener">
           {translate(props.ctx.i18n, copy.layoutFooterSource)}
         </a>
       </p>

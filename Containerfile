@@ -24,7 +24,8 @@ RUN yarn workspaces focus --production
 
 FROM node:24-slim AS runtime
 LABEL org.opencontainers.image.title="rss2.pub" \
-      org.opencontainers.image.description="Atom to ActivityPub bridge" \
+      org.opencontainers.image.description="Atom and RSS 2.0 to ActivityPub bridge" \
+      org.opencontainers.image.licenses="AGPL-3.0-or-later" \
       org.opencontainers.image.url="https://rss2.pub" \
       org.opencontainers.image.documentation="https://github.com/moreal/rss2.pub#readme" \
       org.opencontainers.image.source="https://github.com/moreal/rss2.pub" \
@@ -38,6 +39,7 @@ COPY --from=build --chown=node:node /app/packages/atom-feed ./packages/atom-feed
 COPY --from=build --chown=node:node /app/packages/rss-feed ./packages/rss-feed
 COPY --from=build --chown=node:node /app/packages/web-ui ./packages/web-ui
 COPY --chown=node:node drizzle ./drizzle
+COPY --chown=node:node LICENSE ./LICENSE
 COPY --chown=node:node package.json ./
 EXPOSE 8000
 USER node

@@ -15,22 +15,22 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:197
+#: src/web/ui/messages.ts:201
 msgid "search.results-count"
 msgstr "{count, plural, other {“{query}”匹配到#个信息源}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:231
+#: src/web/ui/messages.ts:235
 msgid "feed.followers"
 msgstr "{count, plural, other {#位关注者}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:137
+#: src/web/ui/messages.ts:141
 msgid "register.result-exists-title"
 msgstr "信息源已注册"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:281
+#: src/web/ui/messages.ts:285
 msgid "federation.back-to-actor"
 msgstr "返回{name}"
 
@@ -41,17 +41,17 @@ msgid "layout.footer-bot"
 msgstr "机器人账号：{handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:162
+#: src/web/ui/messages.ts:166
 msgid "register.copied"
 msgstr "已复制"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:158
+#: src/web/ui/messages.ts:162
 msgid "register.copy-button"
 msgstr "复制"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:149
+#: src/web/ui/messages.ts:153
 msgid "register.next-copy"
 msgstr "复制此账号名称。"
 
@@ -61,17 +61,17 @@ msgid "register.error-feed-unreachable"
 msgstr "无法从该地址读取Atom或RSS 2.0信息源：{message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:277
+#: src/web/ui/messages.ts:281
 msgid "federation.remote-follow-invalid-account"
 msgstr "请输入有效的联邦宇宙账号，例如you@instance.social。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:129
+#: src/web/ui/messages.ts:133
 msgid "register.result-created-title"
 msgstr "信息源已注册"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:125
+#: src/web/ui/messages.ts:129
 msgid "register.result-heading"
 msgstr "注册信息源"
 
@@ -81,7 +81,7 @@ msgid "register.url-label"
 msgstr "信息源URL"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:267
+#: src/web/ui/messages.ts:271
 msgid "federation.remote-follow-button"
 msgstr "关注"
 
@@ -97,12 +97,12 @@ msgstr "在联邦宇宙关注Atom和RSS 2.0信息源。"
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:257
+#: src/web/ui/messages.ts:261
 msgid "federation.remote-follow-label"
 msgstr "使用你的联邦宇宙账号关注"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:145
+#: src/web/ui/messages.ts:149
 msgid "register.next-heading"
 msgstr "从你的联邦宇宙账号关注"
 
@@ -112,7 +112,7 @@ msgid "layout.nav-home"
 msgstr "首页"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:244
+#: src/web/ui/messages.ts:248
 msgid "federation.main-actor-summary"
 msgstr "我可以将Atom和RSS 2.0信息源转换为可关注的账号。提及我并发送register或search命令即可。"
 
@@ -129,27 +129,32 @@ msgstr "缺少信息源URL。"
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:216
+#: src/web/ui/messages.ts:220
 msgid "feed.popular-heading"
 msgstr "关注人数最多的信息源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:203
+#: src/web/ui/messages.ts:125
+msgid "register.error-unavailable"
+msgstr "目前限制新增注册。请稍后重试。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
 msgid "search.empty-title"
 msgstr "没有找到匹配“{query}”的信息源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:221
+#: src/web/ui/messages.ts:225
 msgid "feed.popular-empty"
 msgstr "还没有注册的信息源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:253
 msgid "federation.no-posts-title"
 msgstr "还没有帖子"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:207
+#: src/web/ui/messages.ts:211
 msgid "search.empty-hint"
 msgstr "只能搜索已注册的信息源。请尝试更短的关键词，或自行注册该信息源。"
 
@@ -159,7 +164,7 @@ msgid "register.error-unsupported-protocol"
 msgstr "仅支持http(s)信息源（收到的协议：{protocol}）。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:166
+#: src/web/ui/messages.ts:170
 msgid "register.open-profile"
 msgstr "打开账号页面"
 
@@ -169,18 +174,18 @@ msgid "register.error-hint"
 msgstr "请在浏览器中打开该地址，确认返回的是信息源而非网页，然后重试。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:153
+#: src/web/ui/messages.ts:157
 msgid "register.next-follow"
 msgstr "将账号名称粘贴到Mastodon或你使用的其他应用的搜索框中，然后点击“关注”。"
 
 #. Fallback title for an untitled Note on an actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:239
 msgid "federation.post-fallback"
 msgstr "帖子"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:253
+#: src/web/ui/messages.ts:257
 msgid "federation.no-posts-body"
 msgstr "下次检查信息源后，帖子会显示在这里。"
 
@@ -196,7 +201,7 @@ msgid "register.heading"
 msgstr "注册信息源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:212
+#: src/web/ui/messages.ts:216
 msgid "search.empty-action"
 msgstr "注册信息源"
 
@@ -206,7 +211,7 @@ msgid "home.lede"
 msgstr "注册信息源后，它就会成为一个联邦宇宙账号。在Mastodon或其他应用中关注该账号，新帖子就会出现在你的时间线中。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:170
+#: src/web/ui/messages.ts:174
 msgid "register.another"
 msgstr "注册其他信息源"
 
@@ -228,7 +233,7 @@ msgstr "正在注册…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:271
+#: src/web/ui/messages.ts:275
 msgid "federation.remote-follow-title"
 msgstr "远程关注"
 
@@ -239,7 +244,7 @@ msgstr "rss2.pub将信息源转换为任何人都能关注的联邦宇宙账号�
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:182
+#: src/web/ui/messages.ts:186
 msgid "search.placeholder"
 msgstr "rust、天气、example.com"
 
@@ -249,23 +254,23 @@ msgid "layout.nav-search"
 msgstr "搜索"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:174
+#: src/web/ui/messages.ts:178
 msgid "search.heading"
 msgstr "搜索"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:197
 msgid "search.button"
 msgstr "搜索"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:178
+#: src/web/ui/messages.ts:182
 msgid "search.label"
 msgstr "搜索已注册的信息源"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:225
+#: src/web/ui/messages.ts:229
 msgid "feed.popular-more"
 msgstr "查看更多信息源"
 
@@ -302,28 +307,28 @@ msgid "register.url-help"
 msgstr "请输入Atom或RSS 2.0信息源本身的地址，而不是网站地址。它通常以/atom、/feed或.xml结尾。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:141
+#: src/web/ui/messages.ts:145
 msgid "register.result-exists"
 msgstr "此信息源已通过自己的联邦宇宙账号发布内容。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:133
+#: src/web/ui/messages.ts:137
 msgid "register.result-created"
 msgstr "此信息源现在会通过自己的联邦宇宙账号发布内容。"
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:188
+#: src/web/ui/messages.ts:192
 msgid "search.help"
 msgstr "输入信息源名称、描述或地址的一部分。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:244
 msgid "federation.view-original"
 msgstr "查看原文"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:262
+#: src/web/ui/messages.ts:266
 msgid "federation.remote-follow-placeholder"
 msgstr "you@instance.social"

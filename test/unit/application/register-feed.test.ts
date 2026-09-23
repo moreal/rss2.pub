@@ -12,18 +12,87 @@ import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
 
 const now = new Date("2026-07-26T12:00:00Z");
 
-function setup() {
+function setup(limits = { daily: 20, total: 1000 }) {
   const feeds = createInMemoryFeedRepository();
   const fetcher = fakeFetcher();
+  const gate = { tryAcquire: async () => ({ release: async () => {} }) };
   const registerFeed = createRegisterFeed({
     feeds,
     fetcher,
     clock: fixedClock(now),
+    gate,
+    limits,
   });
   return { feeds, fetcher, registerFeed };
 }
 
 describe("RegisterFeed", () => {
+  it("rejects a new feed when registration work is already in progress", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const fetcher = fakeFetcher();
+    const registerFeed = createRegisterFeed({
+      feeds,
+      fetcher,
+      clock: fixedClock(now),
+      gate: { tryAcquire: async () => null },
+      limits: { daily: 20, total: 1000 },
+    });
+    expect(unwrapErr(await registerFeed.execute("https://a.co/f")))
+      .toMatchObject({ type: "RegistrationUnavailable" });
+    expect(fetcher.calls).toHaveLength(0);
+  });
+
+  it("bounds repeated registration requests before a database lookup", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const fetcher = fakeFetcher();
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({})));
+    let attempts = 0;
+    const registerFeed = createRegisterFeed({
+      feeds,
+      fetcher,
+      clock: fixedClock(now),
+      gate: { tryAcquire: async () => ++attempts === 1 ? { release: async () => {} } : null },
+      limits: { daily: 20, total: 1000 },
+    });
+    unwrap(await registerFeed.execute("https://a.co/f"));
+    expect(unwrapErr(await registerFeed.execute("https://a.co/f")))
+      .toMatchObject({ type: "RegistrationUnavailable" });
+  });
+
+  it("caps total new feeds while leaving existing feeds readable", async () => {
+    const { registerFeed, fetcher } = setup({ daily: 20, total: 1 });
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({})));
+    unwrap(await registerFeed.execute("https://a.co/f"));
+    expect(unwrapErr(await registerFeed.execute("https://b.co/f")))
+      .toMatchObject({ type: "RegistrationUnavailable", retryAfterSeconds: null });
+    expect(unwrap(await registerFeed.execute("https://a.co/f")).created).toBe(false);
+    expect(fetcher.calls).toHaveLength(1);
+  });
+
+  it("caps new feeds in the last 24 hours", async () => {
+    const { registerFeed, fetcher } = setup({ daily: 1, total: 1000 });
+    fetcher.respondWith("https://a.co/f", ok(fetchedFeed({})));
+    unwrap(await registerFeed.execute("https://a.co/f"));
+    expect(unwrapErr(await registerFeed.execute("https://b.co/f")))
+      .toMatchObject({ type: "RegistrationUnavailable", retryAfterSeconds: 3600 });
+    expect(fetcher.calls).toHaveLength(1);
+  });
+
+  it("releases its registration permit after a failed fetch", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const fetcher = fakeFetcher();
+    let releases = 0;
+    const registerFeed = createRegisterFeed({
+      feeds,
+      fetcher,
+      clock: fixedClock(now),
+      gate: { tryAcquire: async () => ({ release: async () => { releases++; } }) },
+      limits: { daily: 20, total: 1000 },
+    });
+    await registerFeed.execute("https://a.co/f");
+    expect(releases).toBe(1);
+  });
+
   it("rejects unparseable URLs without touching the network", async () => {
     const { fetcher, registerFeed } = setup();
     const error = unwrapErr(await registerFeed.execute("not a url"));

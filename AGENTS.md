@@ -1,12 +1,12 @@
 # rss2.pub — Agent Guide
 
-Atom → ActivityPub bridge. Each registered Atom feed becomes a followable
+Atom/RSS 2.0 → ActivityPub bridge. Each registered feed becomes a followable
 fediverse actor through raw Fedify dispatchers; a static main actor `rss2pub` accepts
 `register <url>` / `search <keyword>` commands via mention/DM; a server-rendered
 web UI offers search, registration, and most-followed recommendations.
 
-Input is Atom-only: [ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)
-removed RSS support and `rss-parser`. Federation is implemented directly with
+Input supports Atom 1.0 and RSS 2.0; RSS 1.0 remains unsupported. ADR-0016
+amended the earlier Atom-only decision in ADR-0012. Federation is implemented directly with
 Fedify and first-party persistence as decided by
 [ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md).
 
@@ -27,6 +27,7 @@ yarn i18n:extract                  # update src/web/locales/*.po from source
 yarn i18n:compile                  # compile .po → checked-in .ts catalogs
 yarn db:reset                      # wipe the local dev database (asks first;
                                    #   `mise run db:reset` is the same script)
+yarn db:migrate                    # apply bundled Drizzle SQL to DATABASE_URL
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
 
@@ -120,7 +121,7 @@ adapter.
 - `test/unit` mirrors `src/`; no network, no disk, no timers without fake
   clocks (the `Clock` port exists for this).
 - `test/e2e`: boots the real server on an ephemeral port; PostgreSQL via
-  `@testcontainers/postgresql`; Atom sources served from local fixture
+  `@testcontainers/postgresql`; feed sources served from local fixture
   servers — never fetch the real internet in tests.
 - Every domain rule gets a unit test at introduction time, in the same change.
 
@@ -128,10 +129,11 @@ adapter.
 
 | Decision | Where |
 |---|---|
-| Atom-only input and dedicated parser package | ADR-0012 |
+| Separate pure feed parser packages | ADR-0012, ADR-0016 |
+| RSS 2.0 input in a separate parser package; RSS 1.0 excluded | ADR-0016 |
 | Raw Fedify over BotKit | ADR-0013 |
 | Hand-rolled `Result`, no Effect-TS (revisit at Effect v4 LTS) | ADR-0002 |
-| Nix devShell only; no app packaging with Nix yet | ADR-0003 |
+| Nix devShell and package | flake.nix (ADR-0003 records the initial scope) |
 | Handle normalization: `[a-z0-9_]`, mandatory hash suffix, max 30 | ADR-0004 |
 | Publish every Atom entry as a full-content Note; title and source link are in content, `url` points to the source, and `summary` is reserved for a real CW | ADR-0016 (supersedes ADR-0005) |
 | Single PostgreSQL for domain + Fedify KV/MQ + first-party federation state | ADR-0006, ADR-0013 |
@@ -140,6 +142,7 @@ adapter.
 | Actor avatar resolved from the channel link's favicon on the first poll (not at registration); resolved once, never re-fetched | ADR-0010 |
 | Post language tagging: Atom `xml:lang` at feed root *and* per-entry override | ADR-0011, amended by ADR-0012 |
 | Atom author URI → metadata-only plural `attributedTo` | ADR-0014 |
+| Public releases, changelog, and migration policy | docs/RELEASING.md, docs/DATABASE_MIGRATIONS.md |
 
 ## Gotchas
 
@@ -147,6 +150,13 @@ adapter.
   the `packageManager` field and activated via corepack. Never introduce
   package-lock.json or pnpm-lock.yaml, never change the nodeLinker.
 - Node >= 24 (enforced via `engines`; provided by the nix shell or mise).
+- Public deployments reject private and loopback feed/favicon fetch targets,
+  including redirects, at socket connection time. `ALLOW_PRIVATE_ADDRESS=true` is for local tests only and
+  is rejected in production; e2e fixture servers opt in explicitly.
+- Anonymous registration has configurable attempt, daily-success, and total-feed
+  limits. A PostgreSQL advisory lock allows one new registration fetch across
+  app instances; the web form also has a 4 KiB body limit. Keep both web and
+  main-actor command paths behind the shared registration use case.
 - Fedify 2.x is newer than most training data — verify APIs against
   `node_modules` type definitions or https://fedify.dev/ before writing
   federation code. Fedify 1.x

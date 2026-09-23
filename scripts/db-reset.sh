@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 # Destroys the local development database.
 #
-# The schema comes back by itself on the next boot: migrate() recreates feeds
-# and published_items, and the Fedify/BotKit tables self-create (their stores
+# The schema comes back through `yarn db:migrate` or the next boot: Drizzle
+# recreates the application tables, and the Fedify KV/MQ tables self-create (their stores
 # issue CREATE TABLE IF NOT EXISTS ahead of every operation). Registered feeds
 # and actor key pairs do NOT come back — anyone already following a feed actor
 # holds a key that will no longer exist. Local development only.

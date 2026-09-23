@@ -122,6 +122,10 @@ export const copy = {
     id: "register.error-feed-unreachable",
     message: "Couldn’t read an Atom or RSS 2.0 feed there: {message}",
   },
+  registerErrorUnavailable: /*i18n*/ {
+    id: "register.error-unavailable",
+    message: "New registrations are currently limited. Please try again later.",
+  },
   registerResultHeading: /*i18n*/ {
     id: "register.result-heading",
     message: "Feed registration",

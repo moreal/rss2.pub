@@ -60,8 +60,11 @@ beforeAll(async () => {
     pollMaxIntervalSeconds: 3600,
     pollMaxBackoffSeconds: 86_400,
     schedulerTickMs: 3_600_000,
+    registrationDailyLimit: 20,
+    registrationTotalLimit: 1000,
+    registrationAttemptsPerHour: 60,
     behindProxy: false,
-    allowPrivateAddress: false,
+    allowPrivateAddress: true,
     logLevel: "warning",
     logFormat: "console",
   };

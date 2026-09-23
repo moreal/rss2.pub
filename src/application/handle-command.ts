@@ -17,6 +17,7 @@ export type Command =
 const MENTION_PATTERN = /@[a-z0-9_]+(?:@[a-z0-9.:_-]+)?/gi;
 
 export function parseCommand(text: string): Command {
+  if (text.length > 4096) return { type: "help" };
   const cleaned = text.replace(MENTION_PATTERN, " ").trim();
   const [word = "", ...rest] = cleaned.split(/\s+/).filter((t) => t.length > 0);
   switch (word.toLowerCase()) {
@@ -89,6 +90,8 @@ export function createCommandHandler(deps: {
                     `I couldn't read an Atom feed there: ${result.error.message}`,
                   ),
                 ];
+              case "RegistrationUnavailable":
+                return [t("New registrations are currently limited. Please try again later.")];
               default: {
                 const unreachable: never = result.error;
                 throw new Error(

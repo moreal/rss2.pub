@@ -15,22 +15,22 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:197
+#: src/web/ui/messages.ts:201
 msgid "search.results-count"
 msgstr "{count, plural, other {「{query}」找到#個符合的資訊來源}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:231
+#: src/web/ui/messages.ts:235
 msgid "feed.followers"
 msgstr "{count, plural, other {#位追蹤者}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:137
+#: src/web/ui/messages.ts:141
 msgid "register.result-exists-title"
 msgstr "資訊來源已註冊"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:281
+#: src/web/ui/messages.ts:285
 msgid "federation.back-to-actor"
 msgstr "返回{name}"
 
@@ -41,17 +41,17 @@ msgid "layout.footer-bot"
 msgstr "機器人帳號：{handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:162
+#: src/web/ui/messages.ts:166
 msgid "register.copied"
 msgstr "已複製"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:158
+#: src/web/ui/messages.ts:162
 msgid "register.copy-button"
 msgstr "複製"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:149
+#: src/web/ui/messages.ts:153
 msgid "register.next-copy"
 msgstr "複製這個帳號名稱。"
 
@@ -61,17 +61,17 @@ msgid "register.error-feed-unreachable"
 msgstr "無法從該網址讀取Atom或RSS 2.0資訊來源：{message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:277
+#: src/web/ui/messages.ts:281
 msgid "federation.remote-follow-invalid-account"
 msgstr "請輸入有效的聯邦宇宙帳號，例如you@instance.social。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:129
+#: src/web/ui/messages.ts:133
 msgid "register.result-created-title"
 msgstr "資訊來源已註冊"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:125
+#: src/web/ui/messages.ts:129
 msgid "register.result-heading"
 msgstr "註冊資訊來源"
 
@@ -81,7 +81,7 @@ msgid "register.url-label"
 msgstr "資訊來源URL"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:267
+#: src/web/ui/messages.ts:271
 msgid "federation.remote-follow-button"
 msgstr "追蹤"
 
@@ -97,12 +97,12 @@ msgstr "在聯邦宇宙追蹤Atom與RSS 2.0資訊來源。"
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:257
+#: src/web/ui/messages.ts:261
 msgid "federation.remote-follow-label"
 msgstr "使用你的聯邦宇宙帳號追蹤"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:145
+#: src/web/ui/messages.ts:149
 msgid "register.next-heading"
 msgstr "從你的聯邦宇宙帳號追蹤"
 
@@ -112,7 +112,7 @@ msgid "layout.nav-home"
 msgstr "首頁"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:244
+#: src/web/ui/messages.ts:248
 msgid "federation.main-actor-summary"
 msgstr "我能將Atom與RSS 2.0資訊來源轉換成可追蹤的帳號。提及我並傳送register或search指令即可。"
 
@@ -129,27 +129,32 @@ msgstr "缺少資訊來源URL。"
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:216
+#: src/web/ui/messages.ts:220
 msgid "feed.popular-heading"
 msgstr "追蹤人數最多的資訊來源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:203
+#: src/web/ui/messages.ts:125
+msgid "register.error-unavailable"
+msgstr "目前限制新增註冊。請稍後再試。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
 msgid "search.empty-title"
 msgstr "找不到符合「{query}」的資訊來源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:221
+#: src/web/ui/messages.ts:225
 msgid "feed.popular-empty"
 msgstr "尚無已註冊的資訊來源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:253
 msgid "federation.no-posts-title"
 msgstr "尚無貼文"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:207
+#: src/web/ui/messages.ts:211
 msgid "search.empty-hint"
 msgstr "只能搜尋已註冊的資訊來源。請試試較短的關鍵字，或自行註冊這個資訊來源。"
 
@@ -159,7 +164,7 @@ msgid "register.error-unsupported-protocol"
 msgstr "僅支援http(s)資訊來源（收到的協定：{protocol}）。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:166
+#: src/web/ui/messages.ts:170
 msgid "register.open-profile"
 msgstr "開啟帳號頁面"
 
@@ -169,18 +174,18 @@ msgid "register.error-hint"
 msgstr "請在瀏覽器中開啟該網址，確認顯示的是資訊來源而非網頁，然後再試一次。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:153
+#: src/web/ui/messages.ts:157
 msgid "register.next-follow"
 msgstr "將帳號名稱貼到Mastodon或其他常用應用程式的搜尋框，然後按「追蹤」。"
 
 #. Fallback title for an untitled Note on an actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:239
 msgid "federation.post-fallback"
 msgstr "貼文"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:253
+#: src/web/ui/messages.ts:257
 msgid "federation.no-posts-body"
 msgstr "下次檢查資訊來源後，貼文會顯示在這裡。"
 
@@ -196,7 +201,7 @@ msgid "register.heading"
 msgstr "註冊資訊來源"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:212
+#: src/web/ui/messages.ts:216
 msgid "search.empty-action"
 msgstr "註冊資訊來源"
 
@@ -206,7 +211,7 @@ msgid "home.lede"
 msgstr "註冊資訊來源後，它就會成為聯邦宇宙帳號。在Mastodon或其他應用程式追蹤該帳號，新貼文就會出現在你的時間軸上。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:170
+#: src/web/ui/messages.ts:174
 msgid "register.another"
 msgstr "註冊其他資訊來源"
 
@@ -228,7 +233,7 @@ msgstr "註冊中…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:271
+#: src/web/ui/messages.ts:275
 msgid "federation.remote-follow-title"
 msgstr "遠端追蹤"
 
@@ -239,7 +244,7 @@ msgstr "rss2.pub將資訊來源轉換成任何人都能追蹤的聯邦宇宙帳�
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:182
+#: src/web/ui/messages.ts:186
 msgid "search.placeholder"
 msgstr "rust、天氣、example.com"
 
@@ -249,23 +254,23 @@ msgid "layout.nav-search"
 msgstr "搜尋"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:174
+#: src/web/ui/messages.ts:178
 msgid "search.heading"
 msgstr "搜尋"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:197
 msgid "search.button"
 msgstr "搜尋"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:178
+#: src/web/ui/messages.ts:182
 msgid "search.label"
 msgstr "搜尋已註冊的資訊來源"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:225
+#: src/web/ui/messages.ts:229
 msgid "feed.popular-more"
 msgstr "查看更多資訊來源"
 
@@ -302,28 +307,28 @@ msgid "register.url-help"
 msgstr "請輸入Atom或RSS 2.0資訊來源本身的網址，而非網站網址。它通常以/atom、/feed或.xml結尾。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:141
+#: src/web/ui/messages.ts:145
 msgid "register.result-exists"
 msgstr "這個資訊來源已透過自己的聯邦宇宙帳號發文。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:133
+#: src/web/ui/messages.ts:137
 msgid "register.result-created"
 msgstr "這個資訊來源現在會透過自己的聯邦宇宙帳號發文。"
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:188
+#: src/web/ui/messages.ts:192
 msgid "search.help"
 msgstr "輸入資訊來源名稱、說明或網址的一部分。"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:244
 msgid "federation.view-original"
 msgstr "檢視原文"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:262
+#: src/web/ui/messages.ts:266
 msgid "federation.remote-follow-placeholder"
 msgstr "you@instance.social"

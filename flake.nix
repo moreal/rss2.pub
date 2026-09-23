@@ -1,5 +1,5 @@
 {
-  description = "rss2.pub — Atom to ActivityPub bridge";
+  description = "rss2.pub — Atom and RSS 2.0 to ActivityPub bridge";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -45,12 +45,13 @@
         {
           default = pkgs.stdenv.mkDerivation (finalAttrs: {
             pname = "rss2pub";
-            version = "0.1.0";
+            version = packageJson.version;
 
             src = lib.fileset.toSource {
               root = ./.;
               fileset = lib.fileset.unions [
                 ./package.json
+                ./LICENSE
                 ./yarn.lock
                 ./.yarnrc.yml
                 # .yarn/* is gitignored except a few subpaths (patches,
@@ -76,7 +77,7 @@
             missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
               inherit (finalAttrs) src missingHashes;
-              hash = "sha256-yQiuVWCmBfrR96yq9lY20AGkCuz2QovsTrnP1sbJDfw=";
+              hash = "sha256-YZ7sDX/dAp7WTgIa4A/kGPm4Y2vO7nCTzWJr++4sPq0=";
             };
 
             nativeBuildInputs = [
@@ -104,15 +105,18 @@
             installPhase = ''
               runHook preInstall
               mkdir -p $out/lib/rss2pub $out/bin
-              cp -R dist node_modules drizzle package.json packages $out/lib/rss2pub/
+              cp -R dist node_modules drizzle package.json packages LICENSE $out/lib/rss2pub/
               makeWrapper ${lib.getExe pkgs.nodejs_24} $out/bin/rss2pub \
                 --chdir "$out/lib/rss2pub" \
                 --add-flags dist/web/main.js
+              makeWrapper ${lib.getExe pkgs.nodejs_24} $out/bin/rss2pub-migrate \
+                --chdir "$out/lib/rss2pub" \
+                --add-flags dist/web/migrate.js
               runHook postInstall
             '';
 
             meta = {
-              description = "Atom to ActivityPub bridge";
+              description = "Atom and RSS 2.0 to ActivityPub bridge";
               homepage = "https://github.com/moreal/rss2.pub";
               mainProgram = "rss2pub";
             };

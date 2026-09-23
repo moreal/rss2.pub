@@ -44,6 +44,14 @@ export function createInMemoryFeedRepository(): FeedRepository & {
       return null;
     },
 
+    async registrationCounts(since: Date) {
+      const all = [...feeds.values()];
+      return {
+        total: all.length,
+        recent: all.filter((feed) => feed.registeredAt >= since).length,
+      };
+    },
+
     async listDue(now: Date): Promise<Feed[]> {
       return [...feeds.values()].filter(
         (feed) => feed.nextPollAt.getTime() <= now.getTime(),

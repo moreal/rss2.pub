@@ -48,6 +48,8 @@ const ATOM_XML = `<?xml version="1.0"?>
 
 const feedUrl = unwrap(FeedUrl.create("https://example.test/feed.xml"));
 const fetchMock = vi.fn<typeof fetch>();
+const fixtureFetcher = (options?: Parameters<typeof createFeedFetcher>[0]) =>
+  createFeedFetcher({ ...options, allowPrivateAddress: true, fetchImpl: fetchMock });
 
 beforeEach(() => {
   fetchMock.mockReset();
@@ -61,6 +63,16 @@ afterEach(() => {
 });
 
 describe("createFeedFetcher", () => {
+  it("refuses a loopback feed URL before fetching", async () => {
+    const localUrl = unwrap(FeedUrl.create("http://127.0.0.1/feed.xml"));
+    const result = await createFeedFetcher().fetch(localUrl, {
+      etag: null,
+      lastModified: null,
+    });
+    expect(result).toMatchObject({ ok: false, error: { type: "RequestFailed" } });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("maps Atom DTO fields and validators", async () => {
     fetchMock.mockResolvedValue(
       new Response(ATOM_XML, {
@@ -71,7 +83,7 @@ describe("createFeedFetcher", () => {
       }),
     );
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -126,7 +138,7 @@ describe("createFeedFetcher", () => {
     </feed>`;
     fetchMock.mockResolvedValue(new Response(body));
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -175,7 +187,7 @@ describe("createFeedFetcher", () => {
     </feed>`;
     fetchMock.mockResolvedValue(new Response(body));
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -199,7 +211,7 @@ describe("createFeedFetcher", () => {
     </feed>`;
     fetchMock.mockResolvedValue(new Response(body));
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -218,7 +230,7 @@ describe("createFeedFetcher", () => {
   it("sends conditional headers and handles not-modified", async () => {
     fetchMock.mockResolvedValue(new Response(null, { status: 304 }));
 
-    const result = await createFeedFetcher({ userAgent: "test-agent" }).fetch(
+    const result = await fixtureFetcher({ userAgent: "test-agent" }).fetch(
       feedUrl,
       {
         etag: 'W/"old"',
@@ -227,7 +239,7 @@ describe("createFeedFetcher", () => {
     );
 
     expect(result).toEqual({ ok: true, value: { status: "not-modified" } });
-    expect(fetchMock).toHaveBeenCalledWith(feedUrl, {
+    expect(fetchMock).toHaveBeenCalledWith(new URL(feedUrl), expect.objectContaining({
       headers: {
         accept:
           "application/atom+xml, application/rss+xml, application/xml;q=0.9, text/xml;q=0.8",
@@ -235,9 +247,9 @@ describe("createFeedFetcher", () => {
         "if-none-match": 'W/"old"',
         "if-modified-since": "Sat, 29 Aug 2026 00:00:00 GMT",
       },
-      redirect: "follow",
-      signal: expect.any(AbortSignal),
-    });
+      redirect: "manual",
+    }));
+    expect(fetchMock.mock.calls[0]?.[1]?.signal?.aborted).toBe(false);
   });
 
   it("falls back to RSS 2.0 when the document root is not an Atom feed", async () => {
@@ -259,7 +271,7 @@ describe("createFeedFetcher", () => {
       ),
     );
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -297,7 +309,7 @@ describe("createFeedFetcher", () => {
       new Response("<rss><channel><title>RSS</title></channel></rss>"),
     );
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -317,7 +329,7 @@ describe("createFeedFetcher", () => {
       new Response('<feed xmlns="http://www.w3.org/2005/Atom"><entry></feed>'),
     );
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -340,7 +352,7 @@ describe("createFeedFetcher", () => {
     body.set(suffix, prefix.byteLength + 1);
     fetchMock.mockResolvedValue(new Response(body));
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -355,7 +367,7 @@ describe("createFeedFetcher", () => {
   it("reports non-success HTTP status as a request failure", async () => {
     fetchMock.mockResolvedValue(new Response("unavailable", { status: 503 }));
 
-    const result = await createFeedFetcher().fetch(feedUrl, {
+    const result = await fixtureFetcher().fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -385,7 +397,7 @@ describe("createFeedFetcher", () => {
         }),
     );
 
-    const result = await createFeedFetcher({ timeoutMs: 1 }).fetch(feedUrl, {
+    const result = await fixtureFetcher({ timeoutMs: 1 }).fetch(feedUrl, {
       etag: null,
       lastModified: null,
     });
@@ -406,7 +418,7 @@ describe("createFeedFetcher", () => {
     });
     fetchMock.mockResolvedValue(new Response(body));
 
-    const result = await createFeedFetcher({ maxResponseBytes: 32 }).fetch(
+    const result = await fixtureFetcher({ maxResponseBytes: 32 }).fetch(
       feedUrl,
       { etag: null, lastModified: null },
     );
@@ -419,4 +431,3 @@ describe("createFeedFetcher", () => {
     expect(parseAtomMock).not.toHaveBeenCalled();
   });
 });
-

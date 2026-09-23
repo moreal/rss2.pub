@@ -56,6 +56,8 @@ describe("parseCommand", () => {
     expect(parseCommand("search  ")).toEqual({ type: "help" });
     expect(parseCommand("hello there")).toEqual({ type: "help" });
     expect(parseCommand("")).toEqual({ type: "help" });
+    expect(parseCommand(`register https://example.com/${"x".repeat(5000)}`))
+      .toEqual({ type: "help" });
   });
 });
 
@@ -76,6 +78,8 @@ describe("CommandHandler", () => {
       feeds,
       fetcher,
       clock: fixedClock(now),
+      gate: { tryAcquire: async () => ({ release: async () => {} }) },
+      limits: { daily: 20, total: 1000 },
     });
     const searchFeeds = createSearchFeeds({ feeds });
     const handler = createCommandHandler({

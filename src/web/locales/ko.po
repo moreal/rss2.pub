@@ -15,22 +15,22 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:197
+#: src/web/ui/messages.ts:201
 msgid "search.results-count"
 msgstr "{count, plural, other {“{query}”에 해당하는 피드 #개}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:231
+#: src/web/ui/messages.ts:235
 msgid "feed.followers"
 msgstr "{count, plural, other {팔로워 #명}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:137
+#: src/web/ui/messages.ts:141
 msgid "register.result-exists-title"
 msgstr "이미 등록된 피드입니다"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:281
+#: src/web/ui/messages.ts:285
 msgid "federation.back-to-actor"
 msgstr "{name} 페이지로 돌아가기"
 
@@ -41,17 +41,17 @@ msgid "layout.footer-bot"
 msgstr "봇 계정: {handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:162
+#: src/web/ui/messages.ts:166
 msgid "register.copied"
 msgstr "복사됨"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:158
+#: src/web/ui/messages.ts:162
 msgid "register.copy-button"
 msgstr "복사"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:149
+#: src/web/ui/messages.ts:153
 msgid "register.next-copy"
 msgstr "이 계정 이름을 복사하세요."
 
@@ -61,17 +61,17 @@ msgid "register.error-feed-unreachable"
 msgstr "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니다: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:277
+#: src/web/ui/messages.ts:281
 msgid "federation.remote-follow-invalid-account"
 msgstr "올바른 페디버스 계정을 입력하세요. 예: you@instance.social"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:129
+#: src/web/ui/messages.ts:133
 msgid "register.result-created-title"
 msgstr "등록되었습니다"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:125
+#: src/web/ui/messages.ts:129
 msgid "register.result-heading"
 msgstr "피드 등록"
 
@@ -81,7 +81,7 @@ msgid "register.url-label"
 msgstr "피드 URL"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:267
+#: src/web/ui/messages.ts:271
 msgid "federation.remote-follow-button"
 msgstr "팔로우"
 
@@ -97,12 +97,12 @@ msgstr "페디버스에서 Atom 및 RSS 2.0 피드를 팔로우하세요."
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:257
+#: src/web/ui/messages.ts:261
 msgid "federation.remote-follow-label"
 msgstr "내 페디버스 계정으로 팔로우하기"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:145
+#: src/web/ui/messages.ts:149
 msgid "register.next-heading"
 msgstr "페디버스 계정에서 팔로우하기"
 
@@ -112,7 +112,7 @@ msgid "layout.nav-home"
 msgstr "홈"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:244
+#: src/web/ui/messages.ts:248
 msgid "federation.main-actor-summary"
 msgstr "Atom 및 RSS 2.0 피드를 팔로우할 수 있는 계정으로 바꿔 드립니다. register 또는 search 명령을 멘션으로 보내세요."
 
@@ -129,27 +129,32 @@ msgstr "피드 URL이 없습니다."
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:216
+#: src/web/ui/messages.ts:220
 msgid "feed.popular-heading"
 msgstr "팔로워가 가장 많은 피드"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:203
+#: src/web/ui/messages.ts:125
+msgid "register.error-unavailable"
+msgstr "현재 새 피드 등록이 제한되어 있습니다. 나중에 다시 시도해 주세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
 msgid "search.empty-title"
 msgstr "“{query}”에 해당하는 피드가 없습니다"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:221
+#: src/web/ui/messages.ts:225
 msgid "feed.popular-empty"
 msgstr "아직 등록된 피드가 없습니다"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:253
 msgid "federation.no-posts-title"
 msgstr "아직 게시물이 없습니다"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:207
+#: src/web/ui/messages.ts:211
 msgid "search.empty-hint"
 msgstr "이미 등록된 피드만 검색됩니다. 더 짧은 키워드로 찾아보거나, 직접 등록해 보세요."
 
@@ -159,7 +164,7 @@ msgid "register.error-unsupported-protocol"
 msgstr "http(s) 피드만 지원합니다 (받은 값: {protocol})."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:166
+#: src/web/ui/messages.ts:170
 msgid "register.open-profile"
 msgstr "계정 페이지 열기"
 
@@ -169,18 +174,18 @@ msgid "register.error-hint"
 msgstr "해당 주소를 브라우저에서 열어 웹 페이지가 아니라 피드가 나오는지 확인한 뒤 다시 시도해 보세요."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:153
+#: src/web/ui/messages.ts:157
 msgid "register.next-follow"
 msgstr "마스토돈(또는 사용하는 앱)의 검색창에 붙여 넣고 팔로우를 누르세요."
 
 #. Fallback title for an untitled Note on an actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:239
 msgid "federation.post-fallback"
 msgstr "게시물"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:253
+#: src/web/ui/messages.ts:257
 msgid "federation.no-posts-body"
 msgstr "다음에 피드를 확인한 후 게시물이 여기에 표시됩니다."
 
@@ -196,7 +201,7 @@ msgid "register.heading"
 msgstr "피드 등록"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:212
+#: src/web/ui/messages.ts:216
 msgid "search.empty-action"
 msgstr "피드 등록하기"
 
@@ -206,7 +211,7 @@ msgid "home.lede"
 msgstr "피드를 등록하면 페디버스 계정이 됩니다. 마스토돈을 비롯한 어떤 앱에서든 그 계정을 팔로우하면 새 글이 타임라인에 도착합니다."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:170
+#: src/web/ui/messages.ts:174
 msgid "register.another"
 msgstr "다른 피드 등록하기"
 
@@ -228,7 +233,7 @@ msgstr "등록하는 중…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:271
+#: src/web/ui/messages.ts:275
 msgid "federation.remote-follow-title"
 msgstr "원격 팔로우"
 
@@ -239,7 +244,7 @@ msgstr "rss2.pub은 피드를 누구나 팔로우할 수 있는 페디버스 계
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:182
+#: src/web/ui/messages.ts:186
 msgid "search.placeholder"
 msgstr "예: 뉴스, example.com"
 
@@ -249,23 +254,23 @@ msgid "layout.nav-search"
 msgstr "검색"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:174
+#: src/web/ui/messages.ts:178
 msgid "search.heading"
 msgstr "검색"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:197
 msgid "search.button"
 msgstr "검색"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:178
+#: src/web/ui/messages.ts:182
 msgid "search.label"
 msgstr "등록된 피드 검색"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:225
+#: src/web/ui/messages.ts:229
 msgid "feed.popular-more"
 msgstr "피드 더 보기"
 
@@ -302,28 +307,28 @@ msgid "register.url-help"
 msgstr "웹사이트가 아니라 Atom 또는 RSS 2.0 피드 자체의 주소를 입력하세요. 보통 /atom, /feed 또는 .xml로 끝납니다."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:141
+#: src/web/ui/messages.ts:145
 msgid "register.result-exists"
 msgstr "이 피드는 이미 자체 페디버스 계정으로 글을 게시하고 있습니다."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:133
+#: src/web/ui/messages.ts:137
 msgid "register.result-created"
 msgstr "이제 이 피드는 자체 페디버스 계정으로 글을 게시합니다."
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:188
+#: src/web/ui/messages.ts:192
 msgid "search.help"
 msgstr "피드 이름, 설명, 주소의 일부를 입력하세요."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:244
 msgid "federation.view-original"
 msgstr "원문 보기"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:262
+#: src/web/ui/messages.ts:266
 msgid "federation.remote-follow-placeholder"
 msgstr "아이디@인스턴스.example"

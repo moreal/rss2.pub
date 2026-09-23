@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 // Context's env parameter defaults to `any`; naming Env keeps c.get() checked
 // against hono/language's ContextVariableMap augmentation.
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -27,6 +28,7 @@ export type WebDeps = {
   readonly origin: string;
   /** Host part of the origin (may include a port) — renders as @handle@host. */
   readonly host: string;
+  readonly sourceUrl?: string | undefined;
   readonly registerFeed: RegisterFeed;
   readonly findFeedByHandle: FindFeedByHandle;
   readonly searchFeeds: SearchFeeds;
@@ -119,7 +121,10 @@ export function createWebRoutes(deps: WebDeps): Hono {
    * page the user has to back out of and retype into. Status codes are
    * unchanged (400 malformed, 422 rejected), so nothing but the body moves.
    */
-  app.post("/register", negotiateLocale, async (c) => {
+  app.post("/register", negotiateLocale, bodyLimit({
+    maxSize: 4096,
+    onError: (c) => c.body(null, 413),
+  }), async (c) => {
     // Rejected POST responses are not addressable; their language links return home.
     const ctx = pageContext(c, deps, "/");
     const form = await c.req.formData();
@@ -147,7 +152,15 @@ export function createWebRoutes(deps: WebDeps): Hono {
       return rejected({ type: "MissingUrl" }, 400);
     }
     const result = await deps.registerFeed.execute(rawUrl);
-    if (!result.ok) return rejected(result.error, 422);
+    if (!result.ok) {
+      if (result.error.type === "RegistrationUnavailable") {
+        if (result.error.retryAfterSeconds !== null) {
+          c.header("Retry-After", String(result.error.retryAfterSeconds));
+        }
+        return rejected(result.error, result.error.retryAfterSeconds === null ? 503 : 429);
+      }
+      return rejected(result.error, 422);
+    }
     const params = new URLSearchParams({
       created: result.value.created ? "1" : "0",
       lang: ctx.locale,

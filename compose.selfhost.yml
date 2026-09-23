@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: rss2pub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: rss2pub
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rss2pub -d rss2pub"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    image: ghcr.io/moreal/rss2pub:${RSS2PUB_VERSION:?set RSS2PUB_VERSION}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      ORIGIN: ${ORIGIN:?set ORIGIN}
+      DATABASE_URL: postgres://rss2pub:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@db:5432/rss2pub
+      BEHIND_PROXY: "true"
+      SOURCE_URL: ${SOURCE_URL:-https://github.com/moreal/rss2.pub}
+      REGISTRATION_ATTEMPTS_PER_HOUR: ${REGISTRATION_ATTEMPTS_PER_HOUR:-60}
+      REGISTRATION_DAILY_LIMIT: ${REGISTRATION_DAILY_LIMIT:-20}
+      REGISTRATION_TOTAL_LIMIT: ${REGISTRATION_TOTAL_LIMIT:-1000}
+    ports:
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  postgres-data:

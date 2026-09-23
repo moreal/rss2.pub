@@ -1,10 +1,11 @@
 # rss2.pub
 
-Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스
+Atom 1.0 또는 RSS 2.0 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스
 계정 하나가 되어, 마스토돈 등에서 팔로우하면 새 글이 게시물로 전달됩니다.
 
-입력은 Atom 전용입니다. 자세한 범위와 RSS 지원을 제공하지 않는 이유는
-[ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)를 참고하세요. 연합 기능은
+입력은 Atom 1.0과 RSS 2.0을 지원합니다(RSS 1.0은 제외).
+[ADR-0012](docs/adr/0012-atom-only-input-and-parser-package.md)와 이를 개정한
+[ADR-0016](docs/adr/0016-rss2-input-support.md)을 참고하세요. 연합 기능은
 [ADR-0013](docs/adr/0013-raw-fedify-over-botkit.md)에 따라 raw Fedify dispatcher와
 first-party PostgreSQL tables로 구현합니다.
 
@@ -51,8 +52,9 @@ yarn atom:conformance:update   # 고정된 W3C Atom manifest 재생성
 docker compose up -d           # PostgreSQL 17
 cp .env.example .env
 yarn dev                       # http://localhost:8000
+yarn db:migrate                # 필요한 경우 DB 마이그레이션만 별도 실행
 
-# Nix 패키지 빌드 (최초 1회 flake.nix의 yarnOfflineCache.hash 채우기 필요)
+# Nix 패키지 빌드
 nix build .#
 ./result/bin/rss2pub
 ```
@@ -66,7 +68,10 @@ git submodule update --init --depth 1 vendor/w3c-feedvalidator
 ## 컨테이너 배포
 
 이미지는 애플리케이션만 포함하며 PostgreSQL은 별도로 필요합니다. 컨테이너 시작 시
-Drizzle 마이그레이션이 자동 적용됩니다.
+Drizzle 마이그레이션이 자동 적용되지만, 운영 업그레이드에는 새 버전의
+`node dist/web/migrate.js`를 앱 시작 전에 별도로 실행하세요. 공개 버전은
+고정된 버전 태그를 사용하고 업그레이드 전 백업을 만드세요. 단일 호스트 예시는
+[자체 호스팅 안내](docs/SELF_HOSTING.md)에 있습니다.
 
 ```sh
 docker build -f Containerfile -t rss2pub:local .
@@ -79,7 +84,18 @@ docker run --rm -p 8000:8000 \
 
 `ORIGIN`은 페디버스에서 접근 가능한 공개 URL이어야 합니다. 리버스 프록시 뒤에서
 운영할 때만 `BEHIND_PROXY=true`를 설정합니다. 플랫폼의 liveness probe에는
-`/healthz`, readiness probe에는 `/readyz`를 사용합니다.
+`/healthz`, readiness probe에는 `/readyz`를 사용합니다. 운영 환경에서 `ORIGIN`은
+필수이며, 수정 버전을 호스팅한다면 `SOURCE_URL`을 배포 버전의 소스 주소로 설정하세요.
+
+## 라이선스와 릴리스
+
+프로젝트 코드는 [GNU AGPLv3 또는 이후 버전](LICENSE)으로 제공됩니다. 포함된
+제3자 패키지와 테스트 corpus에는 각각의 라이선스가 적용됩니다. 첫 공개 버전은
+`v0.1.0`을 예정하며, 이전 개인 배포 데이터의 이전은 지원하지 않습니다.
+
+- [변경 이력](CHANGELOG.md)
+- [릴리스 정책](docs/RELEASING.md)
+- [데이터베이스 마이그레이션 정책](docs/DATABASE_MIGRATIONS.md)
 
 ## 문서
 

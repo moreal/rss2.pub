@@ -2,7 +2,6 @@ name: Publish container image
 
 on:
   push:
-    branches: [main]
     tags: ["v*"]
 
 permissions:
@@ -10,7 +9,13 @@ permissions:
   packages: write
 
 jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   publish:
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,8 +33,7 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/rss2pub
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=sha,format=short
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
             type=ref,event=tag
 
       - uses: docker/build-push-action@v6

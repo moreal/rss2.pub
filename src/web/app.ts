@@ -1,8 +1,8 @@
 import { PostgresKvStore, PostgresMessageQueue } from "@fedify/postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { Hono } from "hono";
 import postgres from "postgres";
+import packageJson from "../../package.json" with { type: "json" };
 import { createFindFeedByHandle } from "../application/find-feed-by-handle.js";
 import { createCommandHandler } from "../application/handle-command.js";
 import { createFollowerTracker } from "../application/follower-tracker.js";
@@ -34,6 +34,8 @@ import { createFedifyStack } from "../infrastructure/federation/fedify-stack.js"
 import { createDrizzleFederationRepository } from "../infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../infrastructure/persistence/drizzle-feed-repository.js";
 import { createDrizzleItemRepository } from "../infrastructure/persistence/drizzle-item-repository.js";
+import { createPostgresRegistrationGate } from "../infrastructure/persistence/postgres-registration-gate.js";
+import { applyMigrations } from "../infrastructure/persistence/migrations.js";
 import {
   createPollScheduler,
   type PollScheduler,
@@ -69,17 +71,28 @@ export async function createApp(config: AppConfig): Promise<App> {
   }
   const sql = postgres(config.databaseUrl, { onnotice: () => {} });
   const db = drizzle(sql);
-  await migrate(db, { migrationsFolder: "drizzle" });
+  await applyMigrations(db);
 
   const feeds = createDrizzleFeedRepository(db);
   const items = createDrizzleItemRepository(db);
   const federationObjects = createDrizzleFederationRepository(db);
-  const fetcher = createFeedFetcher();
-  const faviconResolver = createHtmlFaviconResolver();
+  const fetcher = createFeedFetcher({ allowPrivateAddress: config.allowPrivateAddress });
+  const faviconResolver = createHtmlFaviconResolver({ allowPrivateAddress: config.allowPrivateAddress });
   const clock: Clock = { now: () => new Date() };
   const random: Random = { ratio: () => Math.random() };
 
-  const registerFeed = createRegisterFeed({ feeds, fetcher, clock });
+  const registerFeed = createRegisterFeed({
+    feeds,
+    fetcher,
+    clock,
+    gate: createPostgresRegistrationGate(sql, {
+      attemptsPerHour: config.registrationAttemptsPerHour,
+    }),
+    limits: {
+      daily: config.registrationDailyLimit,
+      total: config.registrationTotalLimit,
+    },
+  });
   const findFeedByHandle = createFindFeedByHandle({ feeds });
   const searchFeeds = createSearchFeeds({ feeds });
   const listPopularFeeds = createListPopularFeeds({ feeds });
@@ -96,7 +109,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     kv,
     queue,
     origin: config.origin,
-    softwareVersion: "0.1.0",
+    softwareVersion: packageJson.version,
     feeds,
     repository: federationObjects,
     followerTracker,
@@ -145,6 +158,7 @@ export async function createApp(config: AppConfig): Promise<App> {
   const web = createWebRoutes({
     origin: config.origin,
     host: config.host,
+    sourceUrl: config.sourceUrl,
     registerFeed,
     findFeedByHandle,
     searchFeeds,
@@ -175,6 +189,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     "/",
     createFederationPages({
       origin: config.origin,
+      sourceUrl: config.sourceUrl,
       feeds,
       federationObjects,
       remoteFollow: remoteFollowResolver,

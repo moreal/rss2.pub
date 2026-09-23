@@ -10,6 +10,7 @@ result
 *.log
 .env
 .env.*
+selfhost.env
 
 # Yarn Berry (non-zero-install)
 .pnp.*

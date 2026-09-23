@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
-import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 import type { Database } from "../../../src/infrastructure/persistence/drizzle-feed-repository.js";
+import { applyMigrations } from "../../../src/infrastructure/persistence/migrations.js";
 
 export type TestDatabase = {
   readonly url: string;
@@ -16,6 +16,7 @@ export type TestDatabase = {
 export async function createTestDatabase(
   baseUrl: string,
   name: string,
+  applySchema = true,
 ): Promise<TestDatabase> {
   if (!/^[a-z_][a-z0-9_]*$/.test(name)) {
     throw new Error(`unsafe test database name: ${name}`);
@@ -30,7 +31,7 @@ export async function createTestDatabase(
 
   const sql = postgres(url.href);
   const db = drizzle(sql);
-  await migrate(db, { migrationsFolder: "drizzle" });
+  if (applySchema) await applyMigrations(db);
 
   return {
     url: url.href,

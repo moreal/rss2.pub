@@ -15,22 +15,22 @@ msgstr ""
 
 #. Announced to screen readers when results load.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:197
+#: src/web/ui/messages.ts:201
 msgid "search.results-count"
 msgstr "{count, plural, one {# fonte corresponde a «{query}»} other {# fontes correspondem a «{query}»}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:231
+#: src/web/ui/messages.ts:235
 msgid "feed.followers"
 msgstr "{count, plural, one {# seguidor} other {# seguidores}}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:137
+#: src/web/ui/messages.ts:141
 msgid "register.result-exists-title"
 msgstr "Já registada"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:281
+#: src/web/ui/messages.ts:285
 msgid "federation.back-to-actor"
 msgstr "Voltar a {name}"
 
@@ -41,17 +41,17 @@ msgid "layout.footer-bot"
 msgstr "Conta do bot: {handle}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:162
+#: src/web/ui/messages.ts:166
 msgid "register.copied"
 msgstr "Copiado"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:158
+#: src/web/ui/messages.ts:162
 msgid "register.copy-button"
 msgstr "Copiar"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:149
+#: src/web/ui/messages.ts:153
 msgid "register.next-copy"
 msgstr "Copia o nome desta conta."
 
@@ -61,17 +61,17 @@ msgid "register.error-feed-unreachable"
 msgstr "Não foi possível ler uma fonte Atom ou RSS 2.0 nesse endereço: {message}"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:277
+#: src/web/ui/messages.ts:281
 msgid "federation.remote-follow-invalid-account"
 msgstr "Introduz uma conta válida no fediverso, como tu@instance.social."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:129
+#: src/web/ui/messages.ts:133
 msgid "register.result-created-title"
 msgstr "Fonte registada"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:125
+#: src/web/ui/messages.ts:129
 msgid "register.result-heading"
 msgstr "Registo de fonte"
 
@@ -81,7 +81,7 @@ msgid "register.url-label"
 msgstr "URL da fonte"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:267
+#: src/web/ui/messages.ts:271
 msgid "federation.remote-follow-button"
 msgstr "Seguir"
 
@@ -97,12 +97,12 @@ msgstr "Segue fontes Atom e RSS 2.0 a partir do fediverso."
 
 #. Label of the remote-follow form on a bridged feed's actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:257
+#: src/web/ui/messages.ts:261
 msgid "federation.remote-follow-label"
 msgstr "Segue a partir da tua conta no fediverso"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:145
+#: src/web/ui/messages.ts:149
 msgid "register.next-heading"
 msgstr "Segue a partir da tua conta no fediverso"
 
@@ -112,7 +112,7 @@ msgid "layout.nav-home"
 msgstr "Início"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:244
+#: src/web/ui/messages.ts:248
 msgid "federation.main-actor-summary"
 msgstr "Transformo fontes Atom e RSS 2.0 em contas que podes seguir. Menciona-me com os comandos register ou search."
 
@@ -129,27 +129,32 @@ msgstr "Falta o URL da fonte."
 
 #. Heading of the popular-feed list on the home and search pages.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:216
+#: src/web/ui/messages.ts:220
 msgid "feed.popular-heading"
 msgstr "Fontes mais seguidas"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:203
+#: src/web/ui/messages.ts:125
+msgid "register.error-unavailable"
+msgstr "Os novos registos estão atualmente limitados. Tente novamente mais tarde."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
 msgid "search.empty-title"
 msgstr "Nenhuma fonte corresponde a «{query}»"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:221
+#: src/web/ui/messages.ts:225
 msgid "feed.popular-empty"
 msgstr "Ainda não há fontes registadas"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:249
+#: src/web/ui/messages.ts:253
 msgid "federation.no-posts-title"
 msgstr "Ainda não há publicações"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:207
+#: src/web/ui/messages.ts:211
 msgid "search.empty-hint"
 msgstr "Só é possível pesquisar fontes que alguém já registou. Experimenta uma palavra mais curta ou regista esta fonte."
 
@@ -159,7 +164,7 @@ msgid "register.error-unsupported-protocol"
 msgstr "Só são suportadas fontes http(s) (recebido: {protocol})."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:166
+#: src/web/ui/messages.ts:170
 msgid "register.open-profile"
 msgstr "Abrir a página da conta"
 
@@ -169,18 +174,18 @@ msgid "register.error-hint"
 msgstr "Abre o endereço num navegador para confirmar que apresenta uma fonte e não uma página Web. Depois, tenta novamente."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:153
+#: src/web/ui/messages.ts:157
 msgid "register.next-follow"
 msgstr "Cola-o na caixa de pesquisa do Mastodon, ou da aplicação que usas, e seleciona Seguir."
 
 #. Fallback title for an untitled Note on an actor page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:235
+#: src/web/ui/messages.ts:239
 msgid "federation.post-fallback"
 msgstr "Publicação"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:253
+#: src/web/ui/messages.ts:257
 msgid "federation.no-posts-body"
 msgstr "As publicações aparecerão aqui depois da próxima verificação da fonte."
 
@@ -196,7 +201,7 @@ msgid "register.heading"
 msgstr "Regista uma fonte"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:212
+#: src/web/ui/messages.ts:216
 msgid "search.empty-action"
 msgstr "Regista uma fonte"
 
@@ -206,7 +211,7 @@ msgid "home.lede"
 msgstr "Regista uma fonte e ela torna-se uma conta no fediverso. Segue essa conta no Mastodon ou noutra aplicação e cada nova publicação aparece na tua cronologia."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:170
+#: src/web/ui/messages.ts:174
 msgid "register.another"
 msgstr "Registar outra fonte"
 
@@ -228,7 +233,7 @@ msgstr "A registar…"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:271
+#: src/web/ui/messages.ts:275
 msgid "federation.remote-follow-title"
 msgstr "Seguir remotamente"
 
@@ -239,7 +244,7 @@ msgstr "O rss2.pub transforma fontes em contas do fediverso que qualquer pessoa 
 
 #. Example queries. Deliberately not a restatement of the field's label.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:182
+#: src/web/ui/messages.ts:186
 msgid "search.placeholder"
 msgstr "rust, meteorologia, example.com"
 
@@ -249,23 +254,23 @@ msgid "layout.nav-search"
 msgstr "Pesquisar"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:174
+#: src/web/ui/messages.ts:178
 msgid "search.heading"
 msgstr "Pesquisar"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:193
+#: src/web/ui/messages.ts:197
 msgid "search.button"
 msgstr "Pesquisar"
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:178
+#: src/web/ui/messages.ts:182
 msgid "search.label"
 msgstr "Pesquisar fontes registadas"
 
 #. Link from the home page's shortened list to the full one on /search.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:225
+#: src/web/ui/messages.ts:229
 msgid "feed.popular-more"
 msgstr "Ver mais fontes"
 
@@ -302,28 +307,28 @@ msgid "register.url-help"
 msgstr "O endereço da própria fonte Atom ou RSS 2.0, não do sítio Web. Muitas vezes termina em /atom, /feed ou .xml."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:141
+#: src/web/ui/messages.ts:145
 msgid "register.result-exists"
 msgstr "Esta fonte já publica através da sua própria conta no fediverso."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:133
+#: src/web/ui/messages.ts:137
 msgid "register.result-created"
 msgstr "Esta fonte publica agora através da sua própria conta no fediverso."
 
 #. Help text under the search field.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:188
+#: src/web/ui/messages.ts:192
 msgid "search.help"
 msgstr "Escreve parte do nome, da descrição ou do endereço de uma fonte."
 
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:240
+#: src/web/ui/messages.ts:244
 msgid "federation.view-original"
 msgstr "Ver original"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
-#: src/web/ui/messages.ts:262
+#: src/web/ui/messages.ts:266
 msgid "federation.remote-follow-placeholder"
 msgstr "tu@instance.social"

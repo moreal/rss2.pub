@@ -1,5 +1,5 @@
 import { parseHTML } from "linkedom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { FindFeedByHandle } from "../../../src/application/find-feed-by-handle.js";
 import type { RegisterFeed } from "../../../src/application/register-feed.js";
 import type {
@@ -60,6 +60,45 @@ async function postRegister(app: ReturnType<typeof webApp>, query = "") {
   form.set("url", "https://example.com/feed.xml");
   return app.request(`/register${query}`, { method: "POST", body: form });
 }
+
+describe("source availability", () => {
+  it("links to the operator's source in the page footer", async () => {
+    const response = await webApp({ sourceUrl: "https://code.example/operator/rss2pub" })
+      .request("https://rss2.test/");
+    expect(await response.text()).toContain('href="https://code.example/operator/rss2pub"');
+  });
+});
+
+describe("registration admission", () => {
+  it("rejects an oversized form before parsing or fetching", async () => {
+    const execute = vi.fn<RegisterFeed["execute"]>();
+    const response = await webApp({ registerFeed: { execute } }).request("/register", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: `url=${"x".repeat(5000)}`,
+    });
+    expect(response.status).toBe(413);
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it("returns a retryable response when the shared registration budget is busy", async () => {
+    const registerFeed: RegisterFeed = {
+      execute: async () => err({ type: "RegistrationUnavailable", retryAfterSeconds: 30 }),
+    };
+    const response = await postRegister(webApp({ registerFeed }));
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("30");
+  });
+
+  it("returns service unavailable when the instance is at capacity", async () => {
+    const registerFeed: RegisterFeed = {
+      execute: async () => err({ type: "RegistrationUnavailable", retryAfterSeconds: null }),
+    };
+    const response = await postRegister(webApp({ registerFeed }));
+    expect(response.status).toBe(503);
+    expect(response.headers.get("retry-after")).toBeNull();
+  });
+});
 
 describe("language negotiation", () => {
   it.each([
