@@ -366,11 +366,15 @@ ${DARK_TOKENS}
     display: flex; flex-wrap: wrap;
     gap: var(--space-1) var(--space-4);
   }
+  .footer-links > span {
+    min-inline-size: 0; max-inline-size: 100%;
+  }
   /* inline-flex with a 1.5rem floor keeps every footer link at the 24px
      minimum target size, which "Source code" — a link with no sentence
      around it to claim the inline exemption — missed by two pixels. */
   .footer-links a {
     display: inline-flex; align-items: center; min-height: 1.5rem;
+    min-inline-size: 0; max-inline-size: 100%; overflow-wrap: anywhere;
     color: var(--text-muted);
   }
   .footer-links a:hover { color: var(--accent-hover); }
