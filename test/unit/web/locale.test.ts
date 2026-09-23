@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_LOCALE,
+  LOCALE_META,
   neutralLocalePath,
   SUPPORTED_LOCALES,
   resolveLocale,
@@ -8,6 +9,33 @@ import {
 } from "../../../src/web/locale.js";
 
 describe("resolveLocale", () => {
+  it.each([
+    ["ja", "ja"],
+    ["ko-KR", "ko"],
+    ["zh-CN", "zh-Hans-CN"],
+    ["zh-Hans", "zh-Hans-CN"],
+    ["zh-Hans-TW", "zh-Hans-CN"],
+    ["zh-TW", "zh-Hant-TW"],
+    ["zh-Hant", "zh-Hant-TW"],
+    ["zh-Hant-CN", "zh-Hant-TW"],
+    ["de-DE", "de"],
+    ["fr-FR", "fr"],
+    ["es-ES", "es"],
+    ["it-IT", "it"],
+    ["nl-NL", "nl"],
+    ["pl-PL", "pl"],
+    ["pt-PT", "pt-PT"],
+  ] as const)("maps %s to %s", (value, expected) => {
+    expect(resolveLocale(value)).toBe(expected);
+  });
+
+  it("provides a stable short label and direction for every locale", () => {
+    for (const locale of SUPPORTED_LOCALES) {
+      expect(LOCALE_META[locale].shortLabel.length).toBeGreaterThan(0);
+      expect(LOCALE_META[locale].direction).toBe("ltr");
+    }
+  });
+
   it.each([...SUPPORTED_LOCALES])(
     "accepts the supported locale %s",
     (locale) => {
@@ -15,11 +43,7 @@ describe("resolveLocale", () => {
     },
   );
 
-  // These are post-negotiation inputs: hono's own detector lowercases and
-  // strips region tags first, so "ko-KR" reaching here means the middleware
-  // did not run. Falling back to the default is the right answer for all of
-  // them — see routes.test.ts for what a real "ko-KR" request resolves to.
-  it.each(["fr", "", "ko-KR", "EN"])(
+  it.each(["", "xx-YY", "und"])(
     "falls back to the default locale for the unnegotiated value %j",
     (value) => {
       expect(resolveLocale(value)).toBe(DEFAULT_LOCALE);

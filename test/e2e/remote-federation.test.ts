@@ -114,12 +114,10 @@ function requestCount(path: string): number {
 }
 
 /**
- * This is the only test that shells out, and it competes with every other e2e
- * file: the project runs them in parallel, each booting its own database and
- * HTTP server, on a 4-core CI runner. The lookup itself takes ~4s idle, but a
- * subprocess fighting seven Node apps for a core is a different measurement —
- * 30s was enough until the suite grew, then 90s was not. Budget for the
- * contention, not for the work.
+ * The CLI lookup runs alongside the other E2E servers. Do not pass -a here:
+ * that option opens a public tunnel for a temporary signing server, making
+ * this local test depend on an external service. Authenticated federation is
+ * covered by the Follow/Accept checks in this suite.
  */
 const FEDIFY_CLI_TIMEOUT_MS = 240_000;
 
@@ -127,7 +125,7 @@ async function fedifyLookup(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
     execFile(
       "yarn",
-      ["exec", "fedify", "lookup", "-a", "-p", "-C", url],
+      ["exec", "fedify", "lookup", "-p", "-C", url],
       { cwd: process.cwd(), timeout: FEDIFY_CLI_TIMEOUT_MS },
       (error, stdout, stderr) => {
         if (error === null) resolve(stdout);
@@ -413,7 +411,7 @@ describe("signed federation round trip", () => {
     authoredCc = authored["cc"];
   });
 
-  it("is inspectable with an authorized fedify CLI lookup", async () => {
+  it("is inspectable with a fedify CLI lookup", async () => {
     const output = await fedifyLookup(authoredObjectUrl);
     const local = output.indexOf(`${base}/ap/actor/${feedHandle}`);
     const alice = output.indexOf(`${remoteBase}/users/alice`);

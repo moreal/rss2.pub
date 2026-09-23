@@ -1,6 +1,7 @@
 import { serve, type ServerType } from "@hono/node-server";
 import { createServer } from "node:net";
 import type { AddressInfo } from "node:net";
+import { parseHTML } from "linkedom";
 import { afterAll, beforeAll, describe, expect, inject, it } from "vitest";
 import { FeedUrl } from "../../src/domain/feed/feed-url.js";
 import { Handle } from "../../src/domain/feed/handle.js";
@@ -287,10 +288,12 @@ describe("federation e2e", () => {
 
   it("serves the web UI with the registered feed", async () => {
     const home = await fetch(base).then((r) => r.text());
-    expect(home).toContain(`@${feedHandle}@${host}`);
+    expect(parseHTML(home).document.querySelector(".feeds")?.textContent)
+      .toContain(`@${feedHandle}@${host}`);
 
     const search = await fetch(`${base}/search?q=E2E`).then((r) => r.text());
-    expect(search).toContain(`@${feedHandle}@${host}`);
+    expect(parseHTML(search).document.querySelector(".feeds")?.textContent)
+      .toContain(`@${feedHandle}@${host}`);
 
     expect((await fetch(`${base}/healthz`)).status).toBe(200);
     expect((await fetch(`${base}/readyz`)).status).toBe(200);

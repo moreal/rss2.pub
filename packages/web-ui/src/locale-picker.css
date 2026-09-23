@@ -1,0 +1,77 @@
+.locale-picker-trigger {
+  inline-size: var(--lang-trigger-width);
+  block-size: var(--tap);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.locale-picker-trigger svg {
+  inline-size: calc(var(--tap) / 2);
+  block-size: calc(var(--tap) / 2);
+  flex: none;
+}
+
+.locale-picker-trigger:focus-visible,
+.locale-picker-panel a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.locale-picker-panel {
+  inline-size: var(--lang-menu-width);
+  max-inline-size: calc(100vw - var(--space-3) * 2);
+  max-block-size: min(var(--lang-menu-height), calc(100dvh - var(--space-3) * 2));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  background: var(--surface);
+}
+
+.locale-picker-title {
+  margin: 0;
+  padding: var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+
+.locale-picker-panel nav {
+  display: grid;
+}
+
+.locale-picker-panel a {
+  min-block-size: var(--tap);
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.locale-picker-panel a[aria-current] {
+  background: var(--surface-2);
+  font-weight: var(--weight-semibold);
+}
+
+@media (hover: hover) {
+  .locale-picker-trigger:hover,
+  .locale-picker-panel a:hover {
+    background: var(--surface-2);
+    color: var(--text);
+  }
+}

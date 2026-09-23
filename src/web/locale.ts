@@ -3,7 +3,20 @@
  * same list as the runtime — adding a locale here is the single edit that
  * drives extraction, compilation, and serving.
  */
-export const SUPPORTED_LOCALES = ["en", "ko"] as const;
+export const SUPPORTED_LOCALES = [
+  "en",
+  "ko",
+  "ja",
+  "zh-Hans-CN",
+  "zh-Hant-TW",
+  "de",
+  "fr",
+  "es",
+  "it",
+  "nl",
+  "pl",
+  "pt-PT",
+] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -12,20 +25,46 @@ export const DEFAULT_LOCALE = "en" satisfies Locale;
 /** Written by the switcher, read by the detector — one name, two sides. */
 export const LOCALE_QUERY_PARAM = "lang";
 
-/** Native-language names, deliberately never translated. */
-export const LOCALE_LABELS: Record<Locale, string> = {
-  en: "English",
-  ko: "한국어",
+/** Native names stay in their own script in every language picker. */
+export const LOCALE_META: Record<
+  Locale,
+  { readonly label: string; readonly shortLabel: string; readonly direction: "ltr" | "rtl" }
+> = {
+  en: { label: "English", shortLabel: "EN", direction: "ltr" },
+  ko: { label: "한국어", shortLabel: "KO", direction: "ltr" },
+  ja: { label: "日本語", shortLabel: "JA", direction: "ltr" },
+  "zh-Hans-CN": { label: "简体中文", shortLabel: "ZH-CN", direction: "ltr" },
+  "zh-Hant-TW": { label: "繁體中文（台灣）", shortLabel: "ZH-TW", direction: "ltr" },
+  de: { label: "Deutsch", shortLabel: "DE", direction: "ltr" },
+  fr: { label: "Français", shortLabel: "FR", direction: "ltr" },
+  es: { label: "Español", shortLabel: "ES", direction: "ltr" },
+  it: { label: "Italiano", shortLabel: "IT", direction: "ltr" },
+  nl: { label: "Nederlands", shortLabel: "NL", direction: "ltr" },
+  pl: { label: "Polski", shortLabel: "PL", direction: "ltr" },
+  "pt-PT": { label: "Português (Portugal)", shortLabel: "PT", direction: "ltr" },
 };
 
-/**
- * Narrows a string `hono/language` has already negotiated against this same
- * list. Unknown input falls back to the default on purpose: content
- * negotiation is *defined* as falling back, and no caller could act on a
- * failure — hence a `Locale`, not a `Result`.
- */
+/** Match a BCP 47 request tag to a catalog without losing Chinese script. */
+export function matchLocale(value: string): Locale | null {
+  const tag = value.trim().replaceAll("_", "-").toLowerCase();
+  const exact = SUPPORTED_LOCALES.find((locale) => locale.toLowerCase() === tag);
+  if (exact !== undefined) return exact;
+  const parts = tag.split("-");
+  const base = parts[0];
+  if (base === "zh") {
+    if (parts.includes("hans")) return "zh-Hans-CN";
+    if (parts.includes("hant")) return "zh-Hant-TW";
+    return parts.some((part) => ["tw", "hk", "mo"].includes(part))
+      ? "zh-Hant-TW"
+      : "zh-Hans-CN";
+  }
+  if (base === "pt") return "pt-PT";
+  return SUPPORTED_LOCALES.find((locale) => locale === base) ?? null;
+}
+
+/** Unknown input falls back to the default; callers always receive a catalog. */
 export function resolveLocale(value: string): Locale {
-  return SUPPORTED_LOCALES.find((locale) => locale === value) ?? DEFAULT_LOCALE;
+  return matchLocale(value) ?? DEFAULT_LOCALE;
 }
 
 // Paths arrive without an origin, so parsing needs a base we then discard.

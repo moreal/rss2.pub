@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { Hono } from "hono";
 import postgres from "postgres";
+import { createFindFeedByHandle } from "../application/find-feed-by-handle.js";
 import { createCommandHandler } from "../application/handle-command.js";
 import { createFollowerTracker } from "../application/follower-tracker.js";
 import {
@@ -42,6 +43,7 @@ import { isErr } from "../shared/result.js";
 import type { AppConfig } from "./config.js";
 import { createFederationPages } from "./federation-pages.js";
 import { createWebRoutes } from "./routes.js";
+import { createWebUiAssetRoutes } from "./ui/solid-assets.js";
 
 export type App = {
   readonly fetch: (request: Request) => Response | Promise<Response>;
@@ -78,6 +80,7 @@ export async function createApp(config: AppConfig): Promise<App> {
   const random: Random = { ratio: () => Math.random() };
 
   const registerFeed = createRegisterFeed({ feeds, fetcher, clock });
+  const findFeedByHandle = createFindFeedByHandle({ feeds });
   const searchFeeds = createSearchFeeds({ feeds });
   const listPopularFeeds = createListPopularFeeds({ feeds });
   const followerTracker = createFollowerTracker({ feeds });
@@ -143,6 +146,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     origin: config.origin,
     host: config.host,
     registerFeed,
+    findFeedByHandle,
     searchFeeds,
     listPopularFeeds,
     ready: async () => {
@@ -156,6 +160,7 @@ export async function createApp(config: AppConfig): Promise<App> {
   });
 
   const app = new Hono();
+  app.route("/", createWebUiAssetRoutes());
   app.route("/", web);
   const federationFetch = (request: Request) => stack.federation.fetch(request, {
     contextData: undefined,

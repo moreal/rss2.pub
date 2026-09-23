@@ -1,0 +1,329 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-24 21:45+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: nl\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. Announced to screen readers when results load.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:197
+msgid "search.results-count"
+msgstr "{count, plural, one {# feed gevonden voor “{query}”} other {# feeds gevonden voor “{query}”}}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:231
+msgid "feed.followers"
+msgstr "{count, plural, one {# volger} other {# volgers}}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:137
+msgid "register.result-exists-title"
+msgstr "Al geregistreerd"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:281
+msgid "federation.back-to-actor"
+msgstr "Terug naar {name}"
+
+#. {handle} renders as a link to the @rss2pub account page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:49
+msgid "layout.footer-bot"
+msgstr "Botaccount: {handle}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:162
+msgid "register.copied"
+msgstr "Gekopieerd"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:158
+msgid "register.copy-button"
+msgstr "Kopiëren"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:149
+msgid "register.next-copy"
+msgstr "Kopieer deze accountnaam."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:121
+msgid "register.error-feed-unreachable"
+msgstr "Kon daar geen Atom- of RSS 2.0-feed lezen: {message}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:277
+msgid "federation.remote-follow-invalid-account"
+msgstr "Voer een geldig fediverse-account in, zoals jij@instance.social."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:129
+msgid "register.result-created-title"
+msgstr "Feed geregistreerd"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:125
+msgid "register.result-heading"
+msgstr "Feed registreren"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:75
+msgid "register.url-label"
+msgstr "Feed-URL"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:267
+msgid "federation.remote-follow-button"
+msgstr "Volgen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:58
+msgid "home.heading"
+msgstr "Volg elke Atom- of RSS 2.0-feed vanuit het fediverse"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:18
+msgid "layout.meta-description"
+msgstr "Volg Atom- en RSS 2.0-feeds vanuit het fediverse."
+
+#. Label of the remote-follow form on a bridged feed's actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:257
+msgid "federation.remote-follow-label"
+msgstr "Volgen vanuit je fediverse-account"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:145
+msgid "register.next-heading"
+msgstr "Volg de feed vanuit je fediverse-account"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:37
+msgid "layout.nav-home"
+msgstr "Home"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:244
+msgid "federation.main-actor-summary"
+msgstr "Ik maak van Atom- en RSS 2.0-feeds accounts die je kunt volgen. Vermeld me met de opdrachten register of search."
+
+#. Accessible label of the language switcher.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:22
+msgid "layout.language-label"
+msgstr "Taal"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:109
+msgid "register.error-missing-url"
+msgstr "Feed-URL ontbreekt."
+
+#. Heading of the popular-feed list on the home and search pages.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:216
+msgid "feed.popular-heading"
+msgstr "Meest gevolgde feeds"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:203
+msgid "search.empty-title"
+msgstr "Geen feeds gevonden voor “{query}”"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:221
+msgid "feed.popular-empty"
+msgstr "Nog geen feeds geregistreerd"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:249
+msgid "federation.no-posts-title"
+msgstr "Nog geen berichten"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
+msgid "search.empty-hint"
+msgstr "Je kunt alleen zoeken naar feeds die al zijn geregistreerd. Probeer een korter zoekwoord of registreer de feed zelf."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:117
+msgid "register.error-unsupported-protocol"
+msgstr "Alleen feeds met http(s) worden ondersteund (ontvangen: {protocol})."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:166
+msgid "register.open-profile"
+msgstr "Accountpagina openen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:104
+msgid "register.error-hint"
+msgstr "Open het adres in een browser en controleer of het een feed oplevert in plaats van een webpagina. Probeer het daarna opnieuw."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:153
+msgid "register.next-follow"
+msgstr "Plak de naam in het zoekveld van Mastodon — of de app die je gebruikt — en klik op Volgen."
+
+#. Fallback title for an untitled Note on an actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:235
+msgid "federation.post-fallback"
+msgstr "Bericht"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:253
+msgid "federation.no-posts-body"
+msgstr "Na de volgende controle van de feed verschijnen hier berichten."
+
+#. {handle} renders as the @rss2pub@host chip; {command} renders as the `register <url>` chip.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:94
+msgid "register.bot-alt"
+msgstr "Liever via het fediverse? Vermeld {handle} met {command}."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:71
+msgid "register.heading"
+msgstr "Registreer een feed"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:212
+msgid "search.empty-action"
+msgstr "Registreer een feed"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:62
+msgid "home.lede"
+msgstr "Registreer een feed en deze krijgt een fediverse-account. Volg dat account vanuit Mastodon of een andere app en elk nieuw bericht verschijnt in je tijdlijn."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:170
+msgid "register.another"
+msgstr "Nog een feed registreren"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:84
+msgid "register.button"
+msgstr "Feed registreren"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:67
+msgid "home.popular-empty-hint"
+msgstr "Registreer de eerste feed met het formulier hierboven."
+
+#. Replaces the submit button's label while the feed is being fetched.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:88
+msgid "register.pending"
+msgstr "Bezig met registreren…"
+
+#. Heading and page title of the remote-follow validation-error page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:271
+msgid "federation.remote-follow-title"
+msgstr "Op afstand volgen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:45
+msgid "layout.footer-summary"
+msgstr "rss2.pub maakt van feeds fediverse-accounts die iedereen kan volgen."
+
+#. Example queries. Deliberately not a restatement of the field's label.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:182
+msgid "search.placeholder"
+msgstr "rust, weer, example.com"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:41
+msgid "layout.nav-search"
+msgstr "Zoeken"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:174
+msgid "search.heading"
+msgstr "Zoeken"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:193
+msgid "search.button"
+msgstr "Zoeken"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:178
+msgid "search.label"
+msgstr "Geregistreerde feeds doorzoeken"
+
+#. Link from the home page's shortened list to the full one on /search.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:225
+msgid "feed.popular-more"
+msgstr "Meer feeds bekijken"
+
+#. Accessible label of the primary navigation.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:32
+msgid "layout.nav-label"
+msgstr "Site"
+
+#. First tab stop on every page; visible only while focused.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:27
+msgid "layout.skip-link"
+msgstr "Naar hoofdinhoud springen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:54
+msgid "layout.footer-source"
+msgstr "Broncode"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:113
+msgid "register.error-not-a-url"
+msgstr "Dit lijkt geen URL: {url}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:100
+msgid "register.error-heading"
+msgstr "Deze feed kon niet worden geregistreerd"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:79
+msgid "register.url-help"
+msgstr "Het adres van de Atom- of RSS 2.0-feed zelf, niet van de website. Het eindigt vaak op /atom, /feed of .xml."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:141
+msgid "register.result-exists"
+msgstr "Deze feed publiceert al via een eigen fediverse-account."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:133
+msgid "register.result-created"
+msgstr "Deze feed publiceert nu via een eigen fediverse-account."
+
+#. Help text under the search field.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:188
+msgid "search.help"
+msgstr "Typ een deel van de naam, beschrijving of het adres van een feed."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:240
+msgid "federation.view-original"
+msgstr "Origineel bekijken"
+
+#. Example account shown as the remote-follow input's placeholder.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:262
+msgid "federation.remote-follow-placeholder"
+msgstr "jij@instance.social"

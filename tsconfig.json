@@ -20,5 +20,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "test", "vitest.config.ts", "lingui.config.ts"]
+  "include": ["src", "test", "vitest.config.ts", "lingui.config.ts"],
+  "exclude": ["test/unit/web-ui"]
 }

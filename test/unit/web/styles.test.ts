@@ -128,6 +128,11 @@ describe("design tokens", () => {
 });
 
 describe("stylesheet integrity", () => {
+  it("gives the mobile header two fixed rows instead of content-driven wrapping", () => {
+    expect(STYLE).toMatch(/@media \(max-width: 34rem\) \{\s*\.site-inner \{[^}]*display: grid;[^}]*grid-template-areas: "brand lang" "nav nav"/);
+    expect(STYLE).toMatch(/nav\.site-nav \{[^}]*grid-area: nav;[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  });
+
   /**
    * STYLE is one template literal emitted through raw(). A stray backtick
    * terminates it early, which is a build error rather than a test failure —

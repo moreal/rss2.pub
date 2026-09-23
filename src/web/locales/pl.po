@@ -1,0 +1,329 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-24 21:45+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: pl\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. Announced to screen readers when results load.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:197
+msgid "search.results-count"
+msgstr "{count, plural, one {# kanał pasuje do „{query}”} few {# kanały pasują do „{query}”} many {# kanałów pasuje do „{query}”} other {# kanału pasuje do „{query}”}}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:231
+msgid "feed.followers"
+msgstr "{count, plural, one {# obserwujący} few {# obserwujących} many {# obserwujących} other {# obserwującego}}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:137
+msgid "register.result-exists-title"
+msgstr "Już zarejestrowano"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:281
+msgid "federation.back-to-actor"
+msgstr "Wróć do {name}"
+
+#. {handle} renders as a link to the @rss2pub account page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:49
+msgid "layout.footer-bot"
+msgstr "Konto bota: {handle}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:162
+msgid "register.copied"
+msgstr "Skopiowano"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:158
+msgid "register.copy-button"
+msgstr "Kopiuj"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:149
+msgid "register.next-copy"
+msgstr "Skopiuj nazwę tego konta."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:121
+msgid "register.error-feed-unreachable"
+msgstr "Nie można odczytać kanału Atom ani RSS 2.0 pod tym adresem: {message}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:277
+msgid "federation.remote-follow-invalid-account"
+msgstr "Wpisz poprawne konto w fediwersum, np. ty@instance.social."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:129
+msgid "register.result-created-title"
+msgstr "Kanał zarejestrowany"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:125
+msgid "register.result-heading"
+msgstr "Rejestracja kanału"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:75
+msgid "register.url-label"
+msgstr "Adres URL kanału"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:267
+msgid "federation.remote-follow-button"
+msgstr "Obserwuj"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:58
+msgid "home.heading"
+msgstr "Obserwuj dowolny kanał Atom lub RSS 2.0 z fediwersum"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:18
+msgid "layout.meta-description"
+msgstr "Obserwuj kanały Atom i RSS 2.0 z fediwersum."
+
+#. Label of the remote-follow form on a bridged feed's actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:257
+msgid "federation.remote-follow-label"
+msgstr "Obserwuj ze swojego konta w fediwersum"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:145
+msgid "register.next-heading"
+msgstr "Obserwuj ze swojego konta w fediwersum"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:37
+msgid "layout.nav-home"
+msgstr "Strona główna"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:244
+msgid "federation.main-actor-summary"
+msgstr "Zmieniam kanały Atom i RSS 2.0 w konta, które można obserwować. Wspomnij o mnie, używając poleceń register lub search."
+
+#. Accessible label of the language switcher.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:22
+msgid "layout.language-label"
+msgstr "Język"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:109
+msgid "register.error-missing-url"
+msgstr "Brak adresu URL kanału."
+
+#. Heading of the popular-feed list on the home and search pages.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:216
+msgid "feed.popular-heading"
+msgstr "Najczęściej obserwowane kanały"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:203
+msgid "search.empty-title"
+msgstr "Brak kanałów pasujących do „{query}”"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:221
+msgid "feed.popular-empty"
+msgstr "Nie zarejestrowano jeszcze żadnego kanału"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:249
+msgid "federation.no-posts-title"
+msgstr "Nie ma jeszcze wpisów"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
+msgid "search.empty-hint"
+msgstr "Można wyszukiwać tylko kanały, które ktoś już zarejestrował. Spróbuj krótszego słowa kluczowego lub zarejestruj ten kanał."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:117
+msgid "register.error-unsupported-protocol"
+msgstr "Obsługiwane są tylko kanały http(s) (otrzymano: {protocol})."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:166
+msgid "register.open-profile"
+msgstr "Otwórz stronę konta"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:104
+msgid "register.error-hint"
+msgstr "Otwórz adres w przeglądarce i sprawdź, czy prowadzi do kanału, a nie do strony internetowej. Następnie spróbuj ponownie."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:153
+msgid "register.next-follow"
+msgstr "Wklej nazwę w pole wyszukiwania Mastodona lub używanej aplikacji i wybierz Obserwuj."
+
+#. Fallback title for an untitled Note on an actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:235
+msgid "federation.post-fallback"
+msgstr "Wpis"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:253
+msgid "federation.no-posts-body"
+msgstr "Wpisy pojawią się tutaj po następnym sprawdzeniu kanału."
+
+#. {handle} renders as the @rss2pub@host chip; {command} renders as the `register <url>` chip.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:94
+msgid "register.bot-alt"
+msgstr "Wolisz fediwersum? Wspomnij {handle}, używając {command}."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:71
+msgid "register.heading"
+msgstr "Zarejestruj kanał"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:212
+msgid "search.empty-action"
+msgstr "Zarejestruj kanał"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:62
+msgid "home.lede"
+msgstr "Zarejestruj kanał, a stanie się kontem w fediwersum. Obserwuj je z Mastodona lub innej aplikacji, aby każdy nowy wpis trafiał na Twoją oś czasu."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:170
+msgid "register.another"
+msgstr "Zarejestruj kolejny kanał"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:84
+msgid "register.button"
+msgstr "Zarejestruj kanał"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:67
+msgid "home.popular-empty-hint"
+msgstr "Zarejestruj pierwszy kanał za pomocą formularza powyżej."
+
+#. Replaces the submit button's label while the feed is being fetched.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:88
+msgid "register.pending"
+msgstr "Rejestrowanie…"
+
+#. Heading and page title of the remote-follow validation-error page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:271
+msgid "federation.remote-follow-title"
+msgstr "Obserwowanie z innego serwera"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:45
+msgid "layout.footer-summary"
+msgstr "rss2.pub zmienia kanały w konta w fediwersum, które każdy może obserwować."
+
+#. Example queries. Deliberately not a restatement of the field's label.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:182
+msgid "search.placeholder"
+msgstr "rust, pogoda, example.com"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:41
+msgid "layout.nav-search"
+msgstr "Szukaj"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:174
+msgid "search.heading"
+msgstr "Szukaj"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:193
+msgid "search.button"
+msgstr "Szukaj"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:178
+msgid "search.label"
+msgstr "Szukaj zarejestrowanych kanałów"
+
+#. Link from the home page's shortened list to the full one on /search.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:225
+msgid "feed.popular-more"
+msgstr "Zobacz więcej kanałów"
+
+#. Accessible label of the primary navigation.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:32
+msgid "layout.nav-label"
+msgstr "Witryna"
+
+#. First tab stop on every page; visible only while focused.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:27
+msgid "layout.skip-link"
+msgstr "Przejdź do treści głównej"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:54
+msgid "layout.footer-source"
+msgstr "Kod źródłowy"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:113
+msgid "register.error-not-a-url"
+msgstr "To nie wygląda na adres URL: {url}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:100
+msgid "register.error-heading"
+msgstr "Nie udało się zarejestrować tego kanału"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:79
+msgid "register.url-help"
+msgstr "Podaj adres samego kanału Atom lub RSS 2.0, a nie witryny. Często kończy się na /atom, /feed lub .xml."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:141
+msgid "register.result-exists"
+msgstr "Ten kanał już publikuje wpisy jako osobne konto w fediwersum."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:133
+msgid "register.result-created"
+msgstr "Ten kanał publikuje teraz wpisy jako osobne konto w fediwersum."
+
+#. Help text under the search field.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:188
+msgid "search.help"
+msgstr "Wpisz część nazwy, opisu lub adresu kanału."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:240
+msgid "federation.view-original"
+msgstr "Zobacz oryginał"
+
+#. Example account shown as the remote-follow input's placeholder.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:262
+msgid "federation.remote-follow-placeholder"
+msgstr "ty@instance.social"

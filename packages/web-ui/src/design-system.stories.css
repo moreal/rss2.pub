@@ -1,0 +1,34 @@
+/* Storybook documentation uses the product's tokens, never a second palette. */
+.ds-guide { width: 100%; max-width: calc(var(--container) + var(--container) / 2); margin-inline: auto; padding: var(--space-5) 0; display: grid; gap: var(--space-5); }
+.ds-intro { display: grid; gap: var(--space-4); padding-block: var(--space-5); }
+.ds-intro > p { max-width: var(--container); color: var(--text-muted); }
+.ds-eyebrow { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+.ds-guide h2 { font-size: var(--text-xl); }
+.ds-guide code { font-family: var(--font-mono); font-size: var(--text-sm); overflow-wrap: anywhere; }
+.ds-links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
+.ds-links a { display: inline-flex; align-items: center; min-height: var(--tap); }
+.ds-swatches, .ds-type-list, .ds-space-list, .ds-radii, .ds-inventory { list-style: none; }
+.ds-swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--lang-menu-width)), 1fr)); gap: var(--space-4); }
+.ds-swatch { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.ds-swatch-chip { width: var(--tap); height: var(--tap); flex: none; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); }
+.ds-swatch p, .ds-inventory p, .ds-source { font-size: var(--text-sm); color: var(--text-muted); }
+.ds-pairs, .ds-radii { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.ds-pairs p, .ds-radii li { padding: var(--space-3); border-radius: var(--radius-sm); }
+.ds-accent-pair { background: var(--accent); color: var(--on-accent); }
+.ds-success-pair { background: var(--success-bg); color: var(--success); }
+.ds-danger-pair { background: var(--danger-bg); color: var(--danger); }
+.ds-type-list { display: grid; gap: var(--space-4); }
+.ds-type-list li { display: grid; gap: var(--space-1); border-bottom: 1px solid var(--border); padding-bottom: var(--space-4); }
+.ds-type-list code { color: var(--text-muted); }
+.ds-type-list p { overflow-wrap: anywhere; }
+.ds-mono { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.ds-space-list { display: grid; gap: var(--space-2); }
+.ds-space-list li { display: flex; align-items: center; gap: var(--space-4); }
+.ds-space-list span { height: var(--space-3); background: var(--accent); border-radius: var(--radius-xs); }
+.ds-radii li { border: 1px solid var(--border-strong); background: var(--surface-2); }
+.ds-example { display: grid; gap: var(--space-5); }
+.ds-locale-example { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); }
+.ds-inventory { display: grid; gap: var(--space-4); border-top: 1px solid var(--border); padding-top: var(--space-4); }
+.ds-inventory a { gap: var(--space-1); display: inline-flex; align-items: center; min-height: var(--tap); font-weight: var(--weight-semibold); }
+.ds-checklist { padding-left: var(--space-5); display: grid; gap: var(--space-2); }
+.ds-guide section { scroll-margin-top: var(--space-4); }

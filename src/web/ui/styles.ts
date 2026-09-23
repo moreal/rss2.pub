@@ -17,10 +17,7 @@
  * `&` in text children, which would silently corrupt quoted font names and
  * child selectors.
  */
-export const STYLE = `
-  :root {
-    color-scheme: light dark;
-
+export const LIGHT_TOKENS = `
     /* Spacing — one 4px-based scale. Gaps express relatedness: --space-2
        inside a control, --space-4 between fields, --space-6 between sections. */
     --space-1: 0.25rem;
@@ -96,15 +93,17 @@ export const STYLE = `
     /* One reading column for the whole product, and one minimum tap size. */
     --container: 46rem;
     --tap: 2.75rem;
+    --lang-trigger-width: 6rem;
+    --lang-menu-width: 16rem;
+    --lang-menu-height: 24rem;
 
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     --dur-fast: 120ms;
     --dur-base: 200ms;
     --stagger: 100ms;
-  }
+`;
 
-  @media (prefers-color-scheme: dark) {
-    :root {
+export const DARK_TOKENS = `
       --bg: #0b0b0e;
       --surface: #141418;
       --surface-2: #1d1d22;
@@ -128,6 +127,17 @@ export const STYLE = `
       --on-success: #0b0b0e;
       --focus: #f0f0f3;
       --image-outline: oklch(1 0 0 / 0.1);
+`;
+
+export const STYLE = `
+  :root {
+    color-scheme: light dark;
+${LIGHT_TOKENS}
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+${DARK_TOKENS}
     }
   }
 
@@ -193,7 +203,7 @@ export const STYLE = `
   /* Keyboard users land here first; it stays off-screen until focused. */
   .skip {
     position: absolute; z-index: 20;
-    top: var(--space-2); left: var(--space-2);
+    inset-block-start: var(--space-2); inset-inline-start: var(--space-2);
     transform: translateY(-250%);
     padding: var(--space-2) var(--space-3);
     background: var(--surface); color: var(--text);
@@ -210,8 +220,12 @@ export const STYLE = `
     width: 100%;
     max-width: var(--container);
     margin-inline: auto;
-    padding-left: max(var(--space-4), env(safe-area-inset-left));
-    padding-right: max(var(--space-4), env(safe-area-inset-right));
+    padding-inline-start: max(var(--space-4), env(safe-area-inset-left));
+    padding-inline-end: max(var(--space-4), env(safe-area-inset-right));
+  }
+  :root[dir="rtl"] .shell {
+    padding-inline-start: max(var(--space-4), env(safe-area-inset-right));
+    padding-inline-end: max(var(--space-4), env(safe-area-inset-left));
   }
 
   header.site {
@@ -226,7 +240,6 @@ export const STYLE = `
     flex-wrap: wrap;
     padding-block: var(--space-2);
   }
-
   .brand {
     display: inline-flex; align-items: center; gap: var(--space-2);
     min-height: var(--tap);
@@ -238,40 +251,101 @@ export const STYLE = `
   .brand:hover .brand-name { text-decoration: underline; }
   .brand-mark { width: 1.25rem; height: 1.25rem; color: var(--brand); flex: none; }
 
-  nav.site-nav, nav.lang { display: flex; align-items: center; gap: var(--space-1); }
+  nav.site-nav { display: flex; align-items: center; gap: var(--space-1); }
 
-  nav.site-nav a, nav.lang a, nav.lang span {
+  nav.site-nav a {
     display: inline-flex; align-items: center;
     min-height: var(--tap); padding-inline: var(--space-3);
     border-radius: var(--radius-sm);
     font-size: var(--text-sm);
     text-decoration: none;
   }
-  nav.site-nav a, nav.lang a { color: var(--text-muted); }
-  nav.site-nav a:hover, nav.lang a:hover {
+  nav.site-nav a { color: var(--text-muted); }
+  nav.site-nav a:hover {
     color: var(--text); background: var(--surface-2);
   }
   /* Current page marked by weight and fill, not by colour alone. */
-  nav.site-nav a[aria-current], nav.lang [aria-current] {
+  nav.site-nav a[aria-current] {
     color: var(--text); background: var(--surface-2);
     font-weight: var(--weight-semibold);
   }
-  /* Two clusters, not one row of six equivalent chips: where you can go sits
-     with the brand at the start of the line, and the setting that changes how
-     the page reads is pushed to the far end. The distance is the separator —
-     a rule between them spent more ink saying the same thing, and floated
-     free of anything it divided as soon as the header wrapped. Wrapped, this
-     margin is what still holds the language links against the right edge
-     instead of stranding them under the brand. */
-  nav.lang { margin-inline-start: auto; }
-  nav.lang a, nav.lang span {
-    min-width: var(--tap); padding-inline: var(--space-2);
-    justify-content: center;
+  /* The native trigger occupies the same box as the hydrated picker. It stays
+     usable if the client bundle fails and is hidden only after hydration. */
+  nav.lang { margin-inline-start: auto; flex: none; }
+  nav.lang > #picker, nav.lang > .lang-picker {
+    inline-size: var(--lang-trigger-width);
+    block-size: var(--tap);
+  }
+  .lang-picker { position: relative; }
+  .lang-picker summary {
+    display: flex; align-items: center; justify-content: center;
+    gap: var(--space-1);
+    inline-size: var(--lang-trigger-width); block-size: var(--tap);
+    padding-inline: var(--space-2);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    cursor: pointer; list-style: none; user-select: none;
+  }
+  .lang-picker summary::-webkit-details-marker { display: none; }
+  .lang-picker summary:hover, .lang-picker[open] summary {
+    color: var(--text); background: var(--surface-2);
+  }
+  .lang-caret { line-height: 1; }
+  .lang-picker[open] .lang-caret { transform: rotate(180deg); }
+  .lang-options {
+    position: absolute; z-index: 10;
+    inset-block-start: calc(100% + var(--space-1)); inset-inline-end: 0;
+    display: grid; gap: var(--space-1);
+    width: min(var(--lang-menu-width), calc(100vw - 2 * var(--space-4)));
+    max-height: min(60vh, var(--lang-menu-height)); overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-2);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+  }
+  .lang-picker:not([open]) .lang-options { display: none; }
+  .lang-options a, .lang-options span {
+    display: flex; align-items: center;
+    min-height: var(--tap); padding-inline: var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+  .lang-options a:hover, .lang-options a:focus-visible {
+    color: var(--text); background: var(--surface-2);
+  }
+  .lang-options [aria-current] {
+    color: var(--text); background: var(--surface-2);
+    font-weight: var(--weight-semibold);
+  }
+  @media (max-width: 34rem) {
+    .site-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: "brand lang" "nav nav";
+      gap: var(--space-1) var(--space-2);
+    }
+    .brand { grid-area: brand; }
+    nav.lang { grid-area: lang; margin-inline-start: 0; }
+    nav.site-nav {
+      grid-area: nav;
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    nav.site-nav a {
+      display: block; height: var(--tap); line-height: var(--tap);
+      min-width: 0; overflow: hidden; text-overflow: ellipsis;
+      white-space: nowrap; text-align: center;
+    }
   }
 
   main.shell {
     flex: 1;
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     align-content: start;
     gap: var(--space-6);
     padding-top: var(--space-6);
@@ -334,6 +408,7 @@ export const STYLE = `
 
   .panel {
     display: grid; gap: var(--space-4);
+    grid-template-columns: minmax(0, 1fr);
     padding: var(--space-5);
     background: var(--surface);
     border: 1px solid var(--border);
@@ -348,7 +423,7 @@ export const STYLE = `
 
   /* ---------- forms ---------- */
 
-  .field { display: grid; gap: var(--space-2); }
+  .field { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
   .field-label {
     font-size: var(--text-sm); font-weight: var(--weight-medium);
     color: var(--text);
@@ -429,13 +504,16 @@ export const STYLE = `
 
   .form-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
   @media (max-width: 30rem) {
-    .form-actions .btn { width: 100%; }
+    .form-actions .btn {
+      width: 100%; white-space: normal; overflow-wrap: anywhere;
+      text-align: center;
+    }
   }
 
   /* Compact search sits beside a heading; it must never crush its own
      placeholder, so it keeps a floor of 13rem, and its icon button stays on
      the input's row at every width. */
-  form.search-compact { flex: 1 1 13rem; max-width: 20rem; flex-wrap: nowrap; }
+  form.search-compact { flex: 1 1 13rem; min-width: 0; max-width: 20rem; flex-wrap: nowrap; }
   @media (max-width: 34rem) {
     form.search-compact { max-width: none; flex-basis: 100%; }
   }
@@ -720,9 +798,13 @@ export const STYLE = `
     padding: var(--space-2) var(--space-3);
     background: var(--surface); border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
+    white-space: normal; overflow: visible; text-overflow: clip;
     overflow-wrap: anywhere;
   }
-  .copy-btn { flex: none; }
+  .copy-btn {
+    flex: none; max-width: 100%;
+    white-space: normal; overflow-wrap: anywhere; text-align: center;
+  }
   .copy-icons {
     position: relative; display: inline-grid;
     width: 1rem; height: 1rem; flex: none;

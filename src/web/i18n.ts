@@ -1,7 +1,17 @@
 import { type I18n, type MessageDescriptor, setupI18n } from "@lingui/core";
 import type { Locale } from "./locale.js";
+import { messages as de } from "./locales/de.js";
 import { messages as en } from "./locales/en.js";
+import { messages as es } from "./locales/es.js";
+import { messages as fr } from "./locales/fr.js";
+import { messages as it } from "./locales/it.js";
+import { messages as ja } from "./locales/ja.js";
 import { messages as ko } from "./locales/ko.js";
+import { messages as nl } from "./locales/nl.js";
+import { messages as pl } from "./locales/pl.js";
+import { messages as ptPT } from "./locales/pt-PT.js";
+import { messages as zhHansCN } from "./locales/zh-Hans-CN.js";
+import { messages as zhHantTW } from "./locales/zh-Hant-TW.js";
 
 // One instance per locale, built at startup and shared across requests. Safe
 // because nothing calls activate()/load() afterwards — treat as immutable.
@@ -9,6 +19,16 @@ import { messages as ko } from "./locales/ko.js";
 const INSTANCES: Record<Locale, I18n> = {
   en: setupI18n({ locale: "en", messages: { en } }),
   ko: setupI18n({ locale: "ko", messages: { ko } }),
+  ja: setupI18n({ locale: "ja", messages: { ja } }),
+  "zh-Hans-CN": setupI18n({ locale: "zh-Hans-CN", messages: { "zh-Hans-CN": zhHansCN } }),
+  "zh-Hant-TW": setupI18n({ locale: "zh-Hant-TW", messages: { "zh-Hant-TW": zhHantTW } }),
+  de: setupI18n({ locale: "de", messages: { de } }),
+  fr: setupI18n({ locale: "fr", messages: { fr } }),
+  es: setupI18n({ locale: "es", messages: { es } }),
+  it: setupI18n({ locale: "it", messages: { it } }),
+  nl: setupI18n({ locale: "nl", messages: { nl } }),
+  pl: setupI18n({ locale: "pl", messages: { pl } }),
+  "pt-PT": setupI18n({ locale: "pt-PT", messages: { "pt-PT": ptPT } }),
 };
 
 export function i18nFor(locale: Locale): I18n {
@@ -58,7 +78,7 @@ const SLOT_MARKER = "\u0000";
  * them here rather than splitting the sentence across several messages.
  */
 export function translateWithSlots<T>(
-  i18n: I18n,
+  translator: I18n,
   message: MessageDescriptor,
   slots: Record<string, T>,
   values: Record<string, unknown> = {},
@@ -70,7 +90,7 @@ export function translateWithSlots<T>(
       `${SLOT_MARKER}${index}${SLOT_MARKER}`,
     ]),
   );
-  return i18n
+  return translator
     ._({ ...message, values: { ...values, ...markers } })
     .split(SLOT_MARKER)
     .map((part, index) =>

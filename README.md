@@ -39,7 +39,12 @@ lookup 실패, 비-Actor, ID 없는 객체는 게시를 막지 않고 생략합�
 nix develop            # Node 24 + Yarn Berry + psql (direnv 사용 시 자동)
 # Nix가 없다면: mise가 Node 24를 제공(mise.toml), 최초 1회 `corepack enable`
 yarn install --immutable
-yarn typecheck && yarn test    # e2e는 Docker 필요(testcontainers)
+yarn typecheck && yarn lint:solid && yarn test  # e2e는 Docker 필요(testcontainers)
+yarn playwright install chromium  # UI 테스트용 브라우저 최초 설치
+yarn test:ui                    # Playwright 브라우저 UI 테스트
+yarn storybook                  # 컴포넌트 개발 화면 (http://localhost:6006)
+yarn storybook:build            # Storybook 정적 빌드
+yarn lint:solid                 # Solid 2 정적 검사 (Oxlint + Solid 규칙)
 yarn atom:conformance:update   # 고정된 W3C Atom manifest 재생성
 
 # 로컬 실행

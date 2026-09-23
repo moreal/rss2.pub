@@ -76,7 +76,7 @@
             missingHashes = ./nix/missing-hashes.json;
             yarnOfflineCache = yarn.fetchYarnBerryDeps {
               inherit (finalAttrs) src missingHashes;
-              hash = "sha256-raKUoS9D1PCc6Ac63h9LARawG7wy8UzaLhg0S5RG6Lc=";
+              hash = "sha256-yQiuVWCmBfrR96yq9lY20AGkCuz2QovsTrnP1sbJDfw=";
             };
 
             nativeBuildInputs = [
@@ -85,6 +85,11 @@
               yarn.yarnBerryConfigHook
               pkgs.makeWrapper
             ];
+
+            # node_modules is copied into the output verbatim. The default
+            # fixup scans and strips its many bundled executables, which is
+            # slow and unnecessary for this JavaScript package.
+            dontStrip = true;
 
             buildPhase = ''
               runHook preBuild

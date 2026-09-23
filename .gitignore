@@ -1,6 +1,9 @@
 node_modules/
 dist/
 coverage/
+test-results/
+playwright-report/
+storybook-static/
 .direnv/
 .worktrees/
 result

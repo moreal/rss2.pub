@@ -28,6 +28,9 @@ jobs:
       - name: Typecheck
         run: nix develop --command yarn typecheck
 
+      - name: Solid lint
+        run: nix develop --command yarn lint:solid
+
       # The unit tests catch a stale *compiled* catalog, but only re-running
       # extraction proves the .po files still match the descriptor table.
       - name: Message catalogs are up to date
@@ -42,3 +45,12 @@ jobs:
 
       - name: E2E tests
         run: nix develop --command yarn test:e2e
+
+      - name: Install Playwright Chromium
+        run: nix develop --command yarn playwright install --with-deps chromium
+
+      - name: UI E2E tests
+        run: nix develop --command yarn test:ui
+
+      - name: Build Storybook
+        run: nix develop --command yarn storybook:build

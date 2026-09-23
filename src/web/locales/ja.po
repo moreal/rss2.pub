@@ -1,0 +1,329 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-08-24 21:45+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. Announced to screen readers when results load.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:197
+msgid "search.results-count"
+msgstr "{count, plural, other {「{query}」に一致するフィードが#件あります}}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:231
+msgid "feed.followers"
+msgstr "{count, plural, other {フォロワー#人}}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:137
+msgid "register.result-exists-title"
+msgstr "登録済みのフィードです"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:281
+msgid "federation.back-to-actor"
+msgstr "{name}に戻る"
+
+#. {handle} renders as a link to the @rss2pub account page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:49
+msgid "layout.footer-bot"
+msgstr "ボットアカウント: {handle}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:162
+msgid "register.copied"
+msgstr "コピーしました"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:158
+msgid "register.copy-button"
+msgstr "コピー"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:149
+msgid "register.next-copy"
+msgstr "このアカウント名をコピーしてください。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:121
+msgid "register.error-feed-unreachable"
+msgstr "その場所からAtomまたはRSS 2.0フィードを読み込めませんでした: {message}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:277
+msgid "federation.remote-follow-invalid-account"
+msgstr "有効なFediverseアカウントを入力してください（例: you@instance.social）。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:129
+msgid "register.result-created-title"
+msgstr "フィードを登録しました"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:125
+msgid "register.result-heading"
+msgstr "フィードの登録"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:75
+msgid "register.url-label"
+msgstr "フィードのURL"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:267
+msgid "federation.remote-follow-button"
+msgstr "フォロー"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:58
+msgid "home.heading"
+msgstr "FediverseからAtomやRSS 2.0のフィードをフォロー"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:18
+msgid "layout.meta-description"
+msgstr "FediverseからAtomやRSS 2.0のフィードをフォローできます。"
+
+#. Label of the remote-follow form on a bridged feed's actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:257
+msgid "federation.remote-follow-label"
+msgstr "Fediverseアカウントからフォロー"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:145
+msgid "register.next-heading"
+msgstr "Fediverseアカウントからフォローする"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:37
+msgid "layout.nav-home"
+msgstr "ホーム"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:244
+msgid "federation.main-actor-summary"
+msgstr "AtomやRSS 2.0のフィードをフォロー可能なアカウントに変換します。registerまたはsearchコマンドをメンションで送ってください。"
+
+#. Accessible label of the language switcher.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:22
+msgid "layout.language-label"
+msgstr "言語"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:109
+msgid "register.error-missing-url"
+msgstr "フィードのURLがありません。"
+
+#. Heading of the popular-feed list on the home and search pages.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:216
+msgid "feed.popular-heading"
+msgstr "フォロワーの多いフィード"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:203
+msgid "search.empty-title"
+msgstr "「{query}」に一致するフィードはありません"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:221
+msgid "feed.popular-empty"
+msgstr "登録済みのフィードはまだありません"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:249
+msgid "federation.no-posts-title"
+msgstr "投稿はまだありません"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:207
+msgid "search.empty-hint"
+msgstr "検索できるのは登録済みのフィードだけです。短いキーワードで検索するか、このフィードを登録してください。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:117
+msgid "register.error-unsupported-protocol"
+msgstr "対応しているのはhttp(s)のフィードのみです（指定されたプロトコル: {protocol}）。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:166
+msgid "register.open-profile"
+msgstr "アカウントページを開く"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:104
+msgid "register.error-hint"
+msgstr "このアドレスをブラウザーで開き、ウェブページではなくフィードが返されることを確認してから、もう一度お試しください。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:153
+msgid "register.next-follow"
+msgstr "Mastodonなど、お使いのアプリの検索欄に貼り付けて「フォロー」を押してください。"
+
+#. Fallback title for an untitled Note on an actor page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:235
+msgid "federation.post-fallback"
+msgstr "投稿"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:253
+msgid "federation.no-posts-body"
+msgstr "次にフィードを確認した後、ここに投稿が表示されます。"
+
+#. {handle} renders as the @rss2pub@host chip; {command} renders as the `register <url>` chip.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:94
+msgid "register.bot-alt"
+msgstr "Fediverseから操作する場合は、{handle}に{command}をメンションしてください。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:71
+msgid "register.heading"
+msgstr "フィードを登録"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:212
+msgid "search.empty-action"
+msgstr "フィードを登録"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:62
+msgid "home.lede"
+msgstr "フィードを登録すると、Fediverseのアカウントになります。Mastodonなどのアプリからそのアカウントをフォローすると、新しい投稿がタイムラインに届きます。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:170
+msgid "register.another"
+msgstr "別のフィードを登録"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:84
+msgid "register.button"
+msgstr "フィードを登録"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:67
+msgid "home.popular-empty-hint"
+msgstr "上のフォームから最初のフィードを登録してください。"
+
+#. Replaces the submit button's label while the feed is being fetched.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:88
+msgid "register.pending"
+msgstr "登録中…"
+
+#. Heading and page title of the remote-follow validation-error page.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:271
+msgid "federation.remote-follow-title"
+msgstr "リモートフォロー"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:45
+msgid "layout.footer-summary"
+msgstr "rss2.pubはフィードを誰でもフォローできるFediverseアカウントに変換します。"
+
+#. Example queries. Deliberately not a restatement of the field's label.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:182
+msgid "search.placeholder"
+msgstr "rust、天気、example.com"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:41
+msgid "layout.nav-search"
+msgstr "検索"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:174
+msgid "search.heading"
+msgstr "検索"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:193
+msgid "search.button"
+msgstr "検索"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:178
+msgid "search.label"
+msgstr "登録済みフィードを検索"
+
+#. Link from the home page's shortened list to the full one on /search.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:225
+msgid "feed.popular-more"
+msgstr "フィードをもっと見る"
+
+#. Accessible label of the primary navigation.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:32
+msgid "layout.nav-label"
+msgstr "サイト"
+
+#. First tab stop on every page; visible only while focused.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:27
+msgid "layout.skip-link"
+msgstr "本文に移動"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:54
+msgid "layout.footer-source"
+msgstr "ソースコード"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:113
+msgid "register.error-not-a-url"
+msgstr "URLの形式ではないようです: {url}"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:100
+msgid "register.error-heading"
+msgstr "フィードを登録できませんでした"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:79
+msgid "register.url-help"
+msgstr "ウェブサイトではなく、AtomまたはRSS 2.0フィード自体のアドレスを入力してください。多くの場合、/atom、/feed、.xmlで終わります。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:141
+msgid "register.result-exists"
+msgstr "このフィードはすでに専用のFediverseアカウントとして投稿されています。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:133
+msgid "register.result-created"
+msgstr "このフィードは専用のFediverseアカウントとして投稿されるようになりました。"
+
+#. Help text under the search field.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:188
+msgid "search.help"
+msgstr "フィードの名前、説明、アドレスの一部を入力してください。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:240
+msgid "federation.view-original"
+msgstr "元の投稿を見る"
+
+#. Example account shown as the remote-follow input's placeholder.
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:262
+msgid "federation.remote-follow-placeholder"
+msgstr "you@instance.social"

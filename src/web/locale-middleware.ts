@@ -1,6 +1,11 @@
 import type { Env, MiddlewareHandler } from "hono";
 import { languageDetector } from "hono/language";
-import { DEFAULT_LOCALE, LOCALE_QUERY_PARAM, SUPPORTED_LOCALES } from "./locale.js";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_QUERY_PARAM,
+  matchLocale,
+  SUPPORTED_LOCALES,
+} from "./locale.js";
 
 /**
  * Applied per HTML route on purpose, never as an app-wide `use()`: mounting
@@ -13,8 +18,9 @@ import { DEFAULT_LOCALE, LOCALE_QUERY_PARAM, SUPPORTED_LOCALES } from "./locale.
 const detectLanguage = languageDetector({
   supportedLanguages: [...SUPPORTED_LOCALES],
   fallbackLanguage: DEFAULT_LOCALE,
-  // Hono's own prefix fallback maps ko-KR → ko, and its defaults already
-  // order querystring over cookie over Accept-Language.
+  // Hono's prefix fallback cannot map zh-TW to the distinct zh-Hant-TW
+  // catalog. Normalize BCP 47 script/region aliases before its exact match.
+  convertDetectedLanguage: (value) => matchLocale(value) ?? value,
   order: ["querystring", "cookie", "header"],
   lookupQueryString: LOCALE_QUERY_PARAM,
   lookupCookie: LOCALE_QUERY_PARAM,

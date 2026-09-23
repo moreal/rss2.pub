@@ -1,9 +1,16 @@
-import type { I18n, MessageDescriptor } from "@lingui/core";
+import type { MessageDescriptor } from "@lingui/core";
 import { raw } from "hono/html";
 import type { FC, PropsWithChildren } from "hono/jsx";
-import { translate, translateWithSlots } from "../i18n.js";
 import {
-  LOCALE_LABELS,
+  hydrationBootstrap,
+  renderLocalePicker,
+  serializeLocalePickerProps,
+  type LocalePickerProps,
+} from "@rss2pub/web-ui/server";
+import { translate, translateWithSlots } from "../i18n.js";
+import type { PageContext } from "../page-context.js";
+import {
+  LOCALE_META,
   type Locale,
   neutralLocalePath,
   SUPPORTED_LOCALES,
@@ -12,6 +19,7 @@ import {
 import { RSS_ICON_PATH, RssIcon } from "./icons.js";
 import { copy } from "./messages.js";
 import { COPY_SCRIPT, PENDING_SCRIPT, STYLE } from "./styles.js";
+import { webUiAssetUrls } from "./solid-assets.js";
 
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#ea580c" d="${RSS_ICON_PATH}"/></svg>`,
@@ -28,51 +36,60 @@ const SOURCE_URL = "https://github.com/moreal/rss2.pub";
  */
 const MAIN_ACTOR_HANDLE = "rss2pub";
 
-/** Everything a page needs that isn't its own data. Passed as one `ctx` prop. */
-export type PageContext = {
-  /** Origin of this deployment, e.g. `https://rss2.pub` — for absolute links. */
-  readonly origin: string;
-  /** Host part of the origin (may include a port) — renders as @handle@host. */
-  readonly host: string;
-  readonly i18n: I18n;
-  readonly locale: Locale;
-  /**
-   * GET-addressable path the locale links point at. Deliberately NOT "where
-   * the user is": on a POST result page it is `/`, because the current URL
-   * cannot be re-entered with a different language. Don't reuse it for
-   * og:url or active-nav highlighting — `Layout`'s `nav` prop does that.
-   */
-  readonly switcherPath: string;
-};
-
 /** Which primary-nav entry is the page the user is on, if any. */
 export type NavKey = "home" | "search";
 
 const localeUrl = (ctx: PageContext, locale: Locale): string =>
   `${ctx.origin}${switchLocalePath(ctx.switcherPath, locale)}`;
 
-const LocaleNav: FC<{ ctx: PageContext }> = (props) => (
+const LocaleNav: FC<{ ctx: PageContext }> = (props) => {
+  const pickerProps: LocalePickerProps = {
+    currentLocale: props.ctx.locale,
+    currentShortLabel: LOCALE_META[props.ctx.locale].shortLabel,
+    buttonLabel: translate(props.ctx.i18n, copy.layoutLanguageLabel),
+    options: SUPPORTED_LOCALES.map((locale) => ({
+      locale,
+      label: LOCALE_META[locale].label,
+      href: switchLocalePath(props.ctx.switcherPath, locale),
+    })),
+  };
+  return (
   <nav
     class="lang"
-    aria-label={translate(props.ctx.i18n, copy.layoutLanguageLabel)}
+    aria-label={pickerProps.buttonLabel}
   >
-    {SUPPORTED_LOCALES.map((locale) =>
-      locale === props.ctx.locale ? (
-        <span aria-current="true" lang={locale}>
-          {LOCALE_LABELS[locale]}
-        </span>
-      ) : (
-        <a
-          href={switchLocalePath(props.ctx.switcherPath, locale)}
-          lang={locale}
-          hreflang={locale}
-        >
-          {LOCALE_LABELS[locale]}
-        </a>
-      ),
-    )}
+    <div id="picker" hidden>{raw(renderLocalePicker(pickerProps))}</div>
+    <script type="application/json" id="picker-props">
+      {raw(serializeLocalePickerProps(pickerProps))}
+    </script>
+    <details id="picker-fallback" class="lang-picker">
+      <summary
+        aria-label={`${pickerProps.buttonLabel}: ${LOCALE_META[props.ctx.locale].label}`}
+      >
+        <span aria-hidden="true">{pickerProps.currentShortLabel}</span>
+        <span class="lang-caret" aria-hidden="true">▾</span>
+      </summary>
+      <div class="lang-options">
+        {pickerProps.options.map((option) =>
+          option.locale === pickerProps.currentLocale ? (
+            <span aria-current="true" lang={option.locale}>
+              {option.label}
+            </span>
+          ) : (
+            <a
+              href={option.href}
+              lang={option.locale}
+              hreflang={option.locale}
+            >
+              {option.label}
+            </a>
+          ),
+        )}
+      </div>
+    </details>
   </nav>
-);
+  );
+};
 
 const SiteNav: FC<{ ctx: PageContext; nav?: NavKey | undefined }> = (
   props,
@@ -123,7 +140,7 @@ export const Layout: FC<
     enter?: boolean | undefined;
   }>
 > = (props) => (
-  <html lang={props.ctx.locale}>
+  <html lang={props.ctx.locale} dir={LOCALE_META[props.ctx.locale].direction}>
     <head>
       <meta charset="utf-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -154,6 +171,7 @@ export const Layout: FC<
         href={`${props.ctx.origin}${neutralLocalePath(props.ctx.switcherPath)}`}
       />
       <link rel="icon" href={FAVICON} />
+      {webUiAssetUrls !== null && <link rel="stylesheet" href={webUiAssetUrls.style} />}
       {/* raw(): Hono escapes `"`, `<`, `>` and `&` in text children, which
           would corrupt quoted font names and child selectors. */}
       <style>{raw(STYLE)}</style>
@@ -180,6 +198,8 @@ export const Layout: FC<
           `<` would break both of these silently. */}
       <script>{raw(COPY_SCRIPT)}</script>
       <script>{raw(PENDING_SCRIPT)}</script>
+      {raw(hydrationBootstrap())}
+      {webUiAssetUrls !== null && <script type="module" src={webUiAssetUrls.script} />}
     </body>
   </html>
 );

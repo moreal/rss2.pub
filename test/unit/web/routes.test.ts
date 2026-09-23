@@ -1,4 +1,6 @@
+import { parseHTML } from "linkedom";
 import { describe, expect, it } from "vitest";
+import type { FindFeedByHandle } from "../../../src/application/find-feed-by-handle.js";
 import type { RegisterFeed } from "../../../src/application/register-feed.js";
 import type {
   ListPopularFeeds,
@@ -20,6 +22,10 @@ function webApp(overrides: Partial<WebDeps> = {}) {
   const registerFeed: RegisterFeed = {
     execute: async () => ok({ feed: FEED, created: true }),
   };
+  const findFeedByHandle: FindFeedByHandle = {
+    execute: async (handle) =>
+      handle === "example" ? ok(FEED) : err({ type: "FeedNotFound" }),
+  };
   // Mirrors createSearchFeeds: a blank keyword is rejected rather than run,
   // and /search reads that rejection as "nothing asked yet". A fake that
   // answered ok([]) would let the route pass a case the real one never sends.
@@ -34,6 +40,7 @@ function webApp(overrides: Partial<WebDeps> = {}) {
     origin: ORIGIN,
     host: "rss2.test",
     registerFeed,
+    findFeedByHandle,
     searchFeeds,
     listPopularFeeds,
     ready: async () => true,
@@ -46,6 +53,12 @@ const HEALTH_PATHS = ["/healthz", "/readyz"];
 /** `app.request` may answer synchronously, so it is not a thenable. */
 async function bodyOf(res: Response | Promise<Response>): Promise<string> {
   return (await res).text();
+}
+
+async function postRegister(app: ReturnType<typeof webApp>, query = "") {
+  const form = new FormData();
+  form.set("url", "https://example.com/feed.xml");
+  return app.request(`/register${query}`, { method: "POST", body: form });
 }
 
 describe("language negotiation", () => {
@@ -77,13 +90,26 @@ describe("language negotiation", () => {
     {
       from: "an unsupported language",
       path: "/",
-      headers: { "accept-language": "fr-FR,fr;q=0.9" },
+      headers: { "accept-language": "xx-YY,xx;q=0.9" },
       expected: "en",
     },
     { from: "no signal at all", path: "/", headers: {}, expected: "en" },
   ])("resolves $from to $expected", async ({ path, headers, expected }) => {
     const res = await webApp().request(path, { headers });
-    expect(await res.text()).toContain(`<html lang="${expected}">`);
+    expect(await res.text()).toContain(`<html lang="${expected}" dir="ltr">`);
+  });
+
+  it.each([
+    { from: "Taiwan query", path: "/?lang=zh-TW", headers: {}, expected: "zh-Hant-TW" },
+    { from: "mainland header", path: "/", headers: { "accept-language": "zh-CN,ja;q=0.8" }, expected: "zh-Hans-CN" },
+    { from: "Taiwan header", path: "/", headers: { "accept-language": "zh-TW,zh-CN;q=0.8" }, expected: "zh-Hant-TW" },
+    { from: "quality-weighted Chinese header", path: "/", headers: { "accept-language": "zh-CN;q=0.3,zh-TW;q=0.9" }, expected: "zh-Hant-TW" },
+    { from: "Taiwan cookie", path: "/", headers: { cookie: "lang=zh-TW" }, expected: "zh-Hant-TW" },
+    { from: "unsupported query falling through to header", path: "/?lang=xx", headers: { "accept-language": "ja-JP" }, expected: "ja" },
+    { from: "European region", path: "/", headers: { "accept-language": "fr-FR,fr;q=0.9" }, expected: "fr" },
+  ])("maps $from to $expected", async ({ path, headers, expected }) => {
+    const res = await webApp().request(path, { headers });
+    expect(await res.text()).toContain(`<html lang="${expected}" dir="ltr">`);
   });
 
   it("applies to every HTML page, so none can silently serve English", async () => {
@@ -98,8 +124,8 @@ describe("language negotiation", () => {
 
     expect(pages.length).toBeGreaterThan(0);
     for (const path of pages) {
-      const res = await app.request(`${path}?lang=ko`);
-      expect(await res.text(), path).toContain('<html lang="ko">');
+      const res = await app.request(`${path.replace(":handle", "example")}?lang=ko`);
+      expect(await res.text(), path).toContain('<html lang="ko" dir="ltr">');
     }
   });
 
@@ -156,10 +182,52 @@ describe("locale discoverability", () => {
     expect(html).toContain("한국어");
   });
 
-  it("points the switcher home on non-GET pages, which are not addressable", async () => {
+  it("renders a usable native menu until Solid hydration succeeds", async () => {
+    const html = await bodyOf(webApp().request("/search?q=abc&lang=ko"));
+    const { document } = parseHTML(html);
+    const nav = document.querySelector("nav.lang");
+    const details = nav?.querySelector("#picker-fallback");
+    const summary = details?.querySelector("summary");
+    const choices = details?.querySelectorAll(".lang-options a");
+    const payload = document.querySelector("#picker-props")?.textContent;
+
+    expect(nav?.querySelector("#picker")?.hasAttribute("hidden")).toBe(true);
+    expect(nav?.querySelector("#picker .locale-picker-trigger")?.textContent).toContain("KO");
+    expect(nav?.querySelector("#picker .locale-picker-trigger")?.getAttribute("aria-label")).toContain("한국어");
+    expect(payload).toBeDefined();
+    const initial = JSON.parse(payload ?? "null");
+    expect(initial.currentLocale).toBe("ko");
+    expect(initial.currentShortLabel).toBe("KO");
+    expect(initial.options).toHaveLength(12);
+    expect(initial.options.find((option: { locale: string }) => option.locale === "en")?.href)
+      .toBe("/search?q=abc&lang=en");
+    expect(details).not.toBeNull();
+    expect(details?.hasAttribute("hidden")).toBe(false);
+    expect(details?.hasAttribute("open")).toBe(false);
+    expect(summary?.textContent).toContain("KO");
+    expect(summary?.getAttribute("aria-label")).toContain("한국어");
+    expect(choices?.length).toBe(11);
+    expect(details?.querySelector('[aria-current="true"]')?.textContent).toContain("한국어");
+    expect(details?.querySelector('a[hreflang="en"]')?.getAttribute("href"))
+      .toBe("/search?q=abc&lang=en");
+    const options: { locale: string; href: string; label: string }[] = initial.options;
+    for (const option of options) {
+      const selector = option.locale === initial.currentLocale
+        ? `[aria-current="true"][lang="${option.locale}"]`
+        : `a[hreflang="${option.locale}"]`;
+      const fallback = details?.querySelector(selector);
+      expect(fallback?.textContent).toBe(option.label);
+      if (option.locale !== initial.currentLocale) expect(fallback?.getAttribute("href")).toBe(option.href);
+    }
+    expect(html).toContain("/_assets/web-ui/assets/client-");
+  });
+
+  it("points the switcher home on rejected POST pages, which are not addressable", async () => {
     const form = new FormData();
     form.set("url", "https://example.com/feed.xml");
-    const res = await webApp().request("/register", {
+    const res = await webApp({
+      registerFeed: { execute: async () => err({ type: "NotAUrl", raw: "nope" }) },
+    }).request("/register", {
       method: "POST",
       body: form,
     });
@@ -202,6 +270,17 @@ describe("localized page chrome", () => {
 });
 
 describe("localized content", () => {
+  it("keeps Korean bot-command slot order and element roles", async () => {
+    const { document } = parseHTML(await bodyOf(webApp().request("/?lang=ko")));
+    const note = document.querySelector(".panel-note");
+    expect(note?.textContent).toBe(
+      "페디버스가 더 편하다면 @rss2pub@rss2.test 계정에 register <url> 명령을 멘션하세요.",
+    );
+    expect(note?.querySelector("span.chip")?.textContent).toBe("@rss2pub@rss2.test");
+    expect(note?.querySelector("code.chip")?.textContent).toBe("register <url>");
+    expect(note?.querySelector("span.chip")?.compareDocumentPosition(note.querySelector("code.chip"))).toBe(4);
+  });
+
   it.each([
     { path: "/", expected: "Follow any Atom or RSS 2.0 feed from the fediverse" },
     { path: "/?lang=ko", expected: "페디버스에서 어떤 Atom 또는 RSS 2.0 피드든 팔로우하세요" },
@@ -229,9 +308,9 @@ describe("localized content", () => {
 
   it("escapes user input echoed into a localized notice", async () => {
     const html = await bodyOf(webApp().request("/search?q=%3Cscript%3E&lang=ko"));
-    expect(html).toContain("&lt;script&gt;");
-    // The exact injection point: the query sits between curly quotes.
-    expect(html).not.toContain("“<script>”");
+    const { document } = parseHTML(html);
+    expect(document.querySelector("main")?.textContent).toContain("“<script>”");
+    expect(document.querySelector("main script")).toBeNull();
   });
 
   it("renders matched feeds instead of the empty notice", async () => {
@@ -239,7 +318,7 @@ describe("localized content", () => {
     const html = await bodyOf(
       webApp({ searchFeeds }).request("/search?q=example&lang=ko"),
     );
-    expect(html).toContain("@example@rss2.test");
+    expect(parseHTML(html).document.querySelector(".feeds .handle")?.textContent).toBe("@example@rss2.test");
     expect(html).toContain("Example Blog");
     expect(html).not.toContain("해당하는 피드가 없습니다");
   });
@@ -255,7 +334,7 @@ describe("localized content", () => {
     const html = await bodyOf(
       webApp({ searchFeeds }).request("/search?q=example"),
     );
-    expect(html).toContain('<p class="feed-desc">a blog about examples</p>');
+    expect(parseHTML(html).document.querySelector(".feed-desc")?.textContent).toBe("a blog about examples");
   });
 
   it("browses instead of failing when no query has been typed yet", async () => {
@@ -265,7 +344,7 @@ describe("localized content", () => {
     // Nobody has asked anything yet, so the page answers with what there is
     // to follow rather than with an empty box and an instruction.
     expect(html).toContain("팔로워가 가장 많은 피드");
-    expect(html).toContain("@example@rss2.test");
+    expect(parseHTML(html).document.querySelector(".feeds .handle")?.textContent).toBe("@example@rss2.test");
     // A blank query is not a failed search, so it must not read like one.
     expect(html).not.toContain("해당하는 피드가 없습니다");
   });
@@ -383,17 +462,18 @@ describe("feed cards", () => {
     const html = await bodyOf(webApp().request("/"));
     // The title is the link, so the card's accessible name is the feed name
     // rather than every line of the row concatenated.
-    expect(html).toContain(
-      '<h3 class="feed-title"><a href="/@example">Example Blog</a></h3>',
-    );
+    const title = parseHTML(html).document.querySelector(".feed-title a");
+    expect(title?.getAttribute("href")).toBe("/@example");
+    expect(title?.textContent).toBe("Example Blog");
   });
 
   it("keeps the fediverse handle on the card, below the name", async () => {
     const html = await bodyOf(webApp().request("/"));
-    const title = html.indexOf('href="/@example"');
-    expect(html.slice(title)).toContain(
-      '<span class="handle" data-select-all="true">@example@rss2.test</span>',
-    );
+    const { document } = parseHTML(html);
+    const card = document.querySelector(".feeds .feed");
+    expect(card?.querySelector(".handle")?.textContent).toBe("@example@rss2.test");
+    expect(card?.querySelector(".handle")?.hasAttribute("data-select-all")).toBe(true);
+    expect(card?.querySelector(".feed-title")?.compareDocumentPosition(card.querySelector(".handle"))).toBe(4);
   });
 
   it("renders legacy accounts without advertising article extraction", async () => {
@@ -415,12 +495,6 @@ describe("feed cards", () => {
 });
 
 describe("registration outcomes", () => {
-  async function postRegister(app: ReturnType<typeof webApp>, query = "") {
-    const form = new FormData();
-    form.set("url", "https://example.com/feed.xml");
-    return app.request(`/register${query}`, { method: "POST", body: form });
-  }
-
   it("registers the Atom feed URL", async () => {
     const calls: string[] = [];
     const registerFeed: RegisterFeed = {
@@ -470,8 +544,8 @@ describe("registration outcomes", () => {
         execute: async () => ok({ feed: FEED, created }),
       };
       const res = await postRegister(webApp({ registerFeed }), "?lang=ko");
-      expect(res.status).toBe(200);
-      const html = await res.text();
+      expect(res.status).toBe(303);
+      const html = await bodyOf(webApp().request(res.headers.get("location") ?? ""));
       expect(html).toContain(expected);
       expect(html).toContain("@example@rss2.test");
     },
@@ -531,14 +605,14 @@ describe("recovering from a rejected registration", () => {
     const html = await bodyOf(reject());
     // Retyping a long feed URL is the cost of getting this wrong.
     expect(html).toContain('value="nope"');
-    expect(html).toContain('<form class="register-form field"');
+    expect(parseHTML(html).document.querySelector("form.register-form.field")).not.toBeNull();
   });
 
   it("ties the reason to the field for assistive tech", async () => {
     const html = await bodyOf(reject());
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain('aria-describedby="register-url-error register-url-help"');
-    expect(html).toContain('<p id="register-url-error">');
+    expect(parseHTML(html).document.querySelector("p#register-url-error")?.textContent).toContain("URL");
     expect(html).toContain('role="alert"');
   });
 
@@ -559,8 +633,39 @@ describe("finishing a registration", () => {
   async function succeed() {
     const form = new FormData();
     form.set("url", "https://example.com/feed.xml");
-    return bodyOf(webApp().request("/register", { method: "POST", body: form }));
+    const app = webApp();
+    const result = await app.request("/register", { method: "POST", body: form });
+    return bodyOf(app.request(result.headers.get("location") ?? ""));
   }
+
+  it("redirects a successful POST to its addressable result", async () => {
+    const result = await postRegister(webApp(), "?lang=ko");
+    expect(result.status).toBe(303);
+    expect(result.headers.get("location")).toBe("/registered/example?created=1&lang=ko");
+  });
+
+  it("keeps the feed and outcome when switching language without registering again", async () => {
+    let registrations = 0;
+    const app = webApp({
+      registerFeed: {
+        execute: async () => {
+          registrations += 1;
+          return ok({ feed: FEED, created: true });
+        },
+      },
+    });
+    const result = await postRegister(app, "?lang=ko");
+    const html = await bodyOf(app.request(result.headers.get("location") ?? ""));
+    expect(html).toContain('href="/registered/example?created=1&amp;lang=ja"');
+    const switched = await app.request("/registered/example?created=1&lang=ja");
+    expect(await switched.text()).toContain("@example@rss2.test");
+    expect(registrations).toBe(1);
+  });
+
+  it("answers 404 for malformed or missing result handles", async () => {
+    expect((await webApp().request("/registered/bad.handle")).status).toBe(404);
+    expect((await webApp().request("/registered/missing")).status).toBe(404);
+  });
 
   it("puts the account name one click from the clipboard", async () => {
     const html = await succeed();
@@ -579,6 +684,12 @@ describe("finishing a registration", () => {
 });
 
 describe("page chrome", () => {
+  it("isolates feed-supplied text from surrounding localized chrome", async () => {
+    const html = await bodyOf(webApp().request("/"));
+    expect(html).toContain('<bdi dir="auto">Example Blog</bdi>');
+    expect(html).toContain('<bdi dir="ltr">example.com/feed.xml</bdi>');
+  });
+
   it("marks the page the user is on in the primary nav", async () => {
     const home = await bodyOf(webApp().request("/"));
     expect(home).toContain('<a href="/" aria-current="page">Home</a>');
@@ -609,7 +720,8 @@ describe("waiting for a slow registration", () => {
     // The label lives in its own element so swapping the text leaves the
     // spinner beside it alone.
     expect(html).toContain("data-btn-label");
-    expect(html).toContain('<span class="btn-spinner" aria-hidden="true">');
+    expect(parseHTML(html).document.querySelector("[data-pending-form] .btn-spinner")?.getAttribute("aria-hidden"))
+      .toBe("true");
   });
 
   it("localizes the waiting label", async () => {
@@ -621,9 +733,9 @@ describe("waiting for a slow registration", () => {
     const html = await bodyOf(webApp().request("/"));
     // Empty until the submission starts: an announced region with text in it
     // would speak on load, before there is anything to report.
-    expect(html).toContain(
-      '<span class="sr-only" role="status" data-pending-status="true"></span>',
-    );
+    const status = parseHTML(html).document.querySelector("[data-pending-status]");
+    expect(status?.getAttribute("role")).toBe("status");
+    expect(status?.textContent).toBe("");
   });
 });
 
@@ -631,7 +743,9 @@ describe("the account name to copy", () => {
   async function registered() {
     const form = new FormData();
     form.set("url", "https://example.com/feed.xml");
-    return bodyOf(webApp().request("/register", { method: "POST", body: form }));
+    const app = webApp();
+    const result = await app.request("/register", { method: "POST", body: form });
+    return bodyOf(app.request(result.headers.get("location") ?? ""));
   }
 
   it("copies the whole address, and breaks it only at the host", async () => {
@@ -640,7 +754,10 @@ describe("the account name to copy", () => {
     // <wbr> is a break opportunity, not a character: the copied and selected
     // text are unchanged, but a narrow screen wraps at the address's seam
     // instead of mid-domain.
-    expect(html).toContain("@example<wbr/>@rss2.test");
+    const { document } = parseHTML(html);
+    const handle = document.querySelector(".copy-row .handle");
+    expect(handle?.textContent).toBe("@example@rss2.test");
+    expect(handle?.querySelector("wbr")).not.toBeNull();
   });
 });
 

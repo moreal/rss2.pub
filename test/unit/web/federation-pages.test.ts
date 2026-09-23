@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseHTML } from "linkedom";
 import { createInMemoryFederationRepository } from "../../../src/infrastructure/persistence/in-memory-federation-repository.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
 import type {
@@ -101,17 +102,16 @@ describe("createFederationPages", () => {
 
     expect(feed.status).toBe(200);
     const html = await feed.text();
-    expect(html).toContain('<html lang="en">');
+    expect(html).toContain('<html lang="en" dir="ltr">');
     expect(html).toContain("Example Feed");
-    expect(html).toContain("@feed_a@local.test");
+    expect(html).toContain('<h1><bdi dir="auto">Example Feed</bdi></h1>');
+    expect(parseHTML(html).document.querySelector(".actor-profile .handle")?.textContent).toBe("@feed_a@local.test");
     expect(html).toContain("A useful feed");
     expect(html).toContain("https://source.test/feed.xml");
     expect(html).toContain("https://source.test/icon.png");
     expect(html).toContain('onerror="this.remove()"');
     expect(html).toContain("1 follower");
-    expect(html).toContain(
-      '<p class="feed-meta"><span class="handle" data-select-all="true">',
-    );
+    expect(parseHTML(html).document.querySelector(".actor-profile .feed-meta .handle")?.hasAttribute("data-select-all")).toBe(true);
     expect(html).toContain("Post title");
     expect(html).toContain("Breaking news");
     expect(html).toContain("Something happened today.");
@@ -123,6 +123,7 @@ describe("createFederationPages", () => {
     expect(main.status).toBe(200);
     const mainHtml = await main.text();
     expect(mainHtml).toContain("rss2.pub");
+    expect(mainHtml).toContain('<h1><bdi dir="auto">rss2.pub</bdi></h1>');
     expect(mainHtml).toContain("<title>rss2.pub</title>");
     expect(html).not.toContain('<nav class="crumbs"');
     expect(mainHtml).not.toContain('<nav class="crumbs"');
@@ -136,8 +137,9 @@ describe("createFederationPages", () => {
 
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain('<html lang="en">');
+    expect(html).toContain('<html lang="en" dir="ltr">');
     expect(html).toContain("Post title");
+    expect(html).toContain('<h1><bdi dir="auto">Post title</bdi></h1>');
     expect(html).toContain("<strong>world</strong>");
     expect(html).toContain("<ul><li>First item</li></ul>");
     expect(html).toContain("<blockquote><p>a</p><p>b</p></blockquote>");
@@ -147,7 +149,8 @@ describe("createFederationPages", () => {
     expect(html).toContain(
       '<time class="quiet" datetime="2026-08-30T00:00:00.000Z">Aug 30, 2026</time>',
     );
-    expect(html).toContain('<a href="/@feed_a">Example Feed</a>');
+    expect(parseHTML(html).document.querySelector(".actor-author-name a")?.textContent).toBe("Example Feed");
+    expect(parseHTML(html).document.querySelector(".actor-author-name a")?.getAttribute("href")).toBe("/@feed_a");
     expect(html).toContain('class="btn btn-secondary"');
     expect(html).not.toContain('<nav class="crumbs"');
 
@@ -165,14 +168,11 @@ describe("createFederationPages", () => {
     });
 
     const profileHtml = await profile.text();
-    expect(profileHtml).toContain('<div class="content"><p>Something happened today.</p></div>');
+    expect(parseHTML(profileHtml).document.querySelector(".actor-post .content")?.innerHTML).toBe("<p>Something happened today.</p>");
     expect(profileHtml).not.toContain("https://source.test/posts/2");
 
     const messageHtml = await message.text();
-    const bodyHtml = messageHtml.slice(
-      messageHtml.indexOf('<article class="panel actor-post-body">'),
-      messageHtml.indexOf("</article>"),
-    );
+    const bodyHtml = parseHTML(messageHtml).document.querySelector(".actor-post-body")?.innerHTML ?? "";
     expect(bodyHtml).toContain("<p>Something happened today.</p>");
     expect(bodyHtml).not.toContain("<strong>Breaking news</strong>");
     expect(bodyHtml).not.toContain(
@@ -205,19 +205,15 @@ describe("createFederationPages", () => {
     expect(html).toContain(
       "<title>Tips {braces} &amp; &lt;b&gt;x&lt;/b&gt; · rss2.pub</title>",
     );
-    expect(html).toContain("<h1>Tips {braces} &amp; &lt;b&gt;x&lt;/b&gt;</h1>");
+    expect(parseHTML(html).document.querySelector(".actor-profile h1 bdi")?.textContent).toBe("Tips {braces} & <b>x</b>");
     expect(messageResponse.status).toBe(200);
     const messageHtml = await messageResponse.text();
-    expect(messageHtml).toContain(
-      '<span class="handle" data-select-all="true">@feed_a@local.test</span>',
-    );
+    expect(parseHTML(messageHtml).document.querySelector(".actor-message-head .handle")?.textContent).toBe("@feed_a@local.test");
     expect(messageHtml).toContain(
       "<title>Story {braces} &amp; details · rss2.pub</title>",
     );
-    expect(messageHtml).toContain("<h1>Story {braces} &amp; details</h1>");
-    expect(await remoteFollowError.text()).toContain(
-      "Back to Tips {braces} &amp; &lt;b&gt;x&lt;/b&gt;",
-    );
+    expect(parseHTML(messageHtml).document.querySelector(".actor-message-head h1 bdi")?.textContent).toBe("Story {braces} & details");
+    expect(parseHTML(await remoteFollowError.text()).document.querySelector(".actor-message-head .form-actions a")?.textContent).toBe("Back to Tips {braces} & <b>x</b>");
   });
 
   it("uses shared navigation and gives remote-follow errors a way back", async () => {
@@ -239,7 +235,7 @@ describe("createFederationPages", () => {
 
     const postHtml = await post.text();
     expect(postHtml).not.toContain('<nav class="crumbs"');
-    expect(postHtml).toContain('<a href="/@feed_a">Example Feed</a>');
+    expect(parseHTML(postHtml).document.querySelector(".actor-author-name a")?.textContent).toBe("Example Feed");
 
     expect(remoteFollowError.status).toBe(400);
     const errorHtml = await remoteFollowError.text();
@@ -249,6 +245,9 @@ describe("createFederationPages", () => {
     expect(errorHtml).toContain('class="notice notice-error"');
     expect(errorHtml).toContain('class="btn btn-secondary" href="/@feed_a"');
     expect(errorHtml).toContain("Back to Example Feed");
+    const notice = parseHTML(errorHtml).document.querySelector(".notice.notice-error");
+    expect(notice?.getAttribute("role")).toBe("alert");
+    expect(notice?.textContent).toContain("Enter a valid Fediverse account");
     expect(errorHtml).toContain(".actor-message-head .form-actions .btn {");
     expect(errorHtml).toContain("white-space: normal; overflow-wrap: anywhere;");
   });
@@ -275,8 +274,8 @@ describe("createFederationPages", () => {
 
     const postHtml = await post.text();
     expect(postHtml).toContain('class="actor-author"');
-    expect(postHtml).toContain('<a href="/@feed_a">Example Feed</a>');
-    expect(postHtml).toContain("@feed_a@local.test");
+    expect(parseHTML(postHtml).document.querySelector(".actor-author-name a")?.textContent).toBe("Example Feed");
+    expect(parseHTML(postHtml).document.querySelector(".actor-message-head .handle")?.textContent).toBe("@feed_a@local.test");
 
     // The compact heading size is scoped to the remote-follow component, not
     // global: an unscoped rule would also shrink post titles and sanitized
@@ -322,20 +321,20 @@ describe("createFederationPages", () => {
     );
 
     const profileHtml = await profile.text();
-    expect(profileHtml).toContain('<html lang="ko">');
+    expect(profileHtml).toContain('<html lang="ko" dir="ltr">');
     expect(profileHtml).toContain("내 페디버스 계정으로 팔로우하기");
     expect(profileHtml).toContain("팔로우</button>");
     expect(profileHtml).toContain("아이디@인스턴스.example");
 
     expect(remoteFollowError.status).toBe(400);
     const errorHtml = await remoteFollowError.text();
-    expect(errorHtml).toContain('<html lang="ko">');
+    expect(errorHtml).toContain('<html lang="ko" dir="ltr">');
     expect(errorHtml).toContain("원격 팔로우");
     expect(errorHtml).toContain("올바른 페디버스 계정을 입력하세요");
     expect(errorHtml).toContain("Example Feed 페이지로 돌아가기");
 
     const messageHtml = await message.text();
-    expect(messageHtml).toContain('<html lang="ko">');
+    expect(messageHtml).toContain('<html lang="ko" dir="ltr">');
     expect(messageHtml).toContain("원문 보기");
     expect(messageHtml).toContain(
       '<time class="quiet" datetime="2026-08-30T00:00:00.000Z">2026. 8. 30.</time>',
@@ -382,7 +381,7 @@ describe("createFederationPages", () => {
     // English even though the follow-up GET's own query string never
     // mentions ?lang= itself.
     expect(cookieHtml).toContain('name="lang" value="ko"');
-    expect(cookieHtml).toContain('<html lang="ko">');
+    expect(cookieHtml).toContain('<html lang="ko" dir="ltr">');
   });
 
   it("redirects to a WebFinger-discovered subscribe URL when the resolver finds one", async () => {

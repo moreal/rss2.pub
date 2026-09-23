@@ -62,7 +62,7 @@ nix run nixpkgs#yarn-berry_4-fetcher.yarn-berry-fetcher -- \
   prefetch yarn.lock nix/missing-hashes.json   # → new hash value
 ```
 
-**Quality gate**: `yarn typecheck && yarn test` must pass before any task is
+**Quality gate**: `yarn typecheck && yarn lint:solid && yarn test` must pass before any task is
 considered done. The `/checks` skill runs this loop.
 
 ## Architecture — the dependency rule
