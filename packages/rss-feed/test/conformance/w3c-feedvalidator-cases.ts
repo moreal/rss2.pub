@@ -578,7 +578,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b7efd72fb4e69d2c001f78d10379a5202421585bc7ccc7b4481b67a5ec24b6ab",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/jumbled.xml",
@@ -587,7 +587,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "75d82c465ab161c755c922600ed05b97042d6012daeddada9feab0f1daad24b8",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/jumbled2.xml",
@@ -596,7 +596,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "60ab8a8746e8727431c4f691d4ade2d1509e7728f92e23ebd48f59dee05f1e9e",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/mailto-subject.xml",
@@ -605,7 +605,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "414d893047243d1c4180f78a55f3f9fbcfe53aa36da9c99644b040ba32ccc9bb",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/missing-email.xml",
@@ -614,7 +614,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "962c604cfda7dd1d71bae009e0d368f0adab628a09631990c66f9e99cdadf450",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/missing-name.xml",
@@ -623,7 +623,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "09df10f1e2fbdb80a8f8e522b9ff5d7b9c92f5659683afec58779fd77f55a4df",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/name-as-comment.xml",
@@ -632,7 +632,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e355809ec93488eb6ef2b9fac5db47bdd3d1744365abd82743ffff6c0c25b5eb",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-email/rfc2368.xml",
@@ -641,7 +641,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f5633dc0baaa61f983cabd2289e2094ae9ce5e32fa3c42feebb271709ac09c18",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "data-types-url/idna.xml",
@@ -677,7 +677,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c453213014afedacdcc0ede05f22a8fe4adc3a7c26f19dbe08328760bcafec3d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/cloud_path.xml",
@@ -686,7 +686,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ff84f203a638c749da113cfe4d26fd98d407206830834991a7796bb1c655a6c3",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/cloud_port.xml",
@@ -695,7 +695,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1c0023fe10dab32c4812ec18ae1951c540835b3d6474f88874f7703297ce3cce",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/cloud_port_integer.xml",
@@ -704,7 +704,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "fb4b4b96073b4c4ae6aaa807dd183a486c7b2793286cf4c20fb22e490730e5ff",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/cloud_protocol.xml",
@@ -713,7 +713,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ae7d07ec782e0716d4f22f04ed58acaba574f3dba9c4f2e933e8077eba496534",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/cloud_registerprocedure.xml",
@@ -722,7 +722,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "8713a915e2600407a30880a0ae6bd8315c3cb61066392028f8b04e82167b2401",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_decimal_port.xml",
@@ -731,7 +731,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "dca5cc0674954904630400f654d157c5f4455233b0703e866e6e4a84864093ed",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_negative_port.xml",
@@ -740,7 +740,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2ec0f83bd8560146aaa97d080833b1b1239e71464c08b280c513efde6e8e5bc1",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_no_domain.xml",
@@ -749,7 +749,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f09be970dcacb581a43f7ee5f72963941d258a33f4f77e6d8b79d7deb7b5eccf",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_no_path.xml",
@@ -758,7 +758,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "bfb82cd76d087dbf2756196f72f82bf6c7395904f8047ab48f67ff5c7b233382",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_no_port.xml",
@@ -767,7 +767,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f697d516138fdf1920f23c2066778771e636df6b15d39eb9c9d4d53d94e9c73b",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_no_protocol.xml",
@@ -776,7 +776,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f7b58a968eb6615b6797be52768eb9240abe3cbe227770967c2666602bfcbc50",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_no_registerprocedure.xml",
@@ -785,7 +785,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "d0da9b0e7605dee5ef03c9ad875c8a1cecc66140f29b66d259d065ef1199f612",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_nonnumeric_port.xml",
@@ -794,7 +794,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c5b882485525b82df1b2b853be375d180d5e7744fc43ac5f94302963775817ec",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-cloud/invalid_cloud_zero_port.xml",
@@ -803,7 +803,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c2fcaefcf69593e2d22dbb1eb661acf50f37188dfad8b3936055c695ed8bc953",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-description/html_in_channel_description.xml",
@@ -821,7 +821,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1ffa94371b3fdb65501ee80ea531abc2d09fa932b50d3f1fdef0ef3d0d6685e8",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-docs/invalid_docs.xml",
@@ -830,7 +830,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ddf0737b90e3c97a57085380ee218ee4c3768538f4c8900ca7aecff5184e5931",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-description/image_no_description.xml",
@@ -839,7 +839,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c8220aa106e146ae68b40885e80e5a0f3d9060f229691f736f90e87edf2835cf",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-description/image_title_description_contains_html.xml",
@@ -848,7 +848,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "5512da8d0dfb167f38ffaf3d1cc7ed640b1cf22860d5d04e201e3fcc0afd1289",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-height/image_height.xml",
@@ -857,7 +857,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "35ebb082643c597c0455f753a4a4e4b015ca7a32b10b8e8044bf8e2e9af0d1ad",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-height/image_height2.xml",
@@ -866,7 +866,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e4fdefe75362214f2cec223fcff9b3686b86fab1800bad92a346e95953243591",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-height/invalid_image_bad_height.xml",
@@ -875,7 +875,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "655c91ad7a7912bfa3cb5be6a9aa4aa529e5f1f679507fd6d2f3c8b258af7d72",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-height/invalid_image_negative_height.xml",
@@ -884,7 +884,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "85a8967a7b464dcffae92927882ee975a3e408322cec7ffbb62283607a0f7d1a",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-height/invalid_image_too_high.xml",
@@ -893,7 +893,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ba01717ffbfee1356714e9af4a7ff3f45a39155544889c1134dbc540356fc3ef",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-height/invalid_image_zero_height.xml",
@@ -902,7 +902,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "24e91cf8599ba984cb42c977456ebf1f3ba48dbf4befeca9039a6b2a73fc1c06",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-link/image_link.xml",
@@ -911,7 +911,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "68cfd22159274f13a47ae7f95218baeffc051a8027187d88b21d9f83c1c0ce49",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-link/image_link2.xml",
@@ -920,7 +920,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "bf4ddf860b1e97017b1dcf581e71df6972f9a62f3c4bc7c87fdc7dd306a3cab4",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-link/image_link_no_match.xml",
@@ -929,7 +929,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "7ad272fd6b7504ca6a65007f109f46455a5c9b24d41dff084656865eed9bd025",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-link/invalid_image_link.xml",
@@ -938,7 +938,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "8bef3c7c782bb2bdd4cdf6fda8c5137ed6f4a3ed4c050b2e20169b53fc070ea2",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-link/invalid_image_no_link.xml",
@@ -947,7 +947,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "8d302025c8f27403a3d802c822daf8bcd1dec1386296f4f4d379279f2b77a9b0",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-title/image_title.xml",
@@ -956,7 +956,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "09ae6b42254a61247f029822a2aa8b79c1196e30c856d8bca4388e1ac1ac98f6",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-title/image_title_contains_html.xml",
@@ -965,7 +965,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2a9e8b0f8d9a4e9629387bc3f49b416a1a830e1b00328addb29c7e9a6e8360e1",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-title/image_title_no_match.xml",
@@ -974,7 +974,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "383b46a38a064cc8d4bec50213fffb7ed5d6dd795665132514ee74a0465964a4",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-title/invalid_image_blank_title.xml",
@@ -983,7 +983,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "eb5b355ccd020ab4a7534dfd4f047a234932cf053d8cc2eb306a0a2442d68315",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-title/invalid_image_no_title.xml",
@@ -992,7 +992,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "299242cc4d52fe53f5334aa0e1eeb348184a3170465aedf0d82cc2e1bf3be2b2",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/image_url2.xml",
@@ -1001,7 +1001,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "16b1b2cd3398631bb0cbb0ec24a45ec0a18403a5d4ba64046c24ad48ff34f586",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/image_url_gif.xml",
@@ -1010,7 +1010,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2d2963c24f91f51be5cb0daa7e72e38299a6e1a619f03719539803ed2e719a77",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/image_url_jpeg.xml",
@@ -1019,7 +1019,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b047b195cd903458376191159c2f7755ddf8dd1da0f7729555ad207d35af61c5",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/image_url_jpg.xml",
@@ -1028,7 +1028,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "a74525107e1914b1e50c8c5a72329672d5126e32c7dea6719e615ce76fec43ba",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/image_url_png.xml",
@@ -1037,7 +1037,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "9aa30b6f4d39a75c8c0c4865f58b1592c696f69750034715ab3d31b404ed7e3f",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/image_url_tiff.xml",
@@ -1046,7 +1046,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "60b21469b23d363c2bcfd24c0b35c01419d17403380d740bc7cbb6bcd963bb81",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/invalid_image_no_url.xml",
@@ -1055,7 +1055,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1bdc2e6c1d2d3f7a264d223bf0612643ba70be8eb1bc2e952a9773db4945adb0",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-url/invalid_image_url.xml",
@@ -1064,7 +1064,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "24e551929f6625b1b83802f1e8d9be2d8ece3ff52a251c587ce9f7fe77a329ed",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-width/image_width.xml",
@@ -1073,7 +1073,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "15fd241883085134feab35e8441ed0418c472904fbf52094b9aa3f654d572a6f",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-width/image_width2.xml",
@@ -1082,7 +1082,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "41f477df64f2def9befddd45b9cc5d7375a62383ab6a1f2af97810a9a3b52c3d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-width/invalid_image_bad_width.xml",
@@ -1091,7 +1091,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ce7b558cd70f1c01479a4012b2590be6204acc7675293ef82996c38ffe2ecd41",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-width/invalid_image_negative_width.xml",
@@ -1100,7 +1100,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "7bb612a0e27519dc94f5b01d1211802543e8bfe91f4d2f5f69f3497a43d2c51b",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-width/invalid_image_too_wide.xml",
@@ -1109,7 +1109,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "923cc548603b0040186d594d2a89c3c6648b6e0deca2aac027825b3a333001d6",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image-width/invalid_image_zero_width.xml",
@@ -1118,7 +1118,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "157648550c38d0e85c08a43bc1c61180e9cb0640c23838fbfebf8dd0bc9e1ea7",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/invalid_image_text.xml",
@@ -1127,7 +1127,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2fac02f46b0d24c2ecc974c418d232c93f109ee653b14b0ca159b950efafd623",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/multiple_image_description.xml",
@@ -1136,7 +1136,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "938498c559707746e4f3a1e5911b38dbff41bd77a28b994a659eba40cfcf8b75",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/multiple_image_height.xml",
@@ -1145,7 +1145,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "7e1655310bfc7414d9910bdfd52044a64e017ff9c088220c8f7d26584b95a42d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/multiple_image_link.xml",
@@ -1154,7 +1154,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "7685ccb20c87b2dd51c656b325750e4246d3be90f29b4eea783ebf32e2a16593",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/multiple_image_title.xml",
@@ -1163,7 +1163,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2cb057b8b0b40618fc63f2a28d604c812138e533514dd9a2dd8995f2ab451308",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/multiple_image_url.xml",
@@ -1172,7 +1172,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e4debdbb1a5110444acf2a327aedf67c0afaec7c5ad9099f07f9549cdbbd424b",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-image/multiple_image_width.xml",
@@ -1181,7 +1181,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "05305926dcef916b504396d3e81cd6f835e23743925aa2287de3a447f18deba2",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-author/html_in_item_author.xml",
@@ -1190,7 +1190,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "107f1e97ac5e85b76478ad8cba7d94d4792c2fb93ff64ddcf41393ea83b132e9",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-author/invalid_item_author.xml",
@@ -1199,7 +1199,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f0668ffcd678663115e102709b05a76fc7a669ff7466903fb64e7f6350dd2228",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-author/item_author.xml",
@@ -1208,7 +1208,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "9c15e2e5d0b2bee4f1c5c95ad430df10952d5893c5daf6c9589cbb36526a721b",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-author/valid_email_addresses.xml",
@@ -1217,7 +1217,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "afff0fdc3736eb73b7437354dffedc0e6c30374df2f911a82dfb2822e042a1ae",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-category/blank_category.xml",
@@ -1235,7 +1235,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "99e34763098928d7c4978b6f452635eb5be75ccd618d4ab9f92c3de6789bbb2d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-comments/item_comments.xml",
@@ -1244,7 +1244,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "cf97582b4c337c872555005949845f8ff8bf87302d5d355caffa977567ecefc9",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-description/description_contains_embed.xml",
@@ -1343,7 +1343,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "653b8bb46be512fd3a106b782b3163e02f8ec1894b2d1847ec2a76dc89264e5a",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_decimal_length.xml",
@@ -1352,7 +1352,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ec6302270d9e87b0c72f5408333885a60eece6dbb08b6894442af487b18f4a41",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_invalid_length.xml",
@@ -1361,7 +1361,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "39a376d821673920889cde7b8ed8a32174b31055ccd851faffceeba294a1cf7d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_invalid_type.xml",
@@ -1370,7 +1370,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e6186290e5b8ee006120e3531104f2f16061a6cd0c250cbf7b0cedc37312ab02",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_invalid_url.xml",
@@ -1379,7 +1379,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "fb663ca64cff990f657f58c504ce8ca950df2787a24ab1008cd5913bf4f00b5c",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_negative_length.xml",
@@ -1388,7 +1388,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1b6c0b5d2467d04a797bf43b9f568df364cc5c1230c1ae86f276a2cc636bf05e",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_no_length.xml",
@@ -1397,7 +1397,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "795ad26fcd9af5c3a46329a03813008dbf09451a2a49b97750d57a5ddbee01e0",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_no_type.xml",
@@ -1406,7 +1406,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "164c487bb64506b8eec3afa26b3280a96d93a4ad0724f110380fe315be8f27ff",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/invalid_item_enclosure_no_url.xml",
@@ -1415,7 +1415,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b9aec0b63ae7639dae1f80efe190896b04ddb6a36787bb24f0387a50b66507d2",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/item_enclosure_length.xml",
@@ -1424,7 +1424,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "56f235446594ea288a72a9ba543cfd704f6d5c4ed4f2ebd8c21a719214511839",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/item_enclosure_type.xml",
@@ -1433,7 +1433,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "25f8af5d6146c1fa2653f3535a95d647b04c41b6c0f005260651ee541c4f45a3",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/item_enclosure_url.xml",
@@ -1442,7 +1442,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b082a81a37bb42735250331b12d3eebbacf4c28c2b758c348b88e4e28758c694",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/item_enclosure_url_with_port.xml",
@@ -1451,7 +1451,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "808f81298588c6470a1c7d9193b111984f208693fb1c5b72f0a9f61725525a8d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-enclosure/item_enclosure_zero_length.xml",
@@ -1721,7 +1721,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "cd634dcdc4871dcb47e5ddc7e06695d57b087e63bbad3595acf6f4e1e869af7c",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-source/invalid_item_source.xml",
@@ -1730,7 +1730,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e0288d5723550634e3e1c7f547099342c59ea93ca972d35d8d9d351020cdb270",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-source/invalid_item_source_url.xml",
@@ -1739,7 +1739,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2a7760955f26032929b8aadb454cfdeb933f1837b201ea597a7a42320cc33dd2",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-source/item_source_link.xml",
@@ -1748,7 +1748,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "48a3f747ce4acbd69bb01ef88da935f587e090c6264fa178f4c115f4b0457e2a",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-source/unregistered_item_source_url.xml",
@@ -1757,7 +1757,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "eb2711fee8cca5c6eca95c9a0e567ecfd2b350f2952b0d9a160c87d708744a01",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-item-title/html_in_item_title.xml",
@@ -1973,7 +1973,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "8ee0f0ac0b001dc1c26c057a2a94f2e8dfeaaac8b3e0979408cf8390060d8ceb",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-lastbuilddate/valid_lastBuildDate.xml",
@@ -1982,7 +1982,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "725f1892ae3b4a07916caefb3d7dace9db59eadfaf1a90cd39d83d6916e93b1d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-link/invalid_link.xml",
@@ -2036,7 +2036,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b3d01d3d1e8cff6249c83f8dc19ea82f0f487e40c3ff17deb229baa8ecb6d63b",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-managingeditor/valid_managingEditor.xml",
@@ -2045,7 +2045,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "3e4ea680a313ecf0e8d164889e5957cfb70fa4eb22c3e00de6231e2d23f36f0a",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/duplicate_skipDays.xml",
@@ -2054,7 +2054,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "02ef6718c81032912393fb2a4b07201ec2df08385ad8c8a0c71070bcf84590b7",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/invalid_skipDays_bad_day.xml",
@@ -2063,7 +2063,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "5465d89956491adbc8fe2e5286a09753d1246a328e4b2cccec8865974c57d048",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/invalid_skipDays_no_days.xml",
@@ -2072,7 +2072,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "5eddd5d79713235ec65565235c1aa6a3c7a41e8e2c90e1d7be2b647c6164ee43",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_friday.xml",
@@ -2081,7 +2081,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "6b32f16a1ba673229f02ae1a73feca64c892d8d57190e659086b289cca396e4c",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_monday.xml",
@@ -2090,7 +2090,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e757ad91389951e0f0efedf9ae6b09ec7128cd4ee38d85fd8315484764fdf074",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_saturday.xml",
@@ -2099,7 +2099,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "17322ba228bc95e0d2651659d6f2717551e62d66a0095bc0b63828bd195cb97d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_sunday.xml",
@@ -2108,7 +2108,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "3c83a4fc0b0d9195dcfcc46008aeba0deca9872fb8a286fa5767ab6390446b7e",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_thursday.xml",
@@ -2117,7 +2117,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "fe41dce2041e44aa79d4de0b39e65a1626a353444ca9d992f7bac3d2e7072d18",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_tuesday.xml",
@@ -2126,7 +2126,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "39aad12500ea25eb1bf5ae66b70fa88797a81c9c96bbc5b91e09a8ed43fdfc0e",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays-day/skipDays_wednesday.xml",
@@ -2135,7 +2135,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "af1a5c54169664effd2ddc51c4d49ee8632c4036179198c3ad8df34187c42016",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays/invalid_skipDays_too_many_days.xml",
@@ -2144,7 +2144,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "67d2749b1c82b8a2e8d6fea16a11d569e3aceca1e2aab2f43e8b1f1e6dc77e1e",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays/invalid_skipDays_unknown_child.xml",
@@ -2153,7 +2153,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f20ab6295fb7504ee4a24ad264f31373acfc59f3d4595ae80f5c97f48efcd04d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays/skipDays.xml",
@@ -2162,7 +2162,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "025af8c1593bca0e86813148fd412bb48200982f58cd0cdedb726bb79faf1bce",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skipdays/skipDays_7_days.xml",
@@ -2171,7 +2171,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c58ae5614a23e43b721aa8d66333940bbe994f7be75d8afbee3d32813d5777db",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/duplicate_skipHours_midnight.xml",
@@ -2180,7 +2180,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1d47c76b41b03e94f2fbd2ca0e87e211519a0487e7325c60d4084dc29483d234",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/duplicate_skipHours_noon.xml",
@@ -2189,7 +2189,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "50209a12d9493e4fd7f78b670978d004cb378913ac7938597207714a9dac895a",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours.xml",
@@ -2198,7 +2198,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "0a8e0c76f22c23530b636e374b362398a31240ce50f9b5612abde300dafece91",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_24_hours.xml",
@@ -2207,7 +2207,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "90ca31e6dbc26d58e4bbfa5c60384fc21f47839a8ceb5d3edad64a20a80c1ff0",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_invalid_hour_fractional.xml",
@@ -2216,7 +2216,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "53643a71daf683ca961093f02fc3b968f7d898e487fb481bd8453da4a29027f5",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_invalid_hour_high.xml",
@@ -2225,7 +2225,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "4283aeaa38dd2ff868a2c1e49f9e06891403e2d60b261e07da1e25cec97d1af5",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_invalid_hour_low.xml",
@@ -2234,7 +2234,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "f59308c3c685f4483502b6e514a883bfb7c25f9ca69cb74afaf24d760be06210",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_obsolete_midnight.xml",
@@ -2243,7 +2243,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c2f248e3674a5bc9ef0a054893400b58bedaf45c5b0e2356161f8ad7b023f5e2",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_valid_hour.xml",
@@ -2252,7 +2252,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2364d97630d4e0e7a0248a5d250472c85393da40ad2241d0ee595956b19325ec",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_valid_hour_high.xml",
@@ -2261,7 +2261,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "458c1447ed0ed19e12427161f569754ef40b3d74446c32c04e2ca7b366137317",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours-hour/skipHours_valid_hour_low.xml",
@@ -2270,7 +2270,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "885103c3cbac25b25d7ac8e72bb0755014dc7146237d94d224612c6213c376c7",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours/invalid_skipHours_unknown_child.xml",
@@ -2279,7 +2279,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b00136fd896bd2215235704947ac94a5646842993666efc8c247b2b3c22c5a77",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-skiphours/skipHours.xml",
@@ -2288,7 +2288,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "cc3189840502de7374bed35e49908a1c30d7a72c9e53a80f66d3ce2b91762647",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-description/textInput_description.xml",
@@ -2297,7 +2297,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1243be25ba7910ba91de043e11a75f700b9bffcbf2cf36bf3105e421a183da0c",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-link/invalid_textInput_invalid_link.xml",
@@ -2306,7 +2306,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "8ec60b6b11229b37a3a5132c26aaa15cf186d04938f3bc961d076e037f2be7cb",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-link/textInput_link.xml",
@@ -2315,7 +2315,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "0d7a4f7033a4658895771949c35a3863c5564518674996c50053dd2de05a15aa",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-link/textInput_valid_link.xml",
@@ -2324,7 +2324,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "574876274519e4b7f14458b01cc2b638a21d2cf4badbffa9874f2a21bbd39feb",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-name/invalid_textInput_name.xml",
@@ -2333,7 +2333,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e7d33716fa602fe49514a671aa667b982ed107fc34a676adec86010e3c7f2d0c",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-name/textInput_name.xml",
@@ -2342,7 +2342,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "25896086358a97f76c2a07c761914c05b6b3b4a985a364e32a319e94b95d50bd",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-title/invalid_textInput_title_contains_html.xml",
@@ -2351,7 +2351,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "c915d8d404baab50af95b982874fb033ff53c51e0d8a8b44a71aa4c7f6d051ce",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput-title/textInput_title.xml",
@@ -2360,7 +2360,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "6ba95e1bca2be37192b0b8e7cb4d27cf0d32c9efde71997fc3d62a0f207d4897",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/invalid_textInput_no_description.xml",
@@ -2369,7 +2369,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b30e45ba296e96652bdf56f0bf8962f32d4b02245cadd0310168144ec0ee1a1e",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/invalid_textInput_no_link.xml",
@@ -2378,7 +2378,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "013015e09b8ef3cb9f450dc8c6d9ae4c96132a907e531462837a687c71488525",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/invalid_textInput_no_name.xml",
@@ -2387,7 +2387,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "3e279b0c3c088417598b3b52ff0e358dc602b0ba464daacbb5073ec7cc6b9510",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/invalid_textInput_no_title.xml",
@@ -2396,7 +2396,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "840ce703239af9666a3854d9067f149bc736cb0f4770cba92eb81fdd8e814fea",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/multiple_textInput_description.xml",
@@ -2405,7 +2405,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "00ed05799e620f76e063df65628ada4c89db07d65ec696011187f675ef8e3e07",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/multiple_textInput_link.xml",
@@ -2414,7 +2414,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e87a97aad58eb71c375e40fb27725ff2b0e76708090ee0b9ad9b53fe64566f0c",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/multiple_textInput_name.xml",
@@ -2423,7 +2423,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "9776be5769cb1497878f23a1449b111118660d445d6bea4e293d5255d5f6aab4",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/multiple_textInput_title.xml",
@@ -2432,7 +2432,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "df58bef93de6d2c386c8212d90e0ccd24f0d382f5f8453a3f2c4537611285e9a",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/rss20_camel_textInput.xml",
@@ -2441,7 +2441,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "4c8984272b88792f58ef27c12f460ab1e7efb564296e91d9646f455f4d5739eb",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-textinput/rss20_lower_textinput.xml",
@@ -2450,7 +2450,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ae542fa750470284ec07052113117b482e2be5b91c52c35165b1e5b8c4ceb6db",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-title/blank_title.xml",
@@ -2522,7 +2522,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "2464ca861852adba6de726fd4bd14835c0737d6ca095a59a322e1d975b9a32d4",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-ttl/invalid_ttl_fractional.xml",
@@ -2531,7 +2531,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e1672a84c8215b82d749ad56ab8c98fcc2a0e9f6688eafbc69d2d4d8d08343ec",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-ttl/invalid_ttl_negative.xml",
@@ -2540,7 +2540,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "ddb60f621cfed947f537566dd191662799c8143157d4f56f316439d70fdbcbf1",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-ttl/invalid_ttl_nonnumeric.xml",
@@ -2549,7 +2549,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "d65812aa2797e3a4f25ae160844fcfc6a241fe966e4af6ba2f088409a94a907d",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-ttl/invalid_ttl_zero.xml",
@@ -2558,7 +2558,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "e174fec3d224bf099b9e91c45af71e93d6b016d29bf64bf556dd4541f41c5b14",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-ttl/ttl.xml",
@@ -2567,7 +2567,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "484332254a22718a0e34943b3295b01e062c3b3a9beab18fe7f60b83bd9828b9",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-webmaster/invalid_webMaster.xml",
@@ -2576,7 +2576,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "1a35a61e2a1b01b650600d42f97ec9c2fe80e3d9a93b63f895fc3809a6b386b8",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-webmaster/valid_webMaster.xml",
@@ -2585,7 +2585,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "631f84e5d94de30fbebc0b1256af07950399b74982268919229090402652f5cf",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-webmaster/webMaster_name_and_email.xml",
@@ -2594,7 +2594,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "a18173ac7e10f1df1ab52fc765e3a10c60b473a7298c44e8145fd8922fd27c50",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel-webmaster/webMaster_plus_in_email.xml",
@@ -2603,7 +2603,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "a15488d194f90b95271c59057c8554a4ee1928bfa6757c5e53964e33d6be5d90",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "element-channel/item_too_early.xml",
@@ -2892,8 +2892,8 @@ export const W3C_RSS20_CASES = [
     "upstreamExpectation": "NeedDescriptionBeforeContent",
     "sha256": "c5b6d4e2b99138239c1510cb553ce77f50ef187250ffa47099c8673034c53590",
     "rootKind": "rss",
-    "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "classification": "project",
+    "reason": "dto-projection"
   },
   {
     "path": "namespace-elements-content-encoded/content_without_description.xml",
@@ -2902,7 +2902,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "527c9525482146215c408869a726670f8edbdf9f21889f8daef4433117c86b94",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "namespace-elements-content-encoded/funky_content_encoded.xml",
@@ -2911,7 +2911,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b132c66a2a33896f429e071432166b0b4472b53af450d2d56311c202ba4efb95",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "namespace-elements-content/funky_content_encoded.xml",
@@ -2920,7 +2920,7 @@ export const W3C_RSS20_CASES = [
     "sha256": "b132c66a2a33896f429e071432166b0b4472b53af450d2d56311c202ba4efb95",
     "rootKind": "rss",
     "classification": "not-applicable",
-    "reason": "unconsumed-element"
+    "reason": "validator-only-semantic-rule"
   },
   {
     "path": "namespace-elements-slash-comments/missing-buildDate.xml",

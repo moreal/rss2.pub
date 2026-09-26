@@ -17,6 +17,10 @@
 
 ### 변경
 
+- RSS 2.0 파서가 핵심 스펙의 채널·아이템 요소(enclosure, author, categories,
+  comments, source, content:encoded, cloud, image, textInput, skip 일정,
+  타임스탬프, 메타데이터 필드)를 소비합니다. W3C RSS 2.0 conformance 프로필도
+  이에 맞춰 재분류했습니다.
 - 운영 환경에서 명시적인 공개 `ORIGIN` 설정이 필요합니다.
 - 피드·favicon의 실제 소켓 연결에 쓰이는 DNS 주소까지 검사합니다.
   favicon HTML 읽기에는 크기 제한을 적용하고, 리디렉션된 최종 페이지를

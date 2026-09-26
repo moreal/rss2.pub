@@ -8,8 +8,12 @@ specification, rather than this corpus, is the normative format specification.
 The pinned corpus is a regression oracle. The selected fixture glob is
 `testcases/rss20/**/*.xml`; it contains 326 paths at that commit, and every
 selected path has a generated profile classification. Upstream no-error RSS
-2.0 documents execute as accepted or projected inputs. Fixtures devoted to
-elements the rss2.pub parser does not consume are classified as not applicable.
+2.0 documents execute as accepted or projected inputs. The parser consumes the
+RSS 2.0 core specification's channel and item elements; fixtures whose
+expectation is a validator-only semantic rule (date, URI, MIME, contact, or
+duplicate-element checks) are classified as not applicable. Only fixtures
+devoted to unconsumed extension elements (`atom:link`, Slash module) remain
+classified as not applicable because the parser does not consume them.
 
 This profile does not claim full Feed Validator parity. The W3C project does
 not endorse rss2.pub and has not certified it. The upstream license is

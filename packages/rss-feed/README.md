@@ -7,9 +7,11 @@ Tested against the rss2.pub RSS 2.0 consumer conformance profile derived from th
 
 The profile uses a pinned W3C Feed Validator corpus as a regression oracle. It
 accounts for all 326 selected paths. Upstream no-error RSS 2.0 documents run as
-accepted or projected inputs, while fixtures devoted to unconsumed elements
-are classified as not applicable. This is not a claim of complete Feed
-Validator parity or W3C endorsement.
+accepted or projected inputs, and the parser consumes the RSS 2.0 core
+specification's channel and item elements. Fixtures devoted to unconsumed
+extension elements, or to validator-only semantic rules, are classified as not
+applicable. This is not a claim of complete Feed Validator parity or W3C
+endorsement.
 
 ## Conformance corpus setup
 

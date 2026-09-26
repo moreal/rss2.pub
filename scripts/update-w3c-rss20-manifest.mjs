@@ -14,6 +14,7 @@ const PROJECT_PATHS = new Set([
   "element-channel-item-category/blank_category.xml",
   "element-channel-item-enclosure/item_enclosure_zero_length.xml",
   "introduction/rss-2.0-sample-noerror.xml",
+  "namespace-elements-content-encoded/content_before_description.xml",
 ]);
 
 const BOUNDARY_ERRORS = new Map([
@@ -23,7 +24,7 @@ const BOUNDARY_ERRORS = new Map([
   ["element-rss/missing_version_attribute.xml", "NotRss2Feed"],
 ]);
 
-const UNCONSUMED_DIRECTORY_PATTERN = /^(?:data-types-email|element-channel-(?:cloud|docs|image(?:-|\/)|item-(?:author|category|comments|enclosure|source)|lastbuilddate|managingeditor|skipdays|skiphours|textinput|ttl|webmaster)|namespace-elements-)/u;
+const UNCONSUMED_DIRECTORY_PATTERN = /^(?:namespace-elements-(?:atom-link|slash-comments))/u;
 const EXPECTATION_PATTERN = /Expect:\s*([^\r\n]+)/u;
 const ROOT_PATTERN = /<([A-Za-z_][A-Za-z0-9_.-]*:)?([A-Za-z_][A-Za-z0-9_.-]*)(?=[\s/>])/u;
 const SELECTED_PATH_PATTERN = /^.+\.xml$/u;

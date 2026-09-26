@@ -1,8 +1,9 @@
 import type { RawFeedItem } from "../../domain/feed/feed-item.js";
 import type { Rss2ItemDto, Rss2ParseError } from "@rss2pub/rss-feed";
 
-/** RSS 2.0 items never carry authors (ADR-0016): attribution stays the local
- * feed actor only. */
+/** The RSS 2.0 parser exposes author, enclosure, and content:encoded; domain
+ * wiring (attribution, podcast link fallback, full-content publication) is a
+ * follow-up — attribution stays the local feed actor only for now. */
 export function mapRss2Entry(
   entry: Rss2ItemDto,
   channelLanguage: string | null,

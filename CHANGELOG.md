@@ -17,6 +17,10 @@ the format described in [the release policy](https://docs.rss2.pub/releasing).
 
 ### Changed
 
+- The RSS 2.0 parser now consumes the core specification's channel and item
+  elements (enclosure, author, categories, comments, source, content:encoded,
+  cloud, image, textInput, skip schedules, timestamps, and metadata fields);
+  the W3C RSS 2.0 conformance profile was reclassified accordingly.
 - Production startup requires an explicit public `ORIGIN`.
 - Feed and favicon DNS checks now cover the address used for the actual socket;
   favicon HTML reads have a size limit and follow the redirected page URL.
