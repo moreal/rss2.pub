@@ -31,6 +31,12 @@ yarn db:migrate                    # apply bundled Drizzle SQL to DATABASE_URL
 nix build .#                       # Nix package → ./result/bin/rss2pub
 ```
 
+## Commits
+
+Every commit carries exactly one `Assisted-by: <tool>:<model>` trailer (e.g.
+`Assisted-by: opencode:deepseek-v4-flash`), matching the repo's established
+history. Conventional-commit subjects, concise body, never commit secrets.
+
 ## W3C Atom consumer conformance profile
 
 RFC 4287 is the normative Atom format specification. The pinned W3C Feed
