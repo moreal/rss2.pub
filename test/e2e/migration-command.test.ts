@@ -34,3 +34,22 @@ it("applies bundled migrations to an empty database and can be rerun", async () 
     await database.close();
   }
 });
+
+it("runs operator moderation commands against the migrated database", async () => {
+  const database = await createTestDatabase(inject("databaseUrl"), "moderation_command_e2e");
+  const run = (...args: string[]) => execFileSync(process.execPath, [
+    "--import", "tsx", "src/web/moderate.ts", ...args,
+  ], {
+    env: { ...process.env, DATABASE_URL: database.url, ORIGIN: "https://local.test" },
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  try {
+    expect(run("reports")).toContain("[]");
+    expect(run("block", "https://example.test/feed", "Spam")).toContain("Feed blocked.");
+    const rows = await database.db.execute(sql`SELECT url FROM blocked_feeds`);
+    expect(rows[0]).toMatchObject({ url: "https://example.test/feed" });
+  } finally {
+    await database.close();
+  }
+});

@@ -112,6 +112,9 @@
               makeWrapper ${lib.getExe pkgs.nodejs_24} $out/bin/rss2pub-migrate \
                 --chdir "$out/lib/rss2pub" \
                 --add-flags dist/web/migrate.js
+              makeWrapper ${lib.getExe pkgs.nodejs_24} $out/bin/rss2pub-moderate \
+                --chdir "$out/lib/rss2pub" \
+                --add-flags dist/web/moderate.js
               runHook postInstall
             '';
 

@@ -5,7 +5,6 @@ import {
   type ReplyPart,
 } from "../../../src/application/handle-command.js";
 import { createRegisterFeed } from "../../../src/application/register-feed.js";
-import { createSearchFeeds } from "../../../src/application/search-feeds.js";
 import { createInMemoryFeedRepository } from "../../../src/infrastructure/persistence/in-memory-feed-repository.js";
 import { err, ok } from "../../../src/shared/result.js";
 import { FeedUrl } from "../../../src/domain/feed/feed-url.js";
@@ -13,42 +12,30 @@ import { fakeFetcher, fetchedFeed, fixedClock } from "../../helpers/fakes.js";
 import { unwrap } from "../../helpers/result.js";
 
 describe("parseCommand", () => {
-  it("parses register with a URL, ignoring the leading mention", () => {
-    expect(
-      parseCommand("@rss2pub@rss2.test register https://a.co/f"),
-    ).toEqual({
-      type: "register",
-      url: "https://a.co/f",
-    });
+  it("registers a URL immediately after the main actor mention", () => {
+    expect(parseCommand("@rss2pub@rss2.test https://a.co/feed.xml"))
+      .toEqual({ type: "register", url: "https://a.co/feed.xml" });
+    expect(parseCommand("https://a.co/feed.xml"))
+      .toEqual({ type: "register", url: "https://a.co/feed.xml" });
+  });
+  it("preserves an at-sign inside a feed URL", () => {
+    expect(parseCommand("@rss2pub https://social.example/@alice.rss"))
+      .toEqual({ type: "register", url: "https://social.example/@alice.rss" });
+  });
+  it("rejects the retired register command", () => {
+    expect(parseCommand("@rss2pub@rss2.test register https://a.co/f"))
+      .toEqual({ type: "help" });
+    expect(parseCommand("REGISTER https://a.co/f"))
+      .toEqual({ type: "help" });
   });
 
-  it("is case-insensitive on the verb", () => {
-    expect(parseCommand("REGISTER https://a.co/f")).toEqual({
-      type: "register",
-      url: "https://a.co/f",
-    });
+  it("rejects the retired search command", () => {
+    expect(parseCommand("SEARCH rust")).toEqual({ type: "help" });
+    expect(parseCommand("@rss2pub search cat pictures")).toEqual({ type: "help" });
   });
 
-  it("ignores the retired full option", () => {
-    expect(parseCommand("register https://a.co/f full")).toEqual({
-      type: "register",
-      url: "https://a.co/f",
-    });
-    expect(parseCommand("register https://a.co/f FULL")).toEqual({
-      type: "register",
-      url: "https://a.co/f",
-    });
-    expect(parseCommand("register https://a.co/f other")).toEqual({
-      type: "register",
-      url: "https://a.co/f",
-    });
-  });
-
-  it("joins multi-word search keywords", () => {
-    expect(parseCommand("@rss2pub search cat pictures")).toEqual({
-      type: "search",
-      keyword: "cat pictures",
-    });
+  it("rejects the retired full option", () => {
+    expect(parseCommand("register https://a.co/f full")).toEqual({ type: "help" });
   });
 
   it("falls back to help for missing arguments or unknown verbs", () => {
@@ -56,7 +43,7 @@ describe("parseCommand", () => {
     expect(parseCommand("search  ")).toEqual({ type: "help" });
     expect(parseCommand("hello there")).toEqual({ type: "help" });
     expect(parseCommand("")).toEqual({ type: "help" });
-    expect(parseCommand(`register https://example.com/${"x".repeat(5000)}`))
+    expect(parseCommand(`https://example.com/${"x".repeat(5000)}`))
       .toEqual({ type: "help" });
   });
 });
@@ -81,14 +68,19 @@ describe("CommandHandler", () => {
       gate: { tryAcquire: async () => ({ release: async () => {} }) },
       limits: { daily: 20, total: 1000 },
     });
-    const searchFeeds = createSearchFeeds({ feeds });
     const handler = createCommandHandler({
       registerFeed,
-      searchFeeds,
       host: "rss2.test",
     });
     return { fetcher, handler };
   }
+
+  it("directs Mastodon account RSS registrations to the original actor", async () => {
+    const { fetcher, handler } = setup();
+    fetcher.respondWith("https://social.example/@alice.rss", ok(fetchedFeed({ generator: "Mastodon" })));
+    expect(flatten(await handler.handle("https://social.example/@alice.rss")))
+      .toContain("Follow its original account");
+  });
 
   it("registers a feed and replies with its followable account", async () => {
     const { fetcher, handler } = setup();
@@ -96,7 +88,7 @@ describe("CommandHandler", () => {
       "https://a.co/f",
       ok(fetchedFeed({ title: "My Blog" })),
     );
-    const reply = await handler.handle("@rss2pub register https://a.co/f");
+    const reply = await handler.handle("@rss2pub https://a.co/f");
     expect(flatten(reply)).toContain('Registered "My Blog"!');
     expect(flatten(reply)).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
     expect(reply).toContainEqual(
@@ -107,25 +99,19 @@ describe("CommandHandler", () => {
     );
   });
 
-  it("treats the retired full command as an ordinary registration", async () => {
+  it("does not execute the retired register command", async () => {
     const { fetcher, handler } = setup();
     fetcher.respondWith("https://a.co/f", ok(fetchedFeed({ title: "My Blog" })));
-    const teaser = flatten(await handler.handle("register https://a.co/f"));
-    const full = flatten(await handler.handle("register https://a.co/f full"));
-    expect(teaser).toContain('Registered "My Blog"!');
-    expect(full).toContain("Already registered");
-    const teaserHandle = /@(a_co_f_[a-z0-9]{7})@rss2\.test/.exec(teaser)?.[1];
-    const fullHandle = /@(a_co_f_[a-z0-9]{7})@rss2\.test/.exec(full)?.[1];
-    expect(teaserHandle).toBeDefined();
-    expect(fullHandle).toBeDefined();
-    expect(fullHandle).toBe(teaserHandle);
+    expect(flatten(await handler.handle("register https://a.co/f")))
+      .toContain("@rss2pub <url>");
+    expect(fetcher.calls).toHaveLength(0);
   });
 
   it("tells the user when the feed already exists", async () => {
     const { fetcher, handler } = setup();
     fetcher.respondWith("https://a.co/f", ok(fetchedFeed({})));
-    await handler.handle("register https://a.co/f");
-    const reply = await handler.handle("register https://a.co/f");
+    await handler.handle("https://a.co/f");
+    const reply = await handler.handle("https://a.co/f");
     expect(flatten(reply)).toContain("Already registered");
     expect(flatten(reply)).toMatch(/@a_co_f_[a-z0-9]{7}@rss2\.test/);
     expect(reply).toContainEqual(
@@ -136,12 +122,12 @@ describe("CommandHandler", () => {
     );
   });
 
-  it("explains Atom feed registration failures", async () => {
+  it("explains feed registration failures", async () => {
     const { fetcher, handler } = setup();
-    expect(flatten(await handler.handle("register not-a-url"))).toContain(
+    expect(flatten(await handler.handle("http://[not-a-url"))).toContain(
       "doesn't look like a URL",
     );
-    expect(flatten(await handler.handle("register ftp://a.co/f"))).toContain(
+    expect(flatten(await handler.handle("ftp://a.co/f"))).toContain(
       "Only http(s) feeds are supported",
     );
     fetcher.respondWith(
@@ -153,46 +139,31 @@ describe("CommandHandler", () => {
       }),
     );
     expect(
-      flatten(await handler.handle("register https://dead.example/f")),
-    ).toContain("couldn't read an Atom feed");
+      flatten(await handler.handle("https://dead.example/f")),
+    ).toContain("couldn't find an Atom or RSS 2.0 feed");
   });
 
-  it("lists search hits with account handles", async () => {
+  it("does not search from a mention", async () => {
     const { fetcher, handler } = setup();
     fetcher.respondWith(
       "https://rust.blog/rss",
       ok(fetchedFeed({ title: "Rust Blog" })),
     );
-    await handler.handle("register https://rust.blog/rss");
+    await handler.handle("https://rust.blog/rss");
 
-    const parts = await handler.handle("search rust");
-    const reply = flatten(parts);
-    expect(reply).toContain("Found:");
-    expect(reply).toMatch(/@rust_blog_rss_[a-z0-9]{7}@rss2\.test — Rust Blog/);
-    expect(parts).toEqual([
-      { type: "text", value: "Found:\n" },
-      {
-        type: "mention",
-        handle: expect.stringMatching(/@rust_blog_rss_[a-z0-9]{7}@rss2\.test/),
-      },
-      { type: "text", value: " — Rust Blog" },
-    ]);
-  });
-
-  it("suggests registering when a search finds nothing", async () => {
-    const { handler } = setup();
-    const reply = flatten(await handler.handle("search nothing"));
-    expect(reply).toContain('No feeds found for "nothing"');
+    const reply = flatten(await handler.handle("search rust"));
+    expect(reply).toContain("@rss2pub <url>");
+    expect(reply).not.toContain("Found:");
   });
 
   it("answers anything else with Atom/RSS 2.0 usage help", async () => {
     const { handler } = setup();
     const reply = flatten(await handler.handle("@rss2pub hi!"));
     expect(reply).toContain(
-      "I turn Atom or RSS 2.0 feeds into followable fediverse accounts. Commands:",
+      "I turn Atom or RSS 2.0 feeds into followable fediverse accounts. Send me:",
     );
     expect(reply).not.toContain("RSS/Atom");
-    expect(reply).toContain("register <feed-url>");
-    expect(reply).toContain("search <keyword>");
+    expect(reply).toContain("@rss2pub <url>");
+    expect(reply).not.toContain("search <keyword>");
   });
 });

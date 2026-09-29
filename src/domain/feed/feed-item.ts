@@ -23,7 +23,7 @@ export type RawFeedItem = {
   readonly publishedAt: Date | null;
   /** Raw BCP-47 tag from the entry's effective `xml:lang` (ADR-0011). */
   readonly language: string | null;
-  /** Raw URIs from the entry's effective Atom authors, in document order. */
+  /** Explicit Atom or RSS author URI candidates, in document order. */
   readonly authorUris: readonly string[];
 };
 
@@ -55,7 +55,7 @@ function parseLanguage(raw: string | null): FeedLanguage | null {
 /**
  * Fingerprint of the feed-provided fields of an item, used to detect when a
  * feed re-serves an already-known item (same `ItemKey`) with different
- * content. Computed solely from the Atom entry's effective fields.
+ * content. Computed solely from the feed item's effective fields.
  */
 export function contentFingerprint(item: FeedItem): string {
   return sha256Hex(JSON.stringify([

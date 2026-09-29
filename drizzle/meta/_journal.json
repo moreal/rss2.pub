@@ -64,6 +64,13 @@
       "when": 1790078288324,
       "tag": "0008_perpetual_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790718882968,
+      "tag": "0009_parched_risque",
+      "breakpoints": true
     }
   ]
 }

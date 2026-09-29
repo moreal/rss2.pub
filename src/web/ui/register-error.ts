@@ -34,6 +34,10 @@ export function registerErrorMessage(
       return translate(i18n, copy.registerErrorFeedUnreachable, {
         message: failure.message,
       });
+    case "MastodonFeed":
+      return translate(i18n, copy.registerErrorMastodonFeed);
+    case "FeedBlocked":
+      return translate(i18n, copy.registerErrorFeedBlocked);
     case "RegistrationUnavailable":
       return translate(i18n, copy.registerErrorUnavailable);
   }

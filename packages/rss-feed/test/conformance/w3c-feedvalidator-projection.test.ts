@@ -125,6 +125,7 @@ it("projects consumed category and enclosure elements with raw values", () => {
     description: null,
     pubDate: null,
     author: null,
+    dcCreator: null,
     categories: [{ value: "", domain: null }],
     comments: null,
     enclosure: null,
@@ -139,6 +140,7 @@ it("projects consumed category and enclosure elements with raw values", () => {
     description: "Foo",
     pubDate: null,
     author: null,
+    dcCreator: null,
     categories: [],
     comments: null,
     enclosure: {

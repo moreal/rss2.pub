@@ -3,7 +3,8 @@
 `drizzle/` contains the executable, ordered PostgreSQL SQL migrations.
 `src/web/migrate.ts` applies them to `DATABASE_URL` and exits. The initial public
 release includes migrations `0000` through `0008`; applying them to an empty
-PostgreSQL database is the baseline. Private pre-release databases are outside
+PostgreSQL database is the baseline. Migration `0009` adds moderation reports
+and blocked feed URLs. Private pre-release databases are outside
 the supported upgrade path.
 
 ## Authoring migrations

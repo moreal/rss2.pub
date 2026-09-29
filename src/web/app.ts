@@ -4,6 +4,8 @@ import { Hono } from "hono";
 import postgres from "postgres";
 import packageJson from "../../package.json" with { type: "json" };
 import { createFindFeedByHandle } from "../application/find-feed-by-handle.js";
+import { createBlockFeed } from "../application/block-feed.js";
+import { createRecordAbuseReport } from "../application/record-abuse-report.js";
 import { createCommandHandler } from "../application/handle-command.js";
 import { createFollowerTracker } from "../application/follower-tracker.js";
 import {
@@ -27,12 +29,15 @@ import {
 } from "../domain/feed/retry-policy.js";
 import { createHtmlFaviconResolver } from "../infrastructure/favicon/html-favicon-resolver.js";
 import { createFeedFetcher } from "../infrastructure/feedfetch/feed-fetcher.js";
+import { createHtmlFeedDiscoverer } from "../infrastructure/feedfetch/html-feed-discoverer.js";
 import { createFedifyGateway } from "../infrastructure/federation/fedify-gateway.js";
 import { createFedifyActorResolver } from "../infrastructure/federation/fedify-actor-resolver.js";
 import { createFedifyRemoteFollowResolver } from "../infrastructure/federation/fedify-remote-follow-resolver.js";
 import { createFedifyStack } from "../infrastructure/federation/fedify-stack.js";
 import { createDrizzleFederationRepository } from "../infrastructure/persistence/drizzle-federation-repository.js";
 import { createDrizzleFeedRepository } from "../infrastructure/persistence/drizzle-feed-repository.js";
+import { createDrizzleBlockedFeedRepository } from "../infrastructure/persistence/drizzle-blocked-feed-repository.js";
+import { createDrizzleAbuseReportRepository } from "../infrastructure/persistence/drizzle-abuse-report-repository.js";
 import { createDrizzleItemRepository } from "../infrastructure/persistence/drizzle-item-repository.js";
 import { createPostgresRegistrationGate } from "../infrastructure/persistence/postgres-registration-gate.js";
 import { applyMigrations } from "../infrastructure/persistence/migrations.js";
@@ -51,6 +56,8 @@ export type App = {
   readonly fetch: (request: Request) => Response | Promise<Response>;
   readonly scheduler: PollScheduler;
   readonly unregisterFeed: UnregisterFeed;
+  readonly blockFeed: ReturnType<typeof createBlockFeed>;
+  readonly reports: ReturnType<typeof createDrizzleAbuseReportRepository>;
   shutdown(): Promise<void>;
 };
 
@@ -58,7 +65,7 @@ export type App = {
  * Composition root: the only place where domain, application, infrastructure,
  * and raw Fedify are wired together. `main.ts` adds the HTTP listener and signals.
  */
-export async function createApp(config: AppConfig): Promise<App> {
+export async function createApp(config: AppConfig, options?: { readonly startQueue?: boolean }): Promise<App> {
   const pollPolicyResult = PollPolicy.create({
     intervalSeconds: config.pollIntervalSeconds,
     maxIntervalSeconds: config.pollMaxIntervalSeconds,
@@ -74,6 +81,8 @@ export async function createApp(config: AppConfig): Promise<App> {
   await applyMigrations(db);
 
   const feeds = createDrizzleFeedRepository(db);
+  const blockedFeeds = createDrizzleBlockedFeedRepository(db);
+  const reports = createDrizzleAbuseReportRepository(db);
   const items = createDrizzleItemRepository(db);
   const federationObjects = createDrizzleFederationRepository(db);
   const fetcher = createFeedFetcher({ allowPrivateAddress: config.allowPrivateAddress });
@@ -84,6 +93,8 @@ export async function createApp(config: AppConfig): Promise<App> {
   const registerFeed = createRegisterFeed({
     feeds,
     fetcher,
+    discoverer: createHtmlFeedDiscoverer({ allowPrivateAddress: config.allowPrivateAddress }),
+    blockedFeeds,
     clock,
     gate: createPostgresRegistrationGate(sql, {
       attemptsPerHour: config.registrationAttemptsPerHour,
@@ -99,7 +110,6 @@ export async function createApp(config: AppConfig): Promise<App> {
   const followerTracker = createFollowerTracker({ feeds });
   const commandHandler = createCommandHandler({
     registerFeed,
-    searchFeeds,
     host: config.host,
   });
 
@@ -114,6 +124,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     repository: federationObjects,
     followerTracker,
     commandHandler,
+    recordAbuseReport: createRecordAbuseReport({ reports }),
     host: config.host,
     clock,
     ...(config.allowPrivateAddress ? { allowPrivateAddress: true } : {}),
@@ -132,7 +143,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     federation: stack.federation,
     origin: config.origin,
   });
-  stack.startQueue();
+  if (options?.startQueue !== false) stack.startQueue();
 
   const pollFeed = instrumentPollFeed(
     createPollFeed({
@@ -154,6 +165,7 @@ export async function createApp(config: AppConfig): Promise<App> {
     tickIntervalMs: config.schedulerTickMs,
   });
   const unregisterFeed = createUnregisterFeed({ feeds, items, federation });
+  const blockFeed = createBlockFeed({ feeds, blockedFeeds, unregisterFeed });
 
   const web = createWebRoutes({
     origin: config.origin,
@@ -212,6 +224,8 @@ export async function createApp(config: AppConfig): Promise<App> {
     },
     scheduler,
     unregisterFeed,
+    blockFeed,
+    reports,
     shutdown: async () => {
       scheduler.stop();
       await sql.end({ timeout: 5 });

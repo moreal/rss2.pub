@@ -125,6 +125,8 @@ describe("createFederationPages", () => {
     expect(mainHtml).toContain("rss2.pub");
     expect(mainHtml).toContain('<h1><bdi dir="auto">rss2.pub</bdi></h1>');
     expect(mainHtml).toContain("<title>rss2.pub</title>");
+    expect(mainHtml).toContain("Mention me with a feed or website URL.");
+    expect(mainHtml).not.toContain("search &lt;keyword&gt;");
     expect(html).not.toContain('<nav class="crumbs"');
     expect(mainHtml).not.toContain('<nav class="crumbs"');
   });

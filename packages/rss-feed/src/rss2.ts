@@ -11,6 +11,7 @@ import type {
 import type { XmlElement, XmlNode } from "./xml.js";
 
 const CONTENT_MODULE_NAMESPACE = "http://purl.org/rss/1.0/modules/content/";
+const DUBLIN_CORE_NAMESPACE = "http://purl.org/dc/elements/1.1/";
 
 export function parseRss2Feed(channel: XmlElement): Rss2FeedDto {
   return {
@@ -47,6 +48,7 @@ function parseItem(item: XmlElement): Rss2ItemDto {
     description: directChildText(item, "description"),
     pubDate: directChildText(item, "pubDate"),
     author: directChildText(item, "author"),
+    dcCreator: namespacedChildText(item, DUBLIN_CORE_NAMESPACE, "creator"),
     categories: directChildren(item, "category").map(parseCategory),
     comments: directChildText(item, "comments"),
     enclosure: enclosureOf(item),
@@ -181,4 +183,3 @@ function textValue(element: XmlElement): string {
 function textFromNode(node: XmlNode): string {
   return node.type === "text" ? node.value : textValue(node);
 }
-

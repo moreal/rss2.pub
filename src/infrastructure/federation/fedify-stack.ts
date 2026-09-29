@@ -7,6 +7,7 @@ import {
 import { Create, Note } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
+import type { createRecordAbuseReport } from "../../application/record-abuse-report.js";
 import type { CommandHandler } from "../../application/handle-command.js";
 import { Handle } from "../../domain/feed/handle.js";
 import type { FeedRepository } from "../../domain/ports/feed-repository.js";
@@ -43,6 +44,7 @@ export function createFedifyStack(deps: {
   readonly feeds: FeedRepository;
   readonly followerTracker: FollowerTracker;
   readonly commandHandler?: CommandHandler;
+  readonly recordAbuseReport?: ReturnType<typeof createRecordAbuseReport>;
   readonly host?: string;
   readonly clock?: Clock;
   readonly repository: FederationRepository;
@@ -66,7 +68,7 @@ export function createFedifyStack(deps: {
       return {
         handle: MAIN_ACTOR_HANDLE,
         name: "rss2.pub",
-        summaryHtml: "I turn Atom or RSS 2.0 feeds into followable accounts. Mention me with &quot;register &lt;feed-url&gt;&quot; to bridge a feed, or &quot;search &lt;keyword&gt;&quot; to find one.",
+        summaryHtml: "I turn Atom or RSS 2.0 feeds into followable accounts. Mention me with a feed or website URL to bridge it.",
         homepageUrl: null,
         iconUrl: null,
       };
@@ -176,6 +178,7 @@ export function createFedifyStack(deps: {
     feeds: deps.feeds,
     repository: deps.repository,
     followerTracker: deps.followerTracker,
+    ...(deps.recordAbuseReport === undefined ? {} : { recordAbuseReport: deps.recordAbuseReport }),
     ...(deps.commandHandler === undefined
       ? {}
       : { commandHandler: deps.commandHandler }),

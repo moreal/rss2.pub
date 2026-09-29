@@ -74,12 +74,12 @@ export const copy = {
   },
   registerUrlLabel: /*i18n*/ {
     id: "register.url-label",
-    message: "Feed URL",
+    message: "Feed or website URL",
   },
   registerUrlHelp: /*i18n*/ {
     id: "register.url-help",
     message:
-      "The address of the Atom or RSS 2.0 feed itself, not the website — it often ends in /atom, /feed, or .xml.",
+      "Paste an Atom or RSS 2.0 feed URL, or a website URL that links to one.",
   },
   registerButton: /*i18n*/ {
     id: "register.button",
@@ -95,7 +95,7 @@ export const copy = {
     id: "register.bot-alt",
     message: "Prefer the fediverse? Mention {handle} with {command}.",
     comment:
-      "{handle} renders as the @rss2pub@host chip; {command} renders as the `register <url>` chip.",
+      "{handle} renders as the @rss2pub@host chip; {command} renders as the `<url>` chip.",
   },
   registerErrorHeading: /*i18n*/ {
     id: "register.error-heading",
@@ -104,7 +104,7 @@ export const copy = {
   registerErrorHint: /*i18n*/ {
     id: "register.error-hint",
     message:
-      "Open the address in a browser to check it returns a feed rather than a web page, then try again.",
+      "Check that the address serves a feed or that the website links to one, then try again.",
   },
   registerErrorMissingUrl: /*i18n*/ {
     id: "register.error-missing-url",
@@ -121,6 +121,14 @@ export const copy = {
   registerErrorFeedUnreachable: /*i18n*/ {
     id: "register.error-feed-unreachable",
     message: "Couldn’t read an Atom or RSS 2.0 feed there: {message}",
+  },
+  registerErrorMastodonFeed: /*i18n*/ {
+    id: "register.error-mastodon-feed",
+    message: "This feed belongs to Mastodon. Follow its original account instead.",
+  },
+  registerErrorFeedBlocked: /*i18n*/ {
+    id: "register.error-feed-blocked",
+    message: "This feed cannot be registered.",
   },
   registerErrorUnavailable: /*i18n*/ {
     id: "register.error-unavailable",
@@ -248,7 +256,7 @@ export const copy = {
   federationMainActorSummary: /*i18n*/ {
     id: "federation.main-actor-summary",
     message:
-      "I turn Atom and RSS 2.0 feeds into followable accounts. Mention me with register or search commands.",
+      "I turn Atom and RSS 2.0 feeds into followable accounts. Mention me with a feed or website URL.",
   },
   federationNoPostsTitle: /*i18n*/ {
     id: "federation.no-posts-title",

@@ -2,7 +2,7 @@
 
 Atom/RSS 2.0 → ActivityPub bridge. Each registered feed becomes a followable
 fediverse actor through raw Fedify dispatchers; a static main actor `rss2pub` accepts
-`register <url>` / `search <keyword>` commands via mention/DM; a server-rendered
+`<url>` via mention/DM; a server-rendered
 web UI offers search, registration, and most-followed recommendations.
 
 Input supports Atom 1.0 and RSS 2.0; RSS 1.0 remains unsupported. ADR-0016

@@ -52,7 +52,7 @@ describe("Solid product pages", () => {
       heading: "Follow feeds",
       lede: "Feed posts in your timeline.",
       registration,
-      botAlternative: ["Mention ", { kind: "chip", text: "@rss2pub@rss2.pub" }, " with ", { kind: "code", text: "register <url>" }, "."],
+      botAlternative: ["Mention ", { kind: "chip", text: "@rss2pub@rss2.pub" }, " with ", { kind: "code", text: "<url>" }, "."],
       search,
       popular: {
         heading: "Most followed feeds",
@@ -70,7 +70,7 @@ describe("Solid product pages", () => {
     expect(html).toMatch(/role="alert"/);
     expect(html).toMatch(/data-pending-form/);
     expect(html).toMatch(/data-pending-label="Registering…"/);
-    expect(html).toMatch(/register &lt;url>/);
+    expect(html).toMatch(/&lt;url>/);
     expect(html).toMatch(/href="\/search"[^>]*>See more feeds/);
     expect(html).toMatch(/12 followers/);
   });

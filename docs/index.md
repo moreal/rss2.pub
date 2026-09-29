@@ -4,7 +4,7 @@ rss2.pub turns Atom 1.0 and RSS 2.0 feeds into accounts that people can follow
 from a fediverse server. RSS 1.0 is not supported.
 
 To register a feed, open [rss2.pub](https://rss2.pub/) and submit its feed URL.
-You can also mention the `rss2pub` account with `register <feed-url>`. The
+You can also mention the `rss2pub` account with a feed or website URL. The
 service replies with the feed account's handle. Search for that handle from
 your fediverse account and follow it to receive new feed entries.
 

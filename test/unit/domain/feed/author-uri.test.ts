@@ -51,4 +51,11 @@ describe("AttributionCandidates", () => {
       "https://example.test/users/alice?view=full#profile",
     ]);
   });
+
+  it("does not treat an acct identifier or email as an explicit author URI", () => {
+    expect(AttributionCandidates.values(AttributionCandidates.fromRaw([
+      "acct:alice@example.test",
+      "alice@example.test",
+    ]))).toEqual([]);
+  });
 });

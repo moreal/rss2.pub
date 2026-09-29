@@ -133,3 +133,19 @@ export const federationObjects = pgTable(
     ),
   ],
 );
+
+export const blockedFeeds = pgTable("blocked_feeds", {
+  url: text("url").primaryKey(),
+  reason: text("reason").notNull(),
+  blockedAt: timestamp("blocked_at", { withTimezone: true }).notNull(),
+});
+
+export const abuseReports = pgTable("abuse_reports", {
+  id: text("id").primaryKey(),
+  actorUri: text("actor_uri").notNull(),
+  localHandle: text("local_handle").notNull(),
+  objectUris: text("object_uris").array().notNull(),
+  comment: text("comment").notNull(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull(),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+}, (table) => [index("abuse_reports_closed_received_idx").on(table.closedAt, table.receivedAt)]);

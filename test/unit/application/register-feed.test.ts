@@ -27,6 +27,83 @@ function setup(limits = { daily: 20, total: 1000 }) {
 }
 
 describe("RegisterFeed", () => {
+  it("registers a Mastodon hashtag RSS because the hashtag is not an actor", async () => {
+    const { registerFeed, fetcher } = setup();
+    const url = "https://social.example/tags/cats.rss";
+    fetcher.respondWith(url, ok(fetchedFeed({ generator: "Mastodon v4.4.0" })));
+    expect(unwrap(await registerFeed.execute(url)).feed.url).toBe(url);
+  });
+
+  it("registers a Mastodon account-filtered hashtag RSS", async () => {
+    const { registerFeed, fetcher } = setup();
+    const url = "https://social.example/@alice/tagged/cats.rss";
+    fetcher.respondWith(url, ok(fetchedFeed({ generator: "Mastodon v4.4.0" })));
+    expect(unwrap(await registerFeed.execute(url)).feed.url).toBe(url);
+  });
+
+  it("rejects a Mastodon account RSS without registering a duplicate actor", async () => {
+    const { feeds, registerFeed, fetcher } = setup();
+    const url = "https://social.example/@alice.rss";
+    fetcher.respondWith(url, ok(fetchedFeed({ generator: "Mastodon 4.3" })));
+    expect(unwrapErr(await registerFeed.execute(url)))
+      .toMatchObject({ type: "MastodonFeed" });
+    expect(await feeds.findByUrl(unwrap(FeedUrl.create(url)))).toBeNull();
+  });
+
+  it("discovers a feed from a website URL and registers the feed URL", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const fetcher = fakeFetcher();
+    const site = unwrap(FeedUrl.create("https://a.co/"));
+    const feedUrl = unwrap(FeedUrl.create("https://a.co/feed.xml"));
+    fetcher.respondWith(site, err({ type: "InvalidFeedFormat", url: site, message: "HTML" }));
+    fetcher.respondWith(feedUrl, ok(fetchedFeed({ title: "Found feed" })));
+    const registerFeed = createRegisterFeed({
+      feeds,
+      fetcher,
+      discoverer: { discover: async () => ok([feedUrl]) },
+      clock: fixedClock(now),
+      gate: { tryAcquire: async () => ({ release: async () => {} }) },
+      limits: { daily: 20, total: 1000 },
+    });
+
+    const { feed } = unwrap(await registerFeed.execute(site));
+    expect(feed.url).toBe(feedUrl);
+    expect(feed.title).toBe("Found feed");
+  });
+
+  it("rejects a blocked feed before fetching it", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const fetcher = fakeFetcher();
+    const blocked = unwrap(FeedUrl.create("https://a.co/f"));
+    const registerFeed = createRegisterFeed({
+      feeds,
+      fetcher,
+      blockedFeeds: { isBlocked: async (url) => url === blocked },
+      clock: fixedClock(now),
+      gate: { tryAcquire: async () => ({ release: async () => {} }) },
+      limits: { daily: 20, total: 1000 },
+    });
+    expect(unwrapErr(await registerFeed.execute(blocked))).toMatchObject({ type: "FeedBlocked" });
+    expect(fetcher.calls).toHaveLength(0);
+  });
+
+  it("does not register a blocked feed discovered from a website", async () => {
+    const feeds = createInMemoryFeedRepository();
+    const fetcher = fakeFetcher();
+    const site = unwrap(FeedUrl.create("https://a.co/"));
+    const blocked = unwrap(FeedUrl.create("https://a.co/feed.xml"));
+    fetcher.respondWith(site, err({ type: "InvalidFeedFormat", url: site, message: "HTML" }));
+    const registerFeed = createRegisterFeed({
+      feeds, fetcher,
+      discoverer: { discover: async () => ok([blocked]) },
+      blockedFeeds: { isBlocked: async (url) => url === blocked },
+      clock: fixedClock(now),
+      gate: { tryAcquire: async () => ({ release: async () => {} }) },
+      limits: { daily: 20, total: 1000 },
+    });
+    expect(unwrapErr(await registerFeed.execute(site))).toMatchObject({ type: "FeedBlocked" });
+    expect(fetcher.calls.map((call) => call.url)).toEqual([site]);
+  });
   it("rejects a new feed when registration work is already in progress", async () => {
     const feeds = createInMemoryFeedRepository();
     const fetcher = fakeFetcher();

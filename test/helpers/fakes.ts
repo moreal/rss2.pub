@@ -133,6 +133,7 @@ export function fetchedFeed(params: {
   description?: string | null;
   link?: string | null;
   language?: string | null;
+  generator?: string | null;
   items?: readonly RawFeedItem[];
   validators?: CacheValidators;
 }): FetchFeedSuccess {
@@ -143,6 +144,7 @@ export function fetchedFeed(params: {
       description: params.description ?? null,
       link: params.link ?? null,
       language: params.language ?? null,
+      generator: params.generator ?? null,
       items: params.items ?? [],
     },
     validators: params.validators ?? { etag: null, lastModified: null },

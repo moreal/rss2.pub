@@ -1,6 +1,6 @@
 import type { Brand } from "../../shared/brand.js";
 
-/** Canonical absolute HTTP(S) URI declared for an effective Atom author. */
+/** Canonical absolute HTTP(S) URI declared for an effective author. */
 export type AuthorUri = Brand<string, "AuthorUri">;
 
 /** Ordered, canonical, deduplicated, and bounded author attribution inputs. */

@@ -66,6 +66,7 @@ export type Rss2ItemDto = {
   readonly description: string | null;
   readonly pubDate: string | null;
   readonly author: string | null;
+  readonly dcCreator: string | null;
   readonly categories: readonly Rss2CategoryDto[];
   readonly comments: string | null;
   readonly enclosure: Rss2EnclosureDto | null;
@@ -95,4 +96,3 @@ export type Rss2FeedDto = {
   readonly skipDays: readonly string[];
   readonly items: readonly Rss2ItemDto[];
 };
-

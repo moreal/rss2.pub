@@ -291,7 +291,7 @@ describe("createFeedFetcher", () => {
               link: "https://example.test/rss-item",
               title: "RSS item",
               contentHtml: "<p>Body</p>",
-              summaryHtml: null,
+              summaryHtml: "<p>Body</p>",
               publishedAt: new Date("Sun, 30 Aug 2026 00:00:00 GMT"),
               language: "en-us",
               authorUris: [],

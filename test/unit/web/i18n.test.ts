@@ -52,7 +52,7 @@ describe("translate", () => {
         "Follow Atom and RSS 2.0 feeds from the fediverse.",
         "Follow any Atom or RSS 2.0 feed from the fediverse",
         "rss2.pub turns feeds into fediverse accounts anyone can follow.",
-        "The address of the Atom or RSS 2.0 feed itself, not the website — it often ends in /atom, /feed, or .xml.",
+        "Paste an Atom or RSS 2.0 feed URL, or a website URL that links to one.",
         "Couldn’t read an Atom or RSS 2.0 feed there: boom",
       ],
     },
@@ -62,7 +62,7 @@ describe("translate", () => {
         "페디버스에서 Atom 및 RSS 2.0 피드를 팔로우하세요.",
         "페디버스에서 어떤 Atom 또는 RSS 2.0 피드든 팔로우하세요",
         "rss2.pub은 피드를 누구나 팔로우할 수 있는 페디버스 계정으로 바꿉니다.",
-        "웹사이트가 아니라 Atom 또는 RSS 2.0 피드 자체의 주소를 입력하세요. 보통 /atom, /feed 또는 .xml로 끝납니다.",
+        "Atom 또는 RSS 2.0 피드 URL이나 해당 피드로 연결되는 웹사이트 URL을 입력하세요.",
         "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니다: boom",
       ],
     },
@@ -82,10 +82,10 @@ describe("translateWithSlots", () => {
   it("interleaves slot values between translated text runs", () => {
     const parts = translateWithSlots(i18nFor("en"), copy.registerBotAlt, {
       handle: "@rss2pub@example.com",
-      command: "register <url>",
+      command: "<url>",
     });
     expect(parts.join("")).toBe(
-      "Prefer the fediverse? Mention @rss2pub@example.com with register <url>.",
+      "Prefer the fediverse? Mention @rss2pub@example.com with <url>.",
     );
   });
 
@@ -95,7 +95,7 @@ describe("translateWithSlots", () => {
       command: "C",
     });
     expect(parts.join("")).toBe(
-      "페디버스가 더 편하다면 H 계정에 C 명령을 멘션하세요.",
+      "페디버스가 더 편하다면 H C 형식으로 멘션하세요.",
     );
   });
 

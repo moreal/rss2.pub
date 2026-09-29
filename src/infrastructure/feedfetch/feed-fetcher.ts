@@ -141,6 +141,7 @@ function parseFeedBody(body: string): Result<FetchedFeed, string> {
       description: rss2Result.value.description,
       link: rss2Result.value.link,
       language: channelLanguage,
+      generator: rss2Result.value.generator,
       items: rss2Result.value.items.map((item) => mapRss2Entry(item, channelLanguage)),
     });
   }

@@ -3,6 +3,7 @@ import {
   Accept,
   type Actor,
   Create,
+  Flag,
   Follow,
   Mention,
   Note,
@@ -11,6 +12,7 @@ import {
 } from "@fedify/vocab";
 import { getLogger } from "@logtape/logtape";
 import type { FollowerTracker } from "../../application/follower-tracker.js";
+import type { createRecordAbuseReport } from "../../application/record-abuse-report.js";
 import type { CommandHandler, ReplyPart } from "../../application/handle-command.js";
 import { escapeHtml, stripHtml } from "../../domain/content/html.js";
 import { Handle } from "../../domain/feed/handle.js";
@@ -51,6 +53,7 @@ type InboxHandlerDependencies = {
   readonly repository: FederationRepository;
   readonly followerTracker: FollowerTracker;
   readonly commandHandler?: CommandHandler;
+  readonly recordAbuseReport?: ReturnType<typeof createRecordAbuseReport>;
   readonly host?: string;
   readonly clock?: Clock;
   readonly resolveFollowActor?: ResolveFollowActor;
@@ -146,6 +149,36 @@ export function createInboxHandlers(deps: InboxHandlerDependencies) {
   const resolveCreateActor = deps.resolveCreateActor ?? defaultResolveCreateActor;
 
   return {
+    async flag(
+      ctx: Context<void>,
+      recipient: string | null,
+      flag: Flag,
+    ): Promise<void> {
+      if (deps.recordAbuseReport === undefined || flag.id === null || flag.actorId === null) return;
+      for (const target of flag.objectIds) {
+        const parsed = ctx.parseUri(target);
+        const identifier = parsed?.type === "actor"
+          ? parsed.identifier
+          : parsed?.type === "object" && parsed.class === Note
+            ? parsed.values["identifier"] : undefined;
+        if (identifier === undefined || (recipient !== null
+          && recipient !== MAIN_ACTOR_HANDLE && recipient !== identifier)) continue;
+        if (!await localActorExists(identifier, deps.feeds)) continue;
+        if (parsed?.type === "object") {
+          const id = parsed.values["id"];
+          if (id === undefined || await deps.repository.findObject(identifier, id) === null) continue;
+        }
+        await deps.recordAbuseReport.execute({
+          id: flag.id.href,
+          actorUri: flag.actorId.href,
+          localHandle: identifier,
+          objectUris: flag.objectIds.map((uri) => uri.href),
+          comment: String(flag.content ?? ""),
+          receivedAt: new Date(),
+        });
+        return;
+      }
+    },
     async follow(
       ctx: Context<void>,
       recipient: string | null,
@@ -294,6 +327,7 @@ export function registerInboxListeners(
     .on(Follow, (ctx, follow) => handlers.follow(ctx, ctx.recipient, follow))
     .on(Undo, (ctx, undo) => handlers.undo(ctx, ctx.recipient, undo))
     .on(Create, (ctx, create) => handlers.create(ctx, ctx.recipient, create))
+    .on(Flag, (ctx, flag) => handlers.flag(ctx, ctx.recipient, flag))
     .setSharedKeyDispatcher(() => ({ identifier: MAIN_ACTOR_HANDLE }))
     .withIdempotency("per-inbox");
 }

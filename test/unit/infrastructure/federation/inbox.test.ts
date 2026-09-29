@@ -3,6 +3,7 @@ import {
   Accept,
   Create,
   Endpoints,
+  Flag,
   Follow,
   Mention,
   Note,
@@ -12,10 +13,12 @@ import {
 } from "@fedify/vocab";
 import { describe, expect, it } from "vitest";
 import { createFollowerTracker } from "../../../../src/application/follower-tracker.js";
+import { createRecordAbuseReport } from "../../../../src/application/record-abuse-report.js";
 import { MAIN_ACTOR_HANDLE } from "../../../../src/infrastructure/federation/identity.js";
 import { createInboxHandlers } from "../../../../src/infrastructure/federation/inbox.js";
 import { createInMemoryFederationRepository } from "../../../../src/infrastructure/persistence/in-memory-federation-repository.js";
 import { createInMemoryFeedRepository } from "../../../../src/infrastructure/persistence/in-memory-feed-repository.js";
+import { createInMemoryAbuseReportRepository } from "../../../../src/infrastructure/persistence/in-memory-abuse-report-repository.js";
 import { fixedClock, makeFeed } from "../../../helpers/fakes.js";
 
 function context() {
@@ -33,6 +36,60 @@ function context() {
   );
   return federation.createContext(new URL("https://local.test"), undefined);
 }
+
+it("records a Flag for a local feed sent to the main actor", async () => {
+  const ctx = context();
+  const feeds = createInMemoryFeedRepository();
+  const feed = makeFeed({ handle: "feed_a" });
+  await feeds.save(feed);
+  const reports = createInMemoryAbuseReportRepository();
+  const handlers = createInboxHandlers({
+    feeds,
+    repository: createInMemoryFederationRepository(),
+    followerTracker: createFollowerTracker({ feeds }),
+    recordAbuseReport: createRecordAbuseReport({ reports }),
+  });
+  const flag = new Flag({
+    id: new URL("https://remote.test/flag/1"),
+    actor: new URL("https://remote.test/actor"),
+    objects: [ctx.getActorUri(feed.handle)],
+    content: "Spam",
+  });
+  await handlers.flag(ctx, MAIN_ACTOR_HANDLE, flag);
+  expect(await reports.listOpen()).toMatchObject([{
+    id: "https://remote.test/flag/1",
+    localHandle: feed.handle,
+    comment: "Spam",
+  }]);
+});
+
+it("records a Flag for an existing local Note but ignores an unknown Note", async () => {
+  const ctx = context();
+  const feeds = createInMemoryFeedRepository();
+  const feed = makeFeed({ handle: "feed_a" });
+  await feeds.save(feed);
+  const repository = createInMemoryFederationRepository();
+  await repository.upsertObject({
+    id: "one", actorHandle: feed.handle, contentHtml: "Post",
+    name: null, summaryHtml: null, sourceUrl: null, language: null,
+    toUris: [], ccUris: [], attributedToUris: [], mentions: [],
+    publishedAt: new Date(), updatedAt: null,
+  });
+  const reports = createInMemoryAbuseReportRepository();
+  const handlers = createInboxHandlers({
+    feeds, repository, followerTracker: createFollowerTracker({ feeds }),
+    recordAbuseReport: createRecordAbuseReport({ reports }),
+  });
+  const reported = (id: string) => new Flag({
+    id: new URL(`https://remote.test/flag/${id}`),
+    actor: new URL("https://remote.test/actor"),
+    objects: [ctx.getObjectUri(Note, { identifier: feed.handle, id })],
+  });
+  await handlers.flag(ctx, MAIN_ACTOR_HANDLE, reported("missing"));
+  expect(await reports.listOpen()).toHaveLength(0);
+  await handlers.flag(ctx, MAIN_ACTOR_HANDLE, reported("one"));
+  expect(await reports.listOpen()).toMatchObject([{ localHandle: feed.handle }]);
+});
 
 describe("raw Fedify Follow/Undo handlers", () => {
   it("stores one follower, counts once, and sends Accept for duplicate Follow", async () => {
@@ -181,7 +238,7 @@ describe("raw Fedify Follow/Undo handlers", () => {
       id: new URL("https://remote.test/activities/direct-1"),
       actor: remote.id,
       object: new Note({
-        content: "register https://source.test/feed.xml",
+        content: "https://source.test/feed.xml",
         tos: [ctx.getActorUri(MAIN_ACTOR_HANDLE)],
       }),
     });

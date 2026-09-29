@@ -1,6 +1,5 @@
 import { Feed } from "../domain/feed/feed.js";
 import type { RegisterFeed } from "./register-feed.js";
-import type { SearchFeeds } from "./search-feeds.js";
 
 /**
  * Commands the main actor (`rss2pub`) understands in mentions/DMs.
@@ -11,30 +10,17 @@ export type Command =
       readonly type: "register";
       readonly url: string;
     }
-  | { readonly type: "search"; readonly keyword: string }
   | { readonly type: "help" };
 
-const MENTION_PATTERN = /@[a-z0-9_]+(?:@[a-z0-9.:_-]+)?/gi;
+const MENTION_PATTERN = /(?<!\S)@[a-z0-9_]+(?:@[a-z0-9.:_-]+)?(?=\s|$)/gi;
 
 export function parseCommand(text: string): Command {
   if (text.length > 4096) return { type: "help" };
   const cleaned = text.replace(MENTION_PATTERN, " ").trim();
-  const [word = "", ...rest] = cleaned.split(/\s+/).filter((t) => t.length > 0);
-  switch (word.toLowerCase()) {
-    case "register": {
-      const url = rest[0];
-      if (url === undefined) return { type: "help" };
-      return { type: "register", url };
-    }
-    case "search": {
-      const keyword = rest.join(" ");
-      return keyword.length === 0
-        ? { type: "help" }
-        : { type: "search", keyword };
-    }
-    default:
-      return { type: "help" };
-  }
+  const [word = ""] = cleaned.split(/\s+/).filter((t) => t.length > 0);
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(word)
+    ? { type: "register", url: word }
+    : { type: "help" };
 }
 
 /**
@@ -53,14 +39,12 @@ export type CommandHandler = {
 };
 
 const HELP_TEXT = [
-  "I turn Atom or RSS 2.0 feeds into followable fediverse accounts. Commands:",
-  "register <feed-url> — register an Atom or RSS 2.0 feed and get its account handle",
-  "search <keyword> — find registered feeds",
+  "I turn Atom or RSS 2.0 feeds into followable fediverse accounts. Send me:",
+  "@rss2pub <url> — register an Atom/RSS 2.0 feed or website and get its account handle",
 ].join("\n");
 
 export function createCommandHandler(deps: {
   readonly registerFeed: RegisterFeed;
-  readonly searchFeeds: SearchFeeds;
   /** Hostname feeds are served from, e.g. "rss2.pub" — used to render handles. */
   readonly host: string;
 }): CommandHandler {
@@ -87,9 +71,13 @@ export function createCommandHandler(deps: {
               case "FeedUnreachable":
                 return [
                   t(
-                    `I couldn't read an Atom feed there: ${result.error.message}`,
+                    `I couldn't find an Atom or RSS 2.0 feed there: ${result.error.message}`,
                   ),
                 ];
+              case "MastodonFeed":
+                return [t("This feed belongs to Mastodon. Follow its original account instead.")];
+              case "FeedBlocked":
+                return [t("This feed cannot be registered.")];
               case "RegistrationUnavailable":
                 return [t("New registrations are currently limited. Please try again later.")];
               default: {
@@ -112,25 +100,6 @@ export function createCommandHandler(deps: {
                 m(account(feed.handle)),
                 t("."),
               ];
-        }
-        case "search": {
-          const result = await deps.searchFeeds.execute(command.keyword);
-          if (!result.ok || result.value.length === 0) {
-            return [
-              t(
-                `No feeds found for "${command.keyword}". Register one with: register <feed-url>`,
-              ),
-            ];
-          }
-          const parts: ReplyPart[] = [t("Found:\n")];
-          for (const [index, feed] of result.value.entries()) {
-            if (index > 0) parts.push(t("\n"));
-            parts.push(
-              m(account(feed.handle)),
-              t(` — ${Feed.displayName(feed)}`),
-            );
-          }
-          return parts;
         }
         case "help":
           return [t(HELP_TEXT)];

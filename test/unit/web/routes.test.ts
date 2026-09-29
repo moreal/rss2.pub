@@ -313,10 +313,10 @@ describe("localized content", () => {
     const { document } = parseHTML(await bodyOf(webApp().request("/?lang=ko")));
     const note = document.querySelector(".panel-note");
     expect(note?.textContent).toBe(
-      "페디버스가 더 편하다면 @rss2pub@rss2.test 계정에 register <url> 명령을 멘션하세요.",
+      "페디버스가 더 편하다면 @rss2pub@rss2.test <url> 형식으로 멘션하세요.",
     );
     expect(note?.querySelector("span.chip")?.textContent).toBe("@rss2pub@rss2.test");
-    expect(note?.querySelector("code.chip")?.textContent).toBe("register <url>");
+    expect(note?.querySelector("code.chip")?.textContent).toBe("<url>");
     expect(note?.querySelector("span.chip")?.compareDocumentPosition(note.querySelector("code.chip"))).toBe(4);
   });
 

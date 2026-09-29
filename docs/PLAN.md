@@ -3,7 +3,7 @@
 Atom 피드를 ActivityPub 액터로 노출하는 브리지. 등록된 피드 하나가 페디버스 계정 하나가
 되어, 마스토돈 등에서 팔로우하면 새 글이 게시물로 전달된다. 추가로:
 
-- **메인 액터**: 멘션/DM으로 `register <url>`, `search <keyword>` 같은 명령을 받아 피드를
+- **메인 액터**: 멘션/DM으로 `<url>`을 받아 피드를
   등록·검색해주는 봇 계정.
 - **웹 UI**: 팔로워 수 기준 인기 피드 추천, 검색, 등록 페이지.
 
@@ -290,7 +290,7 @@ packages/
 - 런타임: **Node.js 24**, 패키지 매니저 **Yarn Berry(v4) + `nodeLinker: pnpm`**
   (corepack으로 버전 고정, Node는 nix/mise 제공).
 - 메인 액터 핸들: **`rss2pub`**.
-- 메인 액터 명령: **`register <url>`, `search <keyword>`** 두 가지로 시작.
+- 메인 액터 명령: **`<url>`**. `register <url>`과 `search <keyword>`는 받지 않음.
   unregister는 제공하지 않음.
 - 핸들 정규화: 해시 suffix를 **항상** 적용(최종 최대 30자).
 - 입력: **Atom 1.0 only**. RSS 호환과 기존 RSS 등록 migration은 제공하지 않음.

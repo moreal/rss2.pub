@@ -132,6 +132,53 @@ describe("federation e2e", () => {
     expect(actor["name"]).toBe("RSS Blog");
   });
 
+  it("registers Mastodon tag RSS while rejecting account RSS", async () => {
+    const rss = (link: string) => `<rss version="2.0"><channel>
+      <title>Mastodon RSS</title><description>Posts</description>
+      <link>${link}</link><generator>Mastodon v4.4.0</generator>
+    </channel></rss>`;
+    fixtures.setFixture("/tags/cats.rss", rss(fixtures.url("/tags/cats")), {
+      contentType: "application/rss+xml",
+    });
+    fixtures.setFixture("/@alice.rss", rss(fixtures.url("/@alice")), {
+      contentType: "application/rss+xml",
+    });
+    const tag = await fetch(`${base}/register`, {
+      method: "POST", body: new URLSearchParams({ url: fixtures.url("/tags/cats.rss") }),
+    });
+    expect(tag.status).toBe(200);
+    expect(await tag.text()).toContain("Feed registered");
+    const account = await fetch(`${base}/register`, {
+      method: "POST", body: new URLSearchParams({ url: fixtures.url("/@alice.rss") }),
+    });
+    expect(account.status).toBe(422);
+    expect(await account.text()).toContain("Follow its original account instead");
+  });
+
+  it("discovers a feed from a website and prevents registration after blocking it", async () => {
+    fixtures.setFixture("/discover/", `<!doctype html><html><head>
+      <link rel="alternate" type="application/rss+xml" href="feed.xml">
+    </head></html>`, { contentType: "text/html" });
+    fixtures.setFixture("/discover/feed.xml", `<rss version="2.0"><channel>
+      <title>Discovered feed</title><description>News</description>
+      <link>${fixtures.url("/discover/")}</link>
+    </channel></rss>`, { contentType: "application/rss+xml" });
+    const website = fixtures.url("/discover/");
+    const feedUrl = fixtures.url("/discover/feed.xml");
+    const handle = Handle.fromFeedUrl(unwrap(FeedUrl.create(feedUrl)));
+    const first = await fetch(`${base}/register`, {
+      method: "POST", body: new URLSearchParams({ url: website }),
+    });
+    expect(first.status).toBe(200);
+    expect(await first.text()).toContain(`@${handle}@${host}`);
+    expect((await app.blockFeed.execute(feedUrl, "Spam")).ok).toBe(true);
+    const second = await fetch(`${base}/register`, {
+      method: "POST", body: new URLSearchParams({ url: feedUrl }),
+    });
+    expect(second.status).toBe(422);
+    expect(await second.text()).toContain("This feed cannot be registered.");
+  });
+
   it("registers a feed through the web form", async () => {
     fixtures.setFixture(
       "/blog/feed.xml",

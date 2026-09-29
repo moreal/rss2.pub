@@ -9,9 +9,11 @@ export type FetchedFeed = {
   /** The feed's own homepage link (Atom `alternate`), not the feed document's
    * own URL — the source for ADR-0010 favicon lookup. */
   readonly link: string | null;
-  /** Raw BCP-47 tag from the Atom feed-root `xml:lang` (ADR-0011).
+  /** Raw BCP-47 tag from Atom `xml:lang` or RSS channel language.
    * Unvalidated — see `FeedLanguage.create`. */
   readonly language: string | null;
+  /** RSS 2.0 channel generator, used to avoid duplicating Mastodon actors. */
+  readonly generator?: string | null;
   readonly items: readonly RawFeedItem[];
 };
 
@@ -36,7 +38,7 @@ export type FetchFeedSuccess =
     };
 
 /**
- * Retrieves and parses an Atom 1.0 document. Passing the previous poll's
+ * Retrieves and parses an Atom 1.0 or RSS 2.0 document. Passing the previous poll's
  * validators enables conditional GET (`not-modified`).
  */
 export type FeedFetcher = {

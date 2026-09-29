@@ -2,6 +2,15 @@ import { describe, expect, it } from "vitest";
 import { parseRss2 } from "../src/index.js";
 
 describe("parseRss2 channel and item metadata", () => {
+  it("projects Dublin Core creator without confusing it with RSS author", () => {
+    const result = parseRss2(`<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <channel><item><author>alice@example.test (Alice)</author>
+        <dc:creator>https://actors.test/bob</dc:creator></item></channel></rss>`);
+    expect(result).toMatchObject({ ok: true, value: { items: [{
+      author: "alice@example.test (Alice)",
+      dcCreator: "https://actors.test/bob",
+    }] } });
+  });
   it("parses channel and item fields in document order", () => {
     const result = parseRss2(`<rss version="2.0">
       <channel>
@@ -215,4 +224,3 @@ describe("parseRss2 channel and item metadata", () => {
     });
   });
 });
-

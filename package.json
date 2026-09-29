@@ -23,6 +23,7 @@
     "dev": "yarn workspace @rss2pub/atom-feed build && yarn workspace @rss2pub/rss-feed build && yarn web-ui:build && node --watch --env-file-if-exists=.env --import tsx src/web/main.ts",
     "db:reset": "./scripts/db-reset.sh",
     "db:migrate": "node --env-file-if-exists=.env --import tsx src/web/migrate.ts",
+    "moderate": "node --env-file-if-exists=.env --import tsx src/web/moderate.ts",
     "docs:dev": "yarn --cwd docs dev",
     "docs:build": "yarn --cwd docs build",
     "docs:preview": "yarn --cwd docs preview",

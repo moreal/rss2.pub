@@ -61,7 +61,7 @@ function homeModel(
     botAlternative: translateWithSlots<HomeViewModel["botAlternative"][number]>(
       ctx.i18n, copy.registerBotAlt, {
         handle: { kind: "chip", text: `@rss2pub@${ctx.host}` },
-        command: { kind: "code", text: "register <url>" },
+        command: { kind: "code", text: "<url>" },
       },
     ),
     search: searchForm(ctx),
