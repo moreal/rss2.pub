@@ -41,9 +41,13 @@ export type FetchFeedSuccess =
  * Retrieves and parses an Atom 1.0 or RSS 2.0 document. Passing the previous poll's
  * validators enables conditional GET (`not-modified`).
  */
+/** Remaining time budget supplied by an orchestrating use case. */
+export type FeedRequestBudget = { readonly timeoutMs: number };
+
 export type FeedFetcher = {
   fetch(
     url: FeedUrl,
     validators: CacheValidators,
+    budget?: FeedRequestBudget,
   ): Promise<Result<FetchFeedSuccess, FetchFeedError>>;
 };

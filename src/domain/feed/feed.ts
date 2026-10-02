@@ -78,6 +78,9 @@ export type Feed = {
    * `xml:lang` of their own. */
   readonly language: FeedLanguage | null;
   readonly registeredAt: Date;
+  /** Null for feeds whose polling history has not been recorded yet. */
+  readonly lastPolledAt: Date | null;
+  readonly lastSuccessfulPollAt: Date | null;
   readonly validators: CacheValidators;
   readonly consecutiveFailures: number;
   /** Consecutive polls that produced nothing new; stretches the interval. */
@@ -112,6 +115,8 @@ export const Feed = {
       // register — no extra request needed, so it is set immediately.
       language: params.language ?? null,
       registeredAt: params.now,
+      lastPolledAt: null,
+      lastSuccessfulPollAt: null,
       validators: NO_VALIDATORS,
       consecutiveFailures: 0,
       unchangedPolls: 0,

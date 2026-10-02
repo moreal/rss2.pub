@@ -31,14 +31,40 @@ export function registerErrorMessage(
         protocol: failure.protocol.replace(/:$/, ""),
       });
     case "FeedUnreachable":
-      return translate(i18n, copy.registerErrorFeedUnreachable, {
-        message: failure.message,
-      });
+      return translate(i18n, failure.reason === "timeout" ? copy.registerTimeoutMessage
+        : failure.reason === "network" ? copy.registerNetworkMessage : copy.registerNoFeedMessage);
+    case "MultipleFeeds":
+      return translate(i18n, copy.registerSelectHelp);
     case "MastodonFeed":
       return translate(i18n, copy.registerErrorMastodonFeed);
     case "FeedBlocked":
       return translate(i18n, copy.registerErrorFeedBlocked);
     case "RegistrationUnavailable":
       return translate(i18n, copy.registerErrorUnavailable);
+  }
+}
+
+/** Recovery advice matches the failure, rather than asking everyone to retype a URL. */
+export function registerErrorHint(i18n: I18n, failure: RegisterFailure): string {
+  switch (failure.type) {
+    case "RegistrationUnavailable":
+      return failure.retryAfterSeconds === null ? translate(i18n, copy.registerCapacityHint)
+        : translate(i18n, copy.registerRetryHint, { minutes: Math.max(1, Math.ceil(failure.retryAfterSeconds / 60)) });
+    case "FeedBlocked": return translate(i18n, copy.registerBlockedHint);
+    case "MastodonFeed": return translate(i18n, copy.registerMastodonHint);
+    case "FeedUnreachable": return translate(i18n, failure.reason === "timeout" ? copy.registerTimeoutHint
+      : failure.reason === "network" ? copy.registerNetworkHint : copy.registerFormatHint);
+    case "MissingUrl": case "NotAUrl": case "UnsupportedProtocol": case "MultipleFeeds":
+      return translate(i18n, copy.registerFormatHint);
+  }
+}
+export function registerErrorAction(i18n: I18n, failure: RegisterFailure): { readonly href: string; readonly label: string } | undefined {
+  switch (failure.type) {
+    case "MastodonFeed": return failure.accountUrl === undefined ? undefined
+      : { href: failure.accountUrl, label: translate(i18n, copy.registerOriginalAccount) };
+    case "FeedUnreachable": return { href: failure.url, label: translate(i18n, copy.registerOpenSource) };
+    case "RegistrationUnavailable": return failure.retryAfterSeconds === null
+      ? { href: "/search", label: translate(i18n, copy.searchHeading) } : undefined;
+    default: return undefined;
   }
 }

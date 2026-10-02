@@ -18,7 +18,7 @@ import {
 } from "../locale.js";
 import { RSS_ICON_PATH, RssIcon } from "./icons.js";
 import { copy } from "./messages.js";
-import { COPY_SCRIPT, PENDING_SCRIPT, STYLE } from "./styles.js";
+import { COPY_SCRIPT, PENDING_SCRIPT, STYLE, NO_SCRIPT_STYLE } from "./styles.js";
 import { webUiAssetUrls } from "./solid-assets.js";
 
 const FAVICON = `data:image/svg+xml,${encodeURIComponent(
@@ -173,6 +173,7 @@ export const Layout: FC<
       {/* raw(): Hono escapes `"`, `<`, `>` and `&` in text children, which
           would corrupt quoted font names and child selectors. */}
       <style>{raw(STYLE)}</style>
+      <noscript><style>{raw(NO_SCRIPT_STYLE)}</style></noscript>
     </head>
     <body>
       <a class="skip" href="#main">

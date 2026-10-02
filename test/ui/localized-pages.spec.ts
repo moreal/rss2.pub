@@ -188,7 +188,7 @@ for (const locale of ["ko", "zh-Hant-TW"]) {
 
 test("rejected registration preserves the address, explains the error, and focuses the field", async ({ page }) => {
   await page.goto(`${baseUrl}/?lang=en`);
-  const address = page.getByRole("textbox", { name: "Feed URL" });
+  const address = page.getByRole("textbox", { name: "Feed or website URL" });
   await address.fill("ftp://example.com/feed.xml");
   const response = page.waitForResponse((result) =>
     result.url().endsWith("/register") && result.request().method() === "POST",
@@ -196,7 +196,7 @@ test("rejected registration preserves the address, explains the error, and focus
   await page.getByRole("button", { name: "Register feed" }).click();
   expect((await response).status()).toBe(422);
 
-  const rejected = page.getByRole("textbox", { name: "Feed URL" });
+  const rejected = page.getByRole("textbox", { name: "Feed or website URL" });
   await expect(rejected).toHaveValue("ftp://example.com/feed.xml");
   await expect(rejected).toBeFocused();
   await expect(rejected).toHaveAttribute("aria-invalid", "true");
@@ -210,7 +210,7 @@ test("rejected registration preserves the address, explains the error, and focus
 
 test("successful registration shows the account and steps for following it", async ({ page }) => {
   await page.goto(`${baseUrl}/?lang=en`);
-  await page.getByRole("textbox", { name: "Feed URL" }).fill("https://example.com/feed.xml");
+  await page.getByRole("textbox", { name: "Feed or website URL" }).fill("https://example.com/feed.xml");
   const response = page.waitForResponse((result) =>
     result.url().endsWith("/register") && result.request().method() === "POST",
   );
@@ -220,6 +220,8 @@ test("successful registration shows the account and steps for following it", asy
 
   await expect(page.getByRole("heading", { level: 1, name: "Feed registered" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Follow it from your fediverse account" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Follow from your Fediverse account" })).toBeVisible();
+  await page.locator(".follow-alternative > summary").click();
   await expect(page.getByText("@long_feed_account_name@127.0.0.1")).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "press Follow" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Open the account page" })).toHaveAttribute("href", "/@long_feed_account_name");
@@ -234,6 +236,7 @@ test("successful registration shows the account and steps for following it", asy
   await languageChoice(page, "한국어").click();
   await expect(page).toHaveURL(/\/registered\/long_feed_account_name\?created=1&lang=ko$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
+  await page.locator(".follow-alternative > summary").click();
   await expect(page.getByText("@long_feed_account_name@127.0.0.1")).toBeVisible();
   expect(registrationPosts).toEqual([]);
 });
@@ -245,6 +248,7 @@ test("copying the registered account puts its full handle on the clipboard", asy
   try {
     const page = await context.newPage();
     await page.goto(`${baseUrl}/registered/long_feed_account_name?created=1&lang=en`);
+    await page.locator(".follow-alternative > summary").click();
     const copy = page.getByRole("button", { name: "Copy", exact: true });
     await expect(copy).toBeVisible();
     await copy.click();
@@ -369,4 +373,38 @@ test("200% text at 320px reflows home, search, and registration result with reac
     await japanese.click();
     await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   }
+});
+
+
+test("registration result follows directly without copying an account", async ({ page }) => {
+  await page.goto(baseUrl + "/registered/long_feed_account_name?created=1&lang=en");
+  await page.getByRole("textbox", { name: "Follow from your Fediverse account" }).fill("alice@remote.example");
+  await page.getByRole("button", { name: "Follow", exact: true }).click();
+  await expect(page).toHaveURL(baseUrl + "/remote-authorization");
+});
+
+test("website choices work on a phone without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 320, height: 720 } });
+  try {
+    const page = await context.newPage();
+    await page.goto(baseUrl + "/?lang=en");
+    await page.getByRole("textbox", { name: "Feed or website URL" }).fill("https://example.com/multiple");
+    await page.getByRole("button", { name: "Register feed", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Choose a feed", exact: true })).toBeVisible();
+    await expect(page.locator(".feed-choices > li")).toHaveCount(2);
+    expect(await page.evaluate("document.documentElement.scrollWidth")).toBeLessThanOrEqual(320);
+    await page.screenshot({ path: test.info().outputPath("feed-choice-mobile.png"), fullPage: true });
+    await page.locator(".feed-choices > li").filter({ hasText: "Comments feed" }).getByRole("button").click();
+    await expect(page).toHaveURL(/registered\/comments_feed/);
+    await expect(page.getByRole("textbox", { name: "Follow from your Fediverse account" })).toBeVisible();
+    await expect(page.getByText("Waiting for a source check", { exact: true }).first()).toBeVisible();
+  } finally { await context.close(); }
+});
+
+test("temporary registration limits explain when to retry without marking the address invalid", async ({ page }) => {
+  await page.goto(baseUrl + "/?lang=en");
+  await page.getByRole("textbox", { name: "Feed or website URL" }).fill("https://example.com/limited");
+  await page.getByRole("button", { name: "Register feed", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("Try again in 60 minutes.");
+  await expect(page.getByRole("textbox", { name: "Feed or website URL" })).not.toHaveAttribute("aria-invalid", "true");
 });

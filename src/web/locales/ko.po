@@ -46,6 +46,11 @@ msgid "register.error-hint"
 msgstr "주소에서 피드를 제공하거나 웹사이트에 피드 링크가 있는지 확인한 뒤 다시 시도하세요."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:341
+msgid "register.select-heading"
+msgstr "피드 선택"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:174
 msgid "register.copied"
 msgstr "복사됨"
@@ -69,6 +74,16 @@ msgstr "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니�
 #: src/web/ui/messages.ts:289
 msgid "federation.remote-follow-invalid-account"
 msgstr "올바른 페디버스 계정을 입력하세요. 예: you@instance.social"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:393
+msgid "register.timeout-hint"
+msgstr "웹사이트 탐색을 건너뛰려면 피드 URL을 직접 입력하거나 나중에 다시 시도하세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:297
+msgid "federation.remote-follow-help"
+msgstr "계정 이름을 입력하면 자신의 서버로 이동합니다. 그곳에서 팔로우를 확인하세요."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:75
@@ -128,6 +143,16 @@ msgid "layout.language-label"
 msgstr "언어"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:325
+msgid "collection.last-success"
+msgstr "마지막 확인 성공"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:389
+msgid "register.error-timeout"
+msgstr "피드를 찾는 데 너무 오래 걸렸습니다."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:109
 msgid "register.error-missing-url"
 msgstr "피드 URL이 없습니다."
@@ -142,6 +167,16 @@ msgstr "팔로워가 가장 많은 피드"
 #: src/web/ui/messages.ts:133
 msgid "register.error-unavailable"
 msgstr "현재 새 피드 등록이 제한되어 있습니다. 나중에 다시 시도해 주세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:365
+msgid "register.capacity-hint"
+msgstr "지금은 새 피드를 등록할 수 없습니다. 등록된 피드는 검색하고 팔로우할 수 있습니다."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:329
+msgid "collection.next-check"
+msgstr "다음 확인 예정"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:215
@@ -159,6 +194,11 @@ msgid "federation.no-posts-title"
 msgstr "아직 게시물이 없습니다"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:401
+msgid "register.error-no-feed"
+msgstr "이 주소에서 읽을 수 있는 Atom 또는 RSS 2.0 피드를 찾지 못했습니다."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:219
 msgid "search.empty-hint"
 msgstr "이미 등록된 피드만 검색됩니다. 더 짧은 키워드로 찾아보거나, 직접 등록해 보세요."
@@ -172,6 +212,16 @@ msgstr "http(s) 피드만 지원합니다 (받은 값: {protocol})."
 #: src/web/ui/messages.ts:178
 msgid "register.open-profile"
 msgstr "계정 페이지 열기"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:377
+msgid "register.original-account"
+msgstr "원래 계정 열기"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:405
+msgid "register.open-source"
+msgstr "원본 열기"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
@@ -199,6 +249,11 @@ msgstr "다음에 피드를 확인한 후 게시물이 여기에 표시됩니다
 #: src/web/ui/messages.ts:94
 msgid "register.bot-alt"
 msgstr "페디버스가 더 편하다면 {handle} {command} 형식으로 멘션하세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:349
+msgid "register.select-recent"
+msgstr "최근 게시물"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:71
@@ -230,11 +285,21 @@ msgstr "등록하기"
 msgid "home.popular-empty-hint"
 msgstr "위 양식으로 첫 번째 피드를 등록해 보세요."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:353
+msgid "register.select-button"
+msgstr "이 피드 등록"
+
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "등록하는 중…"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:369
+msgid "register.blocked-hint"
+msgstr "운영자가 이 피드의 등록을 차단했습니다. 요청을 반복해도 등록되지 않습니다."
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
@@ -292,6 +357,16 @@ msgid "layout.skip-link"
 msgstr "본문으로 건너뛰기"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:317
+msgid "collection.failed-title"
+msgstr "피드 확인 실패"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:309
+msgid "collection.healthy-title"
+msgstr "피드 확인 정상"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "소스 코드"
@@ -305,6 +380,41 @@ msgstr "URL 형식이 아닌 것 같습니다: {url}"
 #: src/web/ui/messages.ts:100
 msgid "register.error-heading"
 msgstr "이 피드를 등록하지 못했습니다"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:397
+msgid "register.error-network"
+msgstr "원본에 연결할 수 없습니다."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:321
+msgid "collection.failed-body"
+msgstr "원본 피드를 읽을 수 없습니다. 자동 재시도를 계속하며, 이전에 수집한 게시물은 유지됩니다."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:313
+msgid "collection.healthy-body"
+msgstr "원본 피드에 연결할 수 있습니다. 새 게시물을 자동으로 수집합니다."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:381
+msgid "register.network-hint"
+msgstr "원본이 일시적으로 응답하지 않을 수 있습니다. 나중에 다시 시도하거나 원본을 열어 확인하세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:337
+msgid "collection.empty-body"
+msgstr "피드를 확인했지만 아직 수집된 게시물이 없습니다."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:305
+msgid "collection.pending-body"
+msgstr "피드를 자동으로 확인합니다. 게시물은 수집된 뒤 여기에 표시됩니다."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:373
+msgid "register.mastodon-hint"
+msgstr "이미 페디버스 계정이 있습니다. 원래 프로필을 열어 팔로우하세요."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:153
@@ -326,6 +436,16 @@ msgstr "이 피드는 등록할 수 없습니다."
 msgid "register.result-created"
 msgstr "이제 이 피드는 자체 페디버스 계정으로 글을 게시합니다."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:345
+msgid "register.select-help"
+msgstr "이 웹사이트에는 여러 피드가 있습니다. 팔로우할 피드를 선택하거나 아래에서 다른 주소를 입력하세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:361
+msgid "register.retry-hint"
+msgstr "{minutes, plural, other {#분 후 다시 시도하세요.}}"
+
 #. Help text under the search field.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:200
@@ -333,9 +453,29 @@ msgid "search.help"
 msgstr "피드 이름, 설명, 주소의 일부를 입력하세요."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:385
+msgid "register.format-hint"
+msgstr "읽을 수 있는 Atom 또는 RSS 2.0 피드 URL이나 피드로 연결되는 웹사이트 URL을 입력하세요."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:357
+msgid "register.select-existing"
+msgstr "등록된 피드 이용"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:252
 msgid "federation.view-original"
 msgstr "원문 보기"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:301
+msgid "collection.pending-title"
+msgstr "피드 확인 대기 중"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:333
+msgid "collection.awaiting-check"
+msgstr "다음 확인 대기 중"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id

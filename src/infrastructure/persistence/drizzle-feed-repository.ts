@@ -55,6 +55,8 @@ function rowToFeed(row: FeedRow): Feed {
         ? null
         : parseOrCorrupt(FeedLanguage.create(row.language), "language"),
     registeredAt: row.registeredAt,
+    lastPolledAt: row.lastPolledAt,
+    lastSuccessfulPollAt: row.lastSuccessfulPollAt,
     validators,
     consecutiveFailures: row.consecutiveFailures,
     unchangedPolls: row.unchangedPolls,
@@ -78,6 +80,8 @@ function feedToRow(feed: Feed): Omit<FeedRow, "followerCount"> {
     actorProfileFingerprint: feed.actorProfileFingerprint,
     language: feed.language,
     registeredAt: feed.registeredAt,
+    lastPolledAt: feed.lastPolledAt,
+    lastSuccessfulPollAt: feed.lastSuccessfulPollAt,
     etag: feed.validators.etag,
     lastModified: feed.validators.lastModified,
     consecutiveFailures: feed.consecutiveFailures,

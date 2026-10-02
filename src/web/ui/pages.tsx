@@ -1,3 +1,5 @@
+import type { FeedCandidate } from "../../domain/feed/feed-candidate.js";
+import { feedStatusModel, followFormModel } from "./feed-status.js";
 import type { FC } from "hono/jsx";
 import { raw } from "hono/html";
 import {
@@ -12,7 +14,7 @@ import { Layout } from "./layout.js";
 import { copy } from "./messages.js";
 
 type FeedCardData = RegistrationViewModel["feed"];
-type RegisterDraft = { readonly url: string; readonly error?: string };
+type RegisterDraft = NonNullable<HomeViewModel["registration"]["draft"]>;
 
 function feedCard(feed: Feed): FeedCardData {
   return {
@@ -42,10 +44,16 @@ function searchForm(ctx: PageContext): HomeViewModel["search"] {
 }
 
 function homeModel(
-  ctx: PageContext, popular: PopularFeed[], morePopular: boolean, draft?: RegisterDraft,
+  ctx: PageContext, popular: PopularFeed[], morePopular: boolean, draft?: RegisterDraft, candidates?: readonly FeedCandidate[],
 ): HomeViewModel {
   return {
     host: ctx.host,
+    ...(candidates === undefined ? {} : { selection: {
+      heading: translate(ctx.i18n, copy.registerSelectHeading), help: translate(ctx.i18n, copy.registerSelectHelp),
+      recentHeading: translate(ctx.i18n, copy.registerSelectRecent), pendingLabel: translate(ctx.i18n, copy.registerPending), locale: ctx.locale,
+      candidates: candidates.map(candidate => ({ ...candidate, title: candidate.title ?? candidate.url,
+        button: translate(ctx.i18n, candidate.registered ? copy.registerSelectExisting : copy.registerSelectButton) })),
+    } }),
     heading: translate(ctx.i18n, copy.homeHeading),
     lede: translate(ctx.i18n, copy.homeLede),
     registration: {
@@ -82,9 +90,10 @@ export const HomePage: FC<{
   popular: PopularFeed[];
   morePopular?: boolean;
   draft?: RegisterDraft | undefined;
+  candidates?: readonly FeedCandidate[] | undefined;
 }> = (props) => (
   <Layout ctx={props.ctx} nav="home">
-    {raw(renderHomeBody(homeModel(props.ctx, props.popular, props.morePopular === true, props.draft)))}
+    {raw(renderHomeBody(homeModel(props.ctx, props.popular, props.morePopular === true, props.draft, props.candidates)))}
   </Layout>
 );
 
@@ -139,6 +148,8 @@ function registrationModel(
   return {
     host: ctx.host,
     kind: outcome.kind,
+    remoteFollow: followFormModel(ctx, outcome.feed.handle),
+    collection: feedStatusModel(ctx, outcome.feed),
     title: translate(ctx.i18n, created ? copy.registerResultCreatedTitle : copy.registerResultExistsTitle),
     status: translate(ctx.i18n, created ? copy.registerResultCreated : copy.registerResultExists),
     feed: feedCard(outcome.feed),

@@ -294,6 +294,118 @@ export const copy = {
     id: "federation.back-to-actor",
     message: "Back to {name}",
   },
+  federationRemoteFollowHelp: /*i18n*/ {
+    id: "federation.remote-follow-help",
+    message: "Enter your account name to continue on your own server. You will confirm the follow there.",
+  },
+  collectionPendingTitle: /*i18n*/ {
+    id: "collection.pending-title",
+    message: "Waiting for a source check",
+  },
+  collectionPendingBody: /*i18n*/ {
+    id: "collection.pending-body",
+    message: "The source will be checked automatically. Posts will appear here after they are collected.",
+  },
+  collectionHealthyTitle: /*i18n*/ {
+    id: "collection.healthy-title",
+    message: "Source checked successfully",
+  },
+  collectionHealthyBody: /*i18n*/ {
+    id: "collection.healthy-body",
+    message: "The source is reachable. New posts are collected automatically.",
+  },
+  collectionFailedTitle: /*i18n*/ {
+    id: "collection.failed-title",
+    message: "Source check failed",
+  },
+  collectionFailedBody: /*i18n*/ {
+    id: "collection.failed-body",
+    message: "The source could not be read. Automatic retries continue; previously collected posts remain available.",
+  },
+  collectionLastSuccess: /*i18n*/ {
+    id: "collection.last-success",
+    message: "Last successful check",
+  },
+  collectionNextCheck: /*i18n*/ {
+    id: "collection.next-check",
+    message: "Next scheduled check",
+  },
+  collectionAwaitingCheck: /*i18n*/ {
+    id: "collection.awaiting-check",
+    message: "Waiting for the next check",
+  },
+  collectionEmptyBody: /*i18n*/ {
+    id: "collection.empty-body",
+    message: "The source was checked, but no posts have been collected yet.",
+  },
+  registerSelectHeading: /*i18n*/ {
+    id: "register.select-heading",
+    message: "Choose a feed",
+  },
+  registerSelectHelp: /*i18n*/ {
+    id: "register.select-help",
+    message: "This website offers several feeds. Choose the one you want to follow, or enter a different address below.",
+  },
+  registerSelectRecent: /*i18n*/ {
+    id: "register.select-recent",
+    message: "Recent posts",
+  },
+  registerSelectButton: /*i18n*/ {
+    id: "register.select-button",
+    message: "Register this feed",
+  },
+  registerSelectExisting: /*i18n*/ {
+    id: "register.select-existing",
+    message: "Use this registered feed",
+  },
+  registerRetryHint: /*i18n*/ {
+    id: "register.retry-hint",
+    message: "Try again in {minutes, plural, one {# minute} other {# minutes}}.",
+  },
+  registerCapacityHint: /*i18n*/ {
+    id: "register.capacity-hint",
+    message: "New registrations are unavailable. You can still search and follow registered feeds.",
+  },
+  registerBlockedHint: /*i18n*/ {
+    id: "register.blocked-hint",
+    message: "Registration of this feed has been disabled by the operator. Repeating the request will not register it.",
+  },
+  registerMastodonHint: /*i18n*/ {
+    id: "register.mastodon-hint",
+    message: "This account already exists in the fediverse. Open its original profile and follow it there.",
+  },
+  registerOriginalAccount: /*i18n*/ {
+    id: "register.original-account",
+    message: "Open the original account",
+  },
+  registerNetworkHint: /*i18n*/ {
+    id: "register.network-hint",
+    message: "The source may be temporarily unavailable. Try again later or open the source to check it.",
+  },
+  registerFormatHint: /*i18n*/ {
+    id: "register.format-hint",
+    message: "Use a readable Atom or RSS 2.0 feed URL, or a website that advertises one.",
+  },
+  registerTimeoutMessage: /*i18n*/ {
+    id: "register.error-timeout",
+    message: "Looking for feeds took too long.",
+  },
+  registerTimeoutHint: /*i18n*/ {
+    id: "register.timeout-hint",
+    message: "Enter the direct feed URL to skip website discovery, or try again later.",
+  },
+  registerNetworkMessage: /*i18n*/ {
+    id: "register.error-network",
+    message: "The source could not be reached.",
+  },
+  registerNoFeedMessage: /*i18n*/ {
+    id: "register.error-no-feed",
+    message: "No readable Atom or RSS 2.0 feed was found at this address.",
+  },
+  registerOpenSource: /*i18n*/ {
+    id: "register.open-source",
+    message: "Open the source",
+  },
   // `as const` is load-bearing, not decoration: `translate()` reads each
   // message's literal text to decide whether ICU values are mandatory, and
   // plain `satisfies` would widen it to `string` and silently disable that

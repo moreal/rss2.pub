@@ -179,6 +179,34 @@ describe("federation e2e", () => {
     expect(await second.text()).toContain("This feed cannot be registered.");
   });
 
+
+  it("lets a visitor choose a website feed before creating an actor", async () => {
+    fixtures.setFixture("/choices/", '<html><head><link rel="alternate" type="application/rss+xml" href="posts.xml"><link rel="alternate" type="application/rss+xml" href="comments.xml"></head></html>', { contentType: "text/html" });
+    for (const [path, title] of [["posts", "Website posts"], ["comments", "Website comments"]]) {
+      fixtures.setFixture("/choices/" + path + ".xml", '<rss version="2.0"><channel><title>' + title + '</title><description>Updates</description><link>' + fixtures.url("/choices/") + '</link><item><title>Preview title</title><guid>' + path + '-1</guid><description>Body</description></item></channel></rss>', { contentType: "application/rss+xml" });
+    }
+    const choice = await fetch(base + "/register?lang=ko", { method: "POST", body: new URLSearchParams({ url: fixtures.url("/choices/") }) });
+    expect(choice.status).toBe(200);
+    const { document } = parseHTML(await choice.text());
+    expect(document.querySelector(".feed-selection")?.textContent).toContain("Preview title");
+    const forms = document.querySelectorAll(".feed-choices form");
+    expect(forms.length).toBe(2);
+    const commentsUrl = fixtures.url("/choices/comments.xml");
+    const commentsHandle = Handle.fromFeedUrl(unwrap(FeedUrl.create(commentsUrl)));
+    expect((await fetch(base + "/ap/actor/" + commentsHandle, { headers: { accept: AP_ACCEPT } })).status).toBe(404);
+    const selected = forms[1];
+    const result = await fetch(base + (selected?.getAttribute("action") ?? ""), { method: "POST", body: new URLSearchParams({ url: selected?.querySelector('input[name="url"]')?.getAttribute("value") ?? "" }) });
+    expect(result.status).toBe(200);
+    const registration = parseHTML(await result.text()).document;
+    expect(registration.querySelector('form[action="/@' + commentsHandle + '/remote-follow"]')).not.toBeNull();
+    expect(registration.querySelector(".collection-status")?.textContent).toContain("피드 확인 대기 중");
+    await app.scheduler.tick();
+    const actorPage = parseHTML(await (await fetch(base + "/@" + commentsHandle + "?lang=ko")).text()).document;
+    expect(actorPage.querySelector(".collection-status")?.textContent).toContain("피드 확인 정상");
+    expect(actorPage.querySelector(".collection-status time")?.getAttribute("datetime")).toBeTruthy();
+    expect(actorPage.querySelector(".actor-post")?.textContent).toContain("Preview title");
+  });
+
   it("registers a feed through the web form", async () => {
     fixtures.setFixture(
       "/blog/feed.xml",

@@ -46,6 +46,11 @@ msgid "register.error-hint"
 msgstr "Verifique se o endereço fornece uma fonte ou se o site tem uma ligação para ela e tente novamente."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:341
+msgid "register.select-heading"
+msgstr "Escolhe uma fonte"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:174
 msgid "register.copied"
 msgstr "Copiado"
@@ -69,6 +74,16 @@ msgstr "Não foi possível ler uma fonte Atom ou RSS 2.0 nesse endereço: {messa
 #: src/web/ui/messages.ts:289
 msgid "federation.remote-follow-invalid-account"
 msgstr "Introduz uma conta válida no fediverso, como tu@instance.social."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:393
+msgid "register.timeout-hint"
+msgstr "Introduz o URL direto da fonte para evitar a procura no site ou tenta novamente mais tarde."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:297
+msgid "federation.remote-follow-help"
+msgstr "Introduz o nome da tua conta para continuar no teu servidor. Aí confirmarás que queres seguir."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:75
@@ -128,6 +143,16 @@ msgid "layout.language-label"
 msgstr "Idioma"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:325
+msgid "collection.last-success"
+msgstr "Última verificação bem-sucedida"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:389
+msgid "register.error-timeout"
+msgstr "A procura de fontes demorou demasiado."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:109
 msgid "register.error-missing-url"
 msgstr "Falta o URL da fonte."
@@ -142,6 +167,16 @@ msgstr "Fontes mais seguidas"
 #: src/web/ui/messages.ts:133
 msgid "register.error-unavailable"
 msgstr "Os novos registos estão atualmente limitados. Tente novamente mais tarde."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:365
+msgid "register.capacity-hint"
+msgstr "Os novos registos estão indisponíveis. Ainda podes pesquisar e seguir fontes já registadas."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:329
+msgid "collection.next-check"
+msgstr "Próxima verificação agendada"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:215
@@ -159,6 +194,11 @@ msgid "federation.no-posts-title"
 msgstr "Ainda não há publicações"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:401
+msgid "register.error-no-feed"
+msgstr "Não foi encontrada uma fonte Atom ou RSS 2.0 legível neste endereço."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:219
 msgid "search.empty-hint"
 msgstr "Só é possível pesquisar fontes que alguém já registou. Experimenta uma palavra mais curta ou regista esta fonte."
@@ -172,6 +212,16 @@ msgstr "Só são suportadas fontes http(s) (recebido: {protocol})."
 #: src/web/ui/messages.ts:178
 msgid "register.open-profile"
 msgstr "Abrir a página da conta"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:377
+msgid "register.original-account"
+msgstr "Abrir a conta original"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:405
+msgid "register.open-source"
+msgstr "Abrir a origem"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
@@ -199,6 +249,11 @@ msgstr "As publicações aparecerão aqui depois da próxima verificação da fo
 #: src/web/ui/messages.ts:94
 msgid "register.bot-alt"
 msgstr "Preferes o fediverso? Menciona {handle} com {command}."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:349
+msgid "register.select-recent"
+msgstr "Publicações recentes"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:71
@@ -230,11 +285,21 @@ msgstr "Registar fonte"
 msgid "home.popular-empty-hint"
 msgstr "Regista a primeira fonte com o formulário acima."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:353
+msgid "register.select-button"
+msgstr "Registar esta fonte"
+
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "A registar…"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:369
+msgid "register.blocked-hint"
+msgstr "O operador desativou o registo desta fonte. Repetir o pedido não a registará."
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
@@ -292,6 +357,16 @@ msgid "layout.skip-link"
 msgstr "Saltar para o conteúdo principal"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:317
+msgid "collection.failed-title"
+msgstr "Falha na verificação da fonte"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:309
+msgid "collection.healthy-title"
+msgstr "Fonte verificada com sucesso"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "Código-fonte"
@@ -305,6 +380,41 @@ msgstr "Isto não parece ser um URL: {url}"
 #: src/web/ui/messages.ts:100
 msgid "register.error-heading"
 msgstr "Não foi possível registar esta fonte"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:397
+msgid "register.error-network"
+msgstr "Não foi possível contactar a origem."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:321
+msgid "collection.failed-body"
+msgstr "Não foi possível ler a fonte original. As tentativas automáticas continuam e as publicações já recolhidas permanecem disponíveis."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:313
+msgid "collection.healthy-body"
+msgstr "A fonte original está acessível. As novas publicações são recolhidas automaticamente."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:381
+msgid "register.network-hint"
+msgstr "A origem pode estar temporariamente indisponível. Tenta novamente mais tarde ou abre-a para verificar."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:337
+msgid "collection.empty-body"
+msgstr "A fonte foi verificada, mas ainda não foram recolhidas publicações."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:305
+msgid "collection.pending-body"
+msgstr "A fonte será verificada automaticamente. As publicações aparecerão aqui depois de serem recolhidas."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:373
+msgid "register.mastodon-hint"
+msgstr "Esta conta já existe no fediverso. Abre o perfil original e segue-a aí."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:153
@@ -326,6 +436,16 @@ msgstr "Esta fonte não pode ser registada."
 msgid "register.result-created"
 msgstr "Esta fonte publica agora através da sua própria conta no fediverso."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:345
+msgid "register.select-help"
+msgstr "Este site oferece várias fontes. Escolhe a que queres seguir ou introduz outro endereço abaixo."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:361
+msgid "register.retry-hint"
+msgstr "{minutes, plural, one {Tenta novamente daqui a # minuto.} other {Tenta novamente daqui a # minutos.}}"
+
 #. Help text under the search field.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:200
@@ -333,9 +453,29 @@ msgid "search.help"
 msgstr "Escreve parte do nome, da descrição ou do endereço de uma fonte."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:385
+msgid "register.format-hint"
+msgstr "Usa o URL de uma fonte Atom ou RSS 2.0 legível, ou de um site que tenha uma ligação para uma fonte."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:357
+msgid "register.select-existing"
+msgstr "Usar esta fonte já registada"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:252
 msgid "federation.view-original"
 msgstr "Ver original"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:301
+msgid "collection.pending-title"
+msgstr "A aguardar a verificação da fonte"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:333
+msgid "collection.awaiting-check"
+msgstr "A aguardar a próxima verificação"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id

@@ -605,8 +605,7 @@ describe("registration outcomes", () => {
     {
       failure: "FeedUnreachable",
       error: { type: "FeedUnreachable", url: FEED.url, message: "boom" },
-      // Only {message} reaches the copy; url is here to satisfy the union.
-      expected: "해당 주소에서 Atom 또는 RSS 2.0 피드를 읽을 수 없습니다: boom",
+      expected: "이 주소에서 읽을 수 있는 Atom 또는 RSS 2.0 피드를 찾지 못했습니다.",
     },
   ] as const)("localizes the $failure failure", async ({ error, expected }) => {
     const registerFeed: RegisterFeed = { execute: async () => err(error) };
@@ -811,5 +810,57 @@ describe("health endpoints", () => {
     const res = await webApp({ ready: async () => false }).request("/readyz");
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ status: "unavailable" });
+  });
+});
+
+
+describe("registration product flow", () => {
+  it.each(["en", "ko"])("offers the remote-follow endpoint immediately after registration in %s", async locale => {
+    const response = await webApp().request("/registered/example?lang=" + locale);
+    const { document } = parseHTML(await response.text());
+    const form = document.querySelector('form[action="/@example/remote-follow"]');
+    expect(form?.getAttribute("method")).toBe("get");
+    expect(form?.querySelector('input[name="lang"]')?.getAttribute("value")).toBe(locale);
+    expect(form?.querySelector('input[name="acct"]')?.getAttribute("aria-describedby")).toBe("remote-follow-help");
+    expect(document.querySelector(".collection-status")?.textContent).toContain(locale === "ko" ? "피드 확인 대기 중" : "Waiting for a source check");
+  });
+  it("offers choices and submits the selected URL through normal registration", async () => {
+    const calls: string[] = [];
+    const commentFeed = makeFeed({ url: "https://example.com/comments.xml", title: "Comments" });
+    const registerFeed: RegisterFeed = { execute: async url => {
+      calls.push(url);
+      return url === "https://example.com/" ? err({ type: "MultipleFeeds", candidates: [
+        { url: FEED.url, title: FEED.title, description: null, recentTitles: ["Latest <article>"], registered: false },
+        { url: commentFeed.url, title: commentFeed.title, description: null, recentTitles: [], registered: false },
+      ] }) : ok({ feed: commentFeed, created: true });
+    } };
+    const routes = webApp({ registerFeed });
+    const response = await routes.request("/register?lang=ko", { method: "POST", body: new URLSearchParams({ url: "https://example.com/" }) });
+    expect(response.status).toBe(200);
+    const { document } = parseHTML(await response.text());
+    const choices = document.querySelectorAll(".feed-choices form");
+    expect(choices.length).toBe(2);
+    expect(document.querySelector(".feed-selection")?.textContent).toContain("Latest <article>");
+    expect(document.querySelector(".feed-selection article")).toBeNull();
+    const selected = choices[1];
+    const url = selected?.querySelector('input[name="url"]')?.getAttribute("value");
+    expect(url).toBe("https://example.com/comments.xml");
+    const result = await routes.request(selected?.getAttribute("action") ?? "", { method: "POST", body: new URLSearchParams({ url: url ?? "" }) });
+    expect(result.status).toBe(303);
+    expect(calls).toEqual(["https://example.com/", "https://example.com/comments.xml"]);
+  });
+  it("shows the retry delay when registrations are limited", async () => {
+    const response = await postRegister(webApp({ registerFeed: { execute: async () => err({ type: "RegistrationUnavailable", retryAfterSeconds: 3600 }) } }));
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("3600");
+    const { document } = parseHTML(await response.text());
+    expect(document.querySelector(".notice-error")?.textContent).toContain("Try again in 60 minutes.");
+    expect(document.querySelector('input[name="url"]')?.getAttribute("aria-invalid")).toBeNull();
+    expect(document.querySelector(".notice-error")?.textContent).not.toContain("Check that the address serves a feed");
+  });
+  it("links to the original Mastodon account", async () => {
+    const response = await postRegister(webApp({ registerFeed: { execute: async () => err({ type: "MastodonFeed", accountUrl: "https://social.example/@alice" }) } }));
+    const { document } = parseHTML(await response.text());
+    expect(document.querySelector('.notice-error a')?.getAttribute("href")).toBe("https://social.example/@alice");
   });
 });

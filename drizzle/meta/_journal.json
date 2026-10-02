@@ -71,6 +71,13 @@
       "when": 1790718882968,
       "tag": "0009_parched_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790940229817,
+      "tag": "0010_feed_collection_status",
+      "breakpoints": true
     }
   ]
 }

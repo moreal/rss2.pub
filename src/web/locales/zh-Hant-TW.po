@@ -46,6 +46,11 @@ msgid "register.error-hint"
 msgstr "請確認該網址提供資訊來源，或網站上有資訊來源連結，然後重試。"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:341
+msgid "register.select-heading"
+msgstr "選擇資訊來源"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:174
 msgid "register.copied"
 msgstr "已複製"
@@ -69,6 +74,16 @@ msgstr "無法從該網址讀取Atom或RSS 2.0資訊來源：{message}"
 #: src/web/ui/messages.ts:289
 msgid "federation.remote-follow-invalid-account"
 msgstr "請輸入有效的聯邦宇宙帳號，例如you@instance.social。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:393
+msgid "register.timeout-hint"
+msgstr "請輸入資訊來源的直接網址以略過網站尋找，或稍後重試。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:297
+msgid "federation.remote-follow-help"
+msgstr "輸入你的帳號名稱以移動到自己的伺服器，並在那裡確認追蹤。"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:75
@@ -128,6 +143,16 @@ msgid "layout.language-label"
 msgstr "語言"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:325
+msgid "collection.last-success"
+msgstr "上次檢查成功時間"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:389
+msgid "register.error-timeout"
+msgstr "尋找資訊來源耗時過長。"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:109
 msgid "register.error-missing-url"
 msgstr "缺少資訊來源URL。"
@@ -142,6 +167,16 @@ msgstr "追蹤人數最多的資訊來源"
 #: src/web/ui/messages.ts:133
 msgid "register.error-unavailable"
 msgstr "目前限制新增註冊。請稍後再試。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:365
+msgid "register.capacity-hint"
+msgstr "目前無法註冊新資訊來源。你仍可搜尋並追蹤已註冊的資訊來源。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:329
+msgid "collection.next-check"
+msgstr "下次檢查計畫"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:215
@@ -159,6 +194,11 @@ msgid "federation.no-posts-title"
 msgstr "尚無貼文"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:401
+msgid "register.error-no-feed"
+msgstr "在此位址未找到可讀取的 Atom 或 RSS 2.0 資訊來源。"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:219
 msgid "search.empty-hint"
 msgstr "只能搜尋已註冊的資訊來源。請試試較短的關鍵字，或自行註冊這個資訊來源。"
@@ -172,6 +212,16 @@ msgstr "僅支援http(s)資訊來源（收到的協定：{protocol}）。"
 #: src/web/ui/messages.ts:178
 msgid "register.open-profile"
 msgstr "開啟帳號頁面"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:377
+msgid "register.original-account"
+msgstr "開啟原始帳號"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:405
+msgid "register.open-source"
+msgstr "開啟原始網站"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
@@ -199,6 +249,11 @@ msgstr "下次檢查資訊來源後，貼文會顯示在這裡。"
 #: src/web/ui/messages.ts:94
 msgid "register.bot-alt"
 msgstr "想透過聯邦宇宙操作？請提及{handle}並傳送{command}。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:349
+msgid "register.select-recent"
+msgstr "最近的貼文"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:71
@@ -230,11 +285,21 @@ msgstr "註冊資訊來源"
 msgid "home.popular-empty-hint"
 msgstr "使用上方表單註冊第一個資訊來源。"
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:353
+msgid "register.select-button"
+msgstr "註冊此資訊來源"
+
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "註冊中…"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:369
+msgid "register.blocked-hint"
+msgstr "管理員已停用此資訊來源的註冊。重複請求也無法註冊。"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
@@ -292,6 +357,16 @@ msgid "layout.skip-link"
 msgstr "跳至主要內容"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:317
+msgid "collection.failed-title"
+msgstr "資訊來源檢查失敗"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:309
+msgid "collection.healthy-title"
+msgstr "資訊來源檢查成功"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "原始碼"
@@ -305,6 +380,41 @@ msgstr "這似乎不是有效的URL：{url}"
 #: src/web/ui/messages.ts:100
 msgid "register.error-heading"
 msgstr "無法註冊這個資訊來源"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:397
+msgid "register.error-network"
+msgstr "無法連接到原始網站。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:321
+msgid "collection.failed-body"
+msgstr "無法讀取原始資訊來源。系統會繼續自動重試，並保留已收集的貼文。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:313
+msgid "collection.healthy-body"
+msgstr "可以連接到原始資訊來源。系統會自動收集新貼文。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:381
+msgid "register.network-hint"
+msgstr "原始網站可能暫時無法存取。請稍後重試，或開啟原始網站檢查。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:337
+msgid "collection.empty-body"
+msgstr "已檢查資訊來源，但尚未收集到貼文。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:305
+msgid "collection.pending-body"
+msgstr "系統會自動檢查資訊來源。收集到的貼文會顯示在這裡。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:373
+msgid "register.mastodon-hint"
+msgstr "此帳號已存在於聯邦宇宙中。請開啟原始個人資料並在那裡追蹤。"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:153
@@ -326,6 +436,16 @@ msgstr "無法註冊此資訊來源。"
 msgid "register.result-created"
 msgstr "這個資訊來源現在會透過自己的聯邦宇宙帳號發文。"
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:345
+msgid "register.select-help"
+msgstr "這個網站提供了多個資訊來源。請選擇要追蹤的資訊來源，或在下方輸入其他位址。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:361
+msgid "register.retry-hint"
+msgstr "{minutes, plural, other {請在#分鐘後重試。}}"
+
 #. Help text under the search field.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:200
@@ -333,9 +453,29 @@ msgid "search.help"
 msgstr "輸入資訊來源名稱、說明或網址的一部分。"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:385
+msgid "register.format-hint"
+msgstr "請輸入可讀取的 Atom 或 RSS 2.0 資訊來源網址，或提供資訊來源連結的網站網址。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:357
+msgid "register.select-existing"
+msgstr "使用已註冊的資訊來源"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:252
 msgid "federation.view-original"
 msgstr "檢視原文"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:301
+msgid "collection.pending-title"
+msgstr "等待檢查資訊來源"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:333
+msgid "collection.awaiting-check"
+msgstr "等待下次檢查"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id

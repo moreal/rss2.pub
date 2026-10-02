@@ -75,11 +75,16 @@ export function createCommandHandler(deps: {
                   ),
                 ];
               case "MastodonFeed":
-                return [t("This feed belongs to Mastodon. Follow its original account instead.")];
+                return [t("This feed belongs to Mastodon. Follow its original account instead." + (result.error.accountUrl === undefined ? "" : "\n" + result.error.accountUrl))];
+              case "MultipleFeeds":
+                return [t("Several feeds are available. Mention me with the URL you want to register:\n" +
+                  result.error.candidates.map(candidate => (candidate.title ?? "Feed") + " — " + candidate.url).join("\n"))];
               case "FeedBlocked":
                 return [t("This feed cannot be registered.")];
               case "RegistrationUnavailable":
-                return [t("New registrations are currently limited. Please try again later.")];
+                return [t(result.error.retryAfterSeconds === null
+                  ? "New registrations are unavailable. You can still find existing feeds at https://" + deps.host + "/search."
+                  : "New registrations are currently limited. Try again in " + Math.max(1, Math.ceil(result.error.retryAfterSeconds / 60)) + " minutes.")];
               default: {
                 const unreachable: never = result.error;
                 throw new Error(

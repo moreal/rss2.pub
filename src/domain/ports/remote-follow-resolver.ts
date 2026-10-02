@@ -85,6 +85,7 @@ export const RemoteFollowAccount = {
    * WebFinger `acct:` lookup, which needs a specific account.
    */
   create(raw: string): Result<RemoteFollowAccount, RemoteFollowError> {
+    if (raw.length > 320) return err({ type: "InvalidAccount", raw });
     const trimmed = raw.trim();
     const withoutLeadingAt = trimmed.startsWith("@") ? trimmed.slice(1) : trimmed;
     const atIndex = withoutLeadingAt.indexOf("@");

@@ -81,6 +81,7 @@ async function setup(
       updatedAt: null,
     });
   return {
+    feeds, feed,
     app: createFederationPages({
       origin: "https://local.test",
       feeds,
@@ -359,7 +360,7 @@ describe("createFederationPages", () => {
     expect(html).toContain('class="empty-state"');
     expect(html).toContain("No posts yet");
     expect(html).toContain(
-      "Posts appear here after the next poll of the feed.",
+      "The source will be checked automatically.",
     );
     expect(html).not.toContain('<ul class="posts"');
   });
@@ -520,5 +521,31 @@ describe("createFederationPages", () => {
         })
       ).status,
     ).toBe(406);
+  });
+});
+
+
+describe("feed source health", () => {
+  it("shows successful collection without promising posts for an empty feed", async () => {
+    const { app, feeds, feed } = await setup(undefined, "Empty feed", "Unused", false);
+    await feeds.save({ ...feed, lastPolledAt: new Date("2026-10-02T09:00:00Z"), lastSuccessfulPollAt: new Date("2026-10-02T09:00:00Z") });
+    const { document } = parseHTML(await (await app.request("https://local.test/@feed_a")).text());
+    expect(document.querySelector(".collection-status")?.textContent).toContain("Source checked successfully");
+    expect(document.querySelector(".collection-status time")?.getAttribute("datetime")).toBe("2026-10-02T09:00:00.000Z");
+    expect(document.querySelector(".empty-state")?.textContent).toContain("no posts have been collected yet");
+  });
+  it("keeps posts visible and shows automatic retries after a source failure", async () => {
+    const { app, feeds, feed } = await setup();
+    await feeds.save({ ...feed, consecutiveFailures: 2, lastPolledAt: new Date("2026-10-02T10:00:00Z"), lastSuccessfulPollAt: new Date("2026-10-02T09:00:00Z") });
+    const { document } = parseHTML(await (await app.request("https://local.test/@feed_a?lang=ko")).text());
+    expect(document.querySelector(".collection-status")?.textContent).toContain("피드 확인 실패");
+    expect(document.querySelector(".collection-status")?.textContent).toContain("자동 재시도");
+    expect(document.querySelector(".posts")?.textContent).toContain("Post title");
+  });
+  it("does not show a source-check promise for the main bot actor", async () => {
+    const { app } = await setup();
+    const { document } = parseHTML(await (await app.request("https://local.test/@rss2pub")).text());
+    expect(document.querySelector(".collection-status")).toBeNull();
+    expect(document.querySelector(".empty-state")?.textContent).not.toContain("next poll");
   });
 });

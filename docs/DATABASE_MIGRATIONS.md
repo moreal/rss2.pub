@@ -4,7 +4,10 @@
 `src/web/migrate.ts` applies them to `DATABASE_URL` and exits. The initial public
 release includes migrations `0000` through `0008`; applying them to an empty
 PostgreSQL database is the baseline. Migration `0009` adds moderation reports
-and blocked feed URLs. Private pre-release databases are outside
+and blocked feed URLs. Migration `0010` adds nullable last-attempt and
+last-success timestamps for feed source checks. Existing feeds keep unknown
+history until their next poll; no historical success times are invented.
+Private pre-release databases are outside
 the supported upgrade path.
 
 ## Authoring migrations

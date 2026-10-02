@@ -33,6 +33,7 @@ import { negotiateLocale } from "./locale-middleware.js";
 import { pageContext, type PageContext } from "./page-context.js";
 import { Layout } from "./ui/layout.js";
 import { copy } from "./ui/messages.js";
+import { feedStatusModel } from "./ui/feed-status.js";
 
 function acceptsHtml(accept: string | undefined): boolean {
   return (
@@ -181,6 +182,7 @@ export function createFederationPages(deps: {
     let name: string;
     let summary: SanitizedHtml;
     let icon: string | null;
+    let collection: ActorProfileModel["collection"];
     if (rawHandle === MAIN_ACTOR_HANDLE) {
       name = "rss2.pub";
       summary = SanitizedHtml.fromSanitized(`<p>${escapeHtml(translate(ctx.i18n, copy.federationMainActorSummary))}</p>`);
@@ -193,6 +195,7 @@ export function createFederationPages(deps: {
       name = Feed.displayName(feed);
       summary = SanitizedHtml.fromSanitized(sanitizeFeedHtml(renderFeedProfileHtml(feed)));
       icon = feed.iconUrl;
+      collection = feedStatusModel(ctx, feed);
     }
 
     const followers = await deps.federationObjects.countFollowers(rawHandle);
@@ -205,11 +208,15 @@ export function createFederationPages(deps: {
       summaryHtml: summary,
       followersLabel: translate(ctx.i18n, copy.feedFollowers, { count: followers }),
       locale: ctx.locale,
+      ...(collection === undefined ? {} : { collection }),
+      followHelp: translate(ctx.i18n, copy.federationRemoteFollowHelp),
       followHeading: translate(ctx.i18n, copy.federationRemoteFollowLabel),
       followPlaceholder: translate(ctx.i18n, copy.federationRemoteFollowPlaceholder),
       followButton: translate(ctx.i18n, copy.federationRemoteFollowButton),
       noPostsTitle: translate(ctx.i18n, copy.federationNoPostsTitle),
-      noPostsBody: translate(ctx.i18n, copy.federationNoPostsBody),
+      noPostsBody: translate(ctx.i18n, collection?.state === "healthy" ? copy.collectionEmptyBody
+        : collection?.state === "failed" ? copy.collectionFailedBody
+        : collection === undefined ? copy.federationMainActorSummary : copy.collectionPendingBody),
       posts: posts.items.map((object) => ({
         id: object.id,
         title: fallbackTitle(object, ctx.i18n),

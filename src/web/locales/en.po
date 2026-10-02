@@ -46,6 +46,11 @@ msgid "register.error-hint"
 msgstr "Check that the address serves a feed or that the website links to one, then try again."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:341
+msgid "register.select-heading"
+msgstr "Choose a feed"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:174
 msgid "register.copied"
 msgstr "Copied"
@@ -69,6 +74,16 @@ msgstr "Couldn’t read an Atom or RSS 2.0 feed there: {message}"
 #: src/web/ui/messages.ts:289
 msgid "federation.remote-follow-invalid-account"
 msgstr "Enter a valid Fediverse account, like you@instance.social."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:393
+msgid "register.timeout-hint"
+msgstr "Enter the direct feed URL to skip website discovery, or try again later."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:297
+msgid "federation.remote-follow-help"
+msgstr "Enter your account name to continue on your own server. You will confirm the follow there."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:75
@@ -128,6 +143,16 @@ msgid "layout.language-label"
 msgstr "Language"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:325
+msgid "collection.last-success"
+msgstr "Last successful check"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:389
+msgid "register.error-timeout"
+msgstr "Looking for feeds took too long."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:109
 msgid "register.error-missing-url"
 msgstr "Missing feed URL."
@@ -142,6 +167,16 @@ msgstr "Most followed feeds"
 #: src/web/ui/messages.ts:133
 msgid "register.error-unavailable"
 msgstr "New registrations are currently limited. Please try again later."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:365
+msgid "register.capacity-hint"
+msgstr "New registrations are unavailable. You can still search and follow registered feeds."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:329
+msgid "collection.next-check"
+msgstr "Next scheduled check"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:215
@@ -159,6 +194,11 @@ msgid "federation.no-posts-title"
 msgstr "No posts yet"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:401
+msgid "register.error-no-feed"
+msgstr "No readable Atom or RSS 2.0 feed was found at this address."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:219
 msgid "search.empty-hint"
 msgstr "Only feeds someone has already registered are searchable. Try a shorter keyword, or register this one yourself."
@@ -172,6 +212,16 @@ msgstr "Only http(s) feeds are supported (got {protocol})."
 #: src/web/ui/messages.ts:178
 msgid "register.open-profile"
 msgstr "Open the account page"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:377
+msgid "register.original-account"
+msgstr "Open the original account"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:405
+msgid "register.open-source"
+msgstr "Open the source"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
@@ -199,6 +249,11 @@ msgstr "Posts appear here after the next poll of the feed."
 #: src/web/ui/messages.ts:94
 msgid "register.bot-alt"
 msgstr "Prefer the fediverse? Mention {handle} with {command}."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:349
+msgid "register.select-recent"
+msgstr "Recent posts"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:71
@@ -230,11 +285,21 @@ msgstr "Register feed"
 msgid "home.popular-empty-hint"
 msgstr "Register the first one with the form above."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:353
+msgid "register.select-button"
+msgstr "Register this feed"
+
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "Registering…"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:369
+msgid "register.blocked-hint"
+msgstr "Registration of this feed has been disabled by the operator. Repeating the request will not register it."
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
@@ -292,6 +357,16 @@ msgid "layout.skip-link"
 msgstr "Skip to main content"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:317
+msgid "collection.failed-title"
+msgstr "Source check failed"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:309
+msgid "collection.healthy-title"
+msgstr "Source checked successfully"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "Source code"
@@ -305,6 +380,41 @@ msgstr "That doesn’t look like a URL: {url}"
 #: src/web/ui/messages.ts:100
 msgid "register.error-heading"
 msgstr "That feed could not be registered"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:397
+msgid "register.error-network"
+msgstr "The source could not be reached."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:321
+msgid "collection.failed-body"
+msgstr "The source could not be read. Automatic retries continue; previously collected posts remain available."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:313
+msgid "collection.healthy-body"
+msgstr "The source is reachable. New posts are collected automatically."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:381
+msgid "register.network-hint"
+msgstr "The source may be temporarily unavailable. Try again later or open the source to check it."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:337
+msgid "collection.empty-body"
+msgstr "The source was checked, but no posts have been collected yet."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:305
+msgid "collection.pending-body"
+msgstr "The source will be checked automatically. Posts will appear here after they are collected."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:373
+msgid "register.mastodon-hint"
+msgstr "This account already exists in the fediverse. Open its original profile and follow it there."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:153
@@ -326,6 +436,16 @@ msgstr "This feed cannot be registered."
 msgid "register.result-created"
 msgstr "This feed now publishes as its own fediverse account."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:345
+msgid "register.select-help"
+msgstr "This website offers several feeds. Choose the one you want to follow, or enter a different address below."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:361
+msgid "register.retry-hint"
+msgstr "Try again in {minutes, plural, one {# minute} other {# minutes}}."
+
 #. Help text under the search field.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:200
@@ -333,9 +453,29 @@ msgid "search.help"
 msgstr "Type part of a feed’s name, description, or address."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:385
+msgid "register.format-hint"
+msgstr "Use a readable Atom or RSS 2.0 feed URL, or a website that advertises one."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:357
+msgid "register.select-existing"
+msgstr "Use this registered feed"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:252
 msgid "federation.view-original"
 msgstr "View original"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:301
+msgid "collection.pending-title"
+msgstr "Waiting for a source check"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:333
+msgid "collection.awaiting-check"
+msgstr "Waiting for the next check"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id

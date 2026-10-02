@@ -18,10 +18,12 @@ import {
   type SearchViewModel,
 } from "./product/pages.js";
 
+export type { CollectionStatusModel } from "./collection-status.js";
+export type { RemoteFollowFormModel } from "./remote-follow-form.js";
 export type { LocalePickerProps, LocaleOption } from "./locale-picker.js";
 export type { ActorProfileModel, MessageDetailModel, RemoteFollowErrorModel } from "./federation/pages.js";
 export { SanitizedHtml } from "./federation/sanitized-html.js";
-export type { HomeViewModel, RegistrationViewModel, SearchViewModel } from "./product/pages.js";
+export type { HomeViewModel, RegistrationViewModel, SearchViewModel, FeedSelectionModel } from "./product/pages.js";
 
 export function renderLocalePicker(props: LocalePickerProps): string {
   return renderToString(() => <LocalePicker {...props} />);

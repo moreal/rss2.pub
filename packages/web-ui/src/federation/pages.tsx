@@ -1,5 +1,7 @@
 /** @jsxImportSource @solidjs/web */
-import { AccountHandle, Avatar, Button, Notice } from "../primitives/index.js";
+import { CollectionStatus, type CollectionStatusModel } from "../collection-status.js";
+import { RemoteFollowForm } from "../remote-follow-form.js";
+import { AccountHandle, Avatar, Notice } from "../primitives/index.js";
 import { SanitizedHtml } from "./sanitized-html.js";
 
 export { SanitizedHtml } from "./sanitized-html.js";
@@ -14,6 +16,8 @@ export type PostPreviewModel = {
 };
 
 export type ActorProfileModel = {
+  readonly collection?: CollectionStatusModel;
+  readonly followHelp: string;
   readonly handle: string;
   readonly host: string;
   readonly name: string;
@@ -59,24 +63,6 @@ function SanitizedContent(props: { html: SanitizedHtml }) {
   return <div class="content" innerHTML={props.html.value} />;
 }
 
-function RemoteFollowForm(props: { model: ActorProfileModel }) {
-  return (
-    <section class="panel remote-follow" aria-labelledby="remote-follow-heading">
-      <h2 id="remote-follow-heading">{props.model.followHeading}</h2>
-      <form method="get" action={`${actorHref(props.model.handle)}/remote-follow`}>
-        <input type="hidden" name="lang" value={props.model.locale} />
-        <div class="field">
-          <label class="sr-only" for="remote-follow-acct">{props.model.followHeading}</label>
-          <div class="control">
-            <input type="text" id="remote-follow-acct" name="acct" placeholder={props.model.followPlaceholder} autocomplete="off" required />
-            <Button variant="primary" type="submit">{props.model.followButton}</Button>
-          </div>
-        </div>
-      </form>
-    </section>
-  );
-}
-
 function MessageCard(props: { handle: string; post: PostPreviewModel }) {
   return (
     <article class="panel actor-post">
@@ -100,7 +86,13 @@ export function ActorProfile(props: { model: ActorProfileModel }) {
         </p>
         <SanitizedContent html={props.model.summaryHtml} />
       </header>
-      <RemoteFollowForm model={props.model} />
+      {props.model.collection !== undefined && <CollectionStatus model={props.model.collection} />}
+      <section class="panel remote-follow" aria-labelledby="remote-follow-heading">
+        <h2 id="remote-follow-heading">{props.model.followHeading}</h2>
+        <RemoteFollowForm model={{ handle: props.model.handle, locale: props.model.locale,
+          heading: props.model.followHeading, help: props.model.followHelp,
+          placeholder: props.model.followPlaceholder, button: props.model.followButton }} />
+      </section>
       {props.model.posts.length === 0 ? (
         <div class="empty-state">
           <p class="empty-title">{props.model.noPostsTitle}</p>

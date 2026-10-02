@@ -46,6 +46,11 @@ msgid "register.error-hint"
 msgstr "Prüfe, ob die Adresse einen Feed liefert oder die Website darauf verlinkt, und versuche es erneut."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:341
+msgid "register.select-heading"
+msgstr "Feed auswählen"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:174
 msgid "register.copied"
 msgstr "Kopiert"
@@ -69,6 +74,16 @@ msgstr "Dort konnte kein Atom- oder RSS 2.0-Feed gelesen werden: {message}"
 #: src/web/ui/messages.ts:289
 msgid "federation.remote-follow-invalid-account"
 msgstr "Gib ein gültiges Fediverse-Konto ein, zum Beispiel du@instance.social."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:393
+msgid "register.timeout-hint"
+msgstr "Gib die direkte Feed-URL ein, um die Website-Suche zu überspringen, oder versuche es später erneut."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:297
+msgid "federation.remote-follow-help"
+msgstr "Gib deinen Kontonamen ein, um auf deinem eigenen Server fortzufahren. Bestätige dort das Folgen."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:75
@@ -128,6 +143,16 @@ msgid "layout.language-label"
 msgstr "Sprache"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:325
+msgid "collection.last-success"
+msgstr "Letzte erfolgreiche Prüfung"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:389
+msgid "register.error-timeout"
+msgstr "Die Suche nach Feeds hat zu lange gedauert."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:109
 msgid "register.error-missing-url"
 msgstr "Feed-URL fehlt."
@@ -142,6 +167,16 @@ msgstr "Feeds mit den meisten Followern"
 #: src/web/ui/messages.ts:133
 msgid "register.error-unavailable"
 msgstr "Neue Registrierungen sind derzeit begrenzt. Bitte versuchen Sie es später erneut."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:365
+msgid "register.capacity-hint"
+msgstr "Neue Registrierungen sind nicht verfügbar. Bereits registrierte Feeds kannst du weiterhin suchen und ihnen folgen."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:329
+msgid "collection.next-check"
+msgstr "Nächste geplante Prüfung"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:215
@@ -159,6 +194,11 @@ msgid "federation.no-posts-title"
 msgstr "Noch keine Beiträge"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:401
+msgid "register.error-no-feed"
+msgstr "An dieser Adresse wurde kein lesbarer Atom- oder RSS-2.0-Feed gefunden."
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:219
 msgid "search.empty-hint"
 msgstr "Nur bereits registrierte Feeds sind durchsuchbar. Versuche einen kürzeren Suchbegriff oder registriere den Feed selbst."
@@ -172,6 +212,16 @@ msgstr "Es werden nur http(s)-Feeds unterstützt (erhalten: {protocol})."
 #: src/web/ui/messages.ts:178
 msgid "register.open-profile"
 msgstr "Kontoseite öffnen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:377
+msgid "register.original-account"
+msgstr "Ursprüngliches Konto öffnen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:405
+msgid "register.open-source"
+msgstr "Quelle öffnen"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
@@ -199,6 +249,11 @@ msgstr "Nach der nächsten Abfrage des Feeds erscheinen hier Beiträge."
 #: src/web/ui/messages.ts:94
 msgid "register.bot-alt"
 msgstr "Lieber im Fediverse? Erwähne {handle} mit {command}."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:349
+msgid "register.select-recent"
+msgstr "Neueste Beiträge"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:71
@@ -230,11 +285,21 @@ msgstr "Feed registrieren"
 msgid "home.popular-empty-hint"
 msgstr "Registriere den ersten Feed mit dem Formular oben."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:353
+msgid "register.select-button"
+msgstr "Diesen Feed registrieren"
+
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "Wird registriert…"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:369
+msgid "register.blocked-hint"
+msgstr "Der Betreiber hat die Registrierung dieses Feeds deaktiviert. Eine erneute Anfrage registriert ihn nicht."
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
@@ -292,6 +357,16 @@ msgid "layout.skip-link"
 msgstr "Zum Hauptinhalt springen"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:317
+msgid "collection.failed-title"
+msgstr "Feed-Prüfung fehlgeschlagen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:309
+msgid "collection.healthy-title"
+msgstr "Feed erfolgreich geprüft"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "Quellcode"
@@ -305,6 +380,41 @@ msgstr "Das sieht nicht wie eine URL aus: {url}"
 #: src/web/ui/messages.ts:100
 msgid "register.error-heading"
 msgstr "Dieser Feed konnte nicht registriert werden"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:397
+msgid "register.error-network"
+msgstr "Die Quelle konnte nicht erreicht werden."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:321
+msgid "collection.failed-body"
+msgstr "Der ursprüngliche Feed konnte nicht gelesen werden. Automatische Wiederholungen laufen weiter; bereits abgerufene Beiträge bleiben verfügbar."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:313
+msgid "collection.healthy-body"
+msgstr "Der ursprüngliche Feed ist erreichbar. Neue Beiträge werden automatisch abgerufen."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:381
+msgid "register.network-hint"
+msgstr "Die Quelle ist möglicherweise vorübergehend nicht verfügbar. Versuche es später erneut oder öffne die Quelle zur Überprüfung."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:337
+msgid "collection.empty-body"
+msgstr "Der Feed wurde geprüft, aber es wurden noch keine Beiträge abgerufen."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:305
+msgid "collection.pending-body"
+msgstr "Der Feed wird automatisch geprüft. Beiträge erscheinen hier, sobald sie abgerufen wurden."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:373
+msgid "register.mastodon-hint"
+msgstr "Dieses Konto existiert bereits im Fediverse. Öffne das ursprüngliche Profil und folge ihm dort."
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:153
@@ -326,6 +436,16 @@ msgstr "Dieser Feed kann nicht registriert werden."
 msgid "register.result-created"
 msgstr "Dieser Feed veröffentlicht jetzt über ein eigenes Fediverse-Konto."
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:345
+msgid "register.select-help"
+msgstr "Diese Website bietet mehrere Feeds an. Wähle den gewünschten Feed aus oder gib unten eine andere Adresse ein."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:361
+msgid "register.retry-hint"
+msgstr "{minutes, plural, one {Versuche es in # Minute erneut.} other {Versuche es in # Minuten erneut.}}"
+
 #. Help text under the search field.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:200
@@ -333,9 +453,29 @@ msgid "search.help"
 msgstr "Gib einen Teil des Feed-Namens, der Beschreibung oder der Adresse ein."
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:385
+msgid "register.format-hint"
+msgstr "Verwende die URL eines lesbaren Atom- oder RSS-2.0-Feeds oder einer Website, die auf einen solchen Feed verweist."
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:357
+msgid "register.select-existing"
+msgstr "Diesen registrierten Feed verwenden"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:252
 msgid "federation.view-original"
 msgstr "Original ansehen"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:301
+msgid "collection.pending-title"
+msgstr "Warten auf eine Feed-Prüfung"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:333
+msgid "collection.awaiting-check"
+msgstr "Warten auf die nächste Prüfung"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id

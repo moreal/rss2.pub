@@ -15,6 +15,8 @@ import { pageContext } from "./page-context.js";
 import {
   type RegisterFailure,
   registerErrorMessage,
+  registerErrorHint,
+  registerErrorAction,
 } from "./ui/register-error.js";
 import {
   HomePage,
@@ -134,6 +136,7 @@ export function createWebRoutes(deps: WebDeps): Hono {
       status: ContentfulStatusCode,
     ) => {
       const { popular, morePopular } = await homePopular(deps);
+      const action = registerErrorAction(ctx.i18n, failure);
       return c.html(
         <HomePage
           ctx={ctx}
@@ -142,6 +145,10 @@ export function createWebRoutes(deps: WebDeps): Hono {
           draft={{
             url: typeof rawUrl === "string" ? rawUrl : "",
             error: registerErrorMessage(ctx.i18n, failure),
+            hint: registerErrorHint(ctx.i18n, failure),
+            invalid: failure.type === "NotAUrl" || failure.type === "MissingUrl" || failure.type === "UnsupportedProtocol"
+              || (failure.type === "FeedUnreachable" && failure.reason !== "network" && failure.reason !== "timeout"),
+            ...(action === undefined ? {} : { action }),
           }}
         />,
         status,
@@ -153,6 +160,11 @@ export function createWebRoutes(deps: WebDeps): Hono {
     }
     const result = await deps.registerFeed.execute(rawUrl);
     if (!result.ok) {
+      if (result.error.type === "MultipleFeeds") {
+        const { popular, morePopular } = await homePopular(deps);
+        return c.html(<HomePage ctx={ctx} popular={popular} morePopular={morePopular}
+          candidates={result.error.candidates} draft={{ url: rawUrl }} />);
+      }
       if (result.error.type === "RegistrationUnavailable") {
         if (result.error.retryAfterSeconds !== null) {
           c.header("Retry-After", String(result.error.retryAfterSeconds));

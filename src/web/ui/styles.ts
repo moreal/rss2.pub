@@ -141,6 +141,20 @@ ${DARK_TOKENS}
     }
   }
 
+  .feed-selection { margin-block-end: var(--space-5); }
+  .feed-choices { display: grid; gap: var(--space-3); list-style: none; margin-block: var(--space-4); }
+  .feed-choices > li { min-width: 0; padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .feed-choices h4 { margin: 0; font-size: var(--text-base); font-weight: var(--weight-semibold); word-break: keep-all; overflow-wrap: anywhere; }
+  .feed-choice-url { font-family: var(--font-mono); font-size: var(--text-sm); color: var(--text-muted); overflow-wrap: anywhere; }
+  .feed-choice-titles { list-style: disc; padding-inline-start: var(--space-5); overflow-wrap: anywhere; }
+  .collection-status { margin-block: var(--space-4); }
+  .collection-status .notice-body { overflow-wrap: anywhere; }
+  .collection-times { margin: var(--space-3) 0 0; display: grid; gap: var(--space-2); font-size: var(--text-sm); }
+  .collection-times dt { font-weight: var(--weight-semibold); }
+  .collection-times dd { margin: 0; overflow-wrap: anywhere; }
+  .follow-alternative { margin-block-start: var(--space-4); }
+  .follow-alternative summary { cursor: pointer; padding-block: var(--space-3); color: var(--accent-ink); }
+
   /* ---------- base ---------- */
 
   *, *::before, *::after { box-sizing: border-box; }
@@ -964,3 +978,6 @@ export const COPY_SCRIPT = `
   });
 })();
 `;
+
+/** Cross-document transitions can remain over the page when scripting is disabled. */
+export const NO_SCRIPT_STYLE = "@view-transition { navigation: none; }";

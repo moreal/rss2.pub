@@ -21,15 +21,21 @@ const feed = makeFeed({
   title: "A long example title about publishing feeds across languages",
 });
 
+const comments = makeFeed({ url: "https://example.com/comments.xml", handle: "comments_feed", title: "Comments feed" });
 const registerFeed: RegisterFeed = {
-  execute: async (url) =>
-    url.startsWith("ftp:")
-      ? err({ type: "UnsupportedProtocol", raw: url, protocol: "ftp:" })
-      : ok({ feed, created: true }),
+  execute: async (url) => {
+    if (url.startsWith("ftp:")) return err({ type: "UnsupportedProtocol", raw: url, protocol: "ftp:" });
+    if (url === "https://example.com/multiple") return err({ type: "MultipleFeeds", candidates: [
+      { url: feed.url, title: feed.title, description: "Articles", recentTitles: ["Example story"], registered: false },
+      { url: comments.url, title: comments.title, description: "Comments", recentTitles: ["A reply"], registered: false },
+    ] });
+    if (url === "https://example.com/limited") return err({ type: "RegistrationUnavailable", retryAfterSeconds: 3600 });
+    return ok({ feed: url === comments.url ? comments : feed, created: true });
+  },
 };
 const findFeedByHandle: FindFeedByHandle = {
   execute: async (handle) =>
-    handle === feed.handle ? ok(feed) : err({ type: "FeedNotFound" }),
+    handle === feed.handle ? ok(feed) : handle === comments.handle ? ok(comments) : err({ type: "FeedNotFound" }),
 };
 const searchFeeds: SearchFeeds = {
   execute: async (keyword) =>
@@ -41,6 +47,7 @@ const listPopularFeeds: ListPopularFeeds = {
 
 const feeds = createInMemoryFeedRepository();
 await feeds.save(feed);
+await feeds.save(comments);
 const federationObjects = createInMemoryFederationRepository();
 await federationObjects.upsertObject({
   id: "post-1",

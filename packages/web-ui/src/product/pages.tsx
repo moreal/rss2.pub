@@ -1,4 +1,6 @@
 /** @jsxImportSource @solidjs/web */
+import { CollectionStatus, type CollectionStatusModel } from "../collection-status.js";
+import { RemoteFollowForm, type RemoteFollowFormModel } from "../remote-follow-form.js";
 import type { FeedCardData } from "../feed-card-data.js";
 import { AccountHandle, Button, FeedCard, FeedList, Field, Notice } from "../primitives/index.js";
 
@@ -20,7 +22,7 @@ export type RegistrationFormViewModel = {
   readonly pendingLabel: string;
   readonly errorHeading: string;
   readonly errorHint: string;
-  readonly draft?: { readonly url: string; readonly error?: string };
+  readonly draft?: { readonly url: string; readonly error?: string; readonly hint?: string; readonly invalid?: boolean; readonly action?: { readonly href: string; readonly label: string } };
 };
 
 export type PopularFeedViewModel = {
@@ -28,7 +30,17 @@ export type PopularFeedViewModel = {
   readonly followersLabel: string;
 };
 
+export type FeedSelectionModel = {
+  readonly heading: string;
+  readonly help: string;
+  readonly recentHeading: string;
+  readonly pendingLabel: string;
+  readonly locale: string;
+  readonly candidates: readonly { readonly url: string; readonly title: string; readonly description: string | null; readonly recentTitles: readonly string[]; readonly button: string }[];
+};
+
 export type HomeViewModel = {
+  readonly selection?: FeedSelectionModel;
   readonly host: string;
   readonly heading: string;
   readonly lede: string;
@@ -69,6 +81,8 @@ export type SearchViewModel = {
 };
 
 export type RegistrationViewModel = {
+  readonly remoteFollow: RemoteFollowFormModel;
+  readonly collection: CollectionStatusModel;
   readonly host: string;
   readonly kind: "created" | "exists";
   readonly title: string;
@@ -105,20 +119,44 @@ function SearchForm(props: { model: SearchFormViewModel; query?: string; compact
 
 function RegistrationForm(props: { model: RegistrationFormViewModel }) {
   const failed = props.model.draft?.error !== undefined;
+  const invalid = failed && props.model.draft?.invalid !== false;
   return <form class="register-form field" method="post" action="/register" data-pending-form>
     {props.model.draft?.error !== undefined && <Notice kind="error" live="alert" title={props.model.errorHeading}>
       <p id="register-url-error">{props.model.draft.error}</p>
-      <p class="help">{props.model.errorHint}</p>
+      <p class="help">{props.model.draft.hint ?? props.model.errorHint}</p>
+      {props.model.draft.action !== undefined && <p><a class="btn btn-secondary" href={props.model.draft.action.href}>{props.model.draft.action.label}</a></p>}
     </Notice>}
     <Field id="register-url" type="url" name="url" label={props.model.urlLabel}
       value={props.model.draft?.url ?? ""} placeholder="https://example.com/feed.xml"
       help={props.model.urlHelp} required spellcheck="false" autocomplete="off" autocapitalize="off"
-      externalErrorId={failed ? "register-url-error" : undefined} invalid={failed} autofocus={failed} />
+      externalErrorId={failed ? "register-url-error" : undefined} invalid={invalid} autofocus={invalid} />
     <div class="form-actions"><Button variant="primary" type="submit" data-pending-label={props.model.pendingLabel}>
       <span class="btn-spinner" aria-hidden="true" /><span data-btn-label>{props.model.submitLabel}</span>
     </Button></div>
     <span class="sr-only" role="status" data-pending-status />
   </form>;
+}
+
+function FeedSelection(props: { model: FeedSelectionModel }) {
+  return <section class="feed-selection" aria-labelledby="feed-selection-heading">
+    <h3 id="feed-selection-heading">{props.model.heading}</h3>
+    <p class="help">{props.model.help}</p>
+    <ul class="feed-choices">
+      {props.model.candidates.map(candidate => <li>
+        <form method="post" action={"/register?lang=" + encodeURIComponent(props.model.locale)} class="field" data-pending-form>
+          <h4><bdi dir="auto">{candidate.title}</bdi></h4>
+          <p class="feed-choice-url"><bdi dir="ltr">{candidate.url}</bdi></p>
+          {candidate.description !== null && <p><bdi dir="auto">{candidate.description}</bdi></p>}
+          {candidate.recentTitles.length > 0 && <div><p class="help">{props.model.recentHeading}</p><ul class="feed-choice-titles">{candidate.recentTitles.map(title => <li><bdi dir="auto">{title}</bdi></li>)}</ul></div>}
+          <input type="hidden" name="url" value={candidate.url} />
+          <div class="form-actions"><Button variant="secondary" type="submit" data-pending-label={props.model.pendingLabel}>
+            <span class="btn-spinner" aria-hidden="true" /><span data-btn-label>{candidate.button}</span>
+          </Button></div>
+          <span class="sr-only" role="status" data-pending-status />
+        </form>
+      </li>)}
+    </ul>
+  </section>;
 }
 
 function RichText(props: { parts: readonly InlinePart[] }) {
@@ -131,6 +169,7 @@ export function HomeBody(props: { model: HomeViewModel }) {
     <div class="page-head"><h1>{model.heading}</h1><p class="lede">{model.lede}</p></div>
     <section class="panel" aria-labelledby="register-heading">
       <div class="panel-head"><h2 id="register-heading">{model.registration.heading}</h2></div>
+      {model.selection !== undefined && <FeedSelection model={model.selection} />}
       <RegistrationForm model={model.registration} />
       <p class="help panel-note"><RichText parts={model.botAlternative} /></p>
     </section>
@@ -181,8 +220,10 @@ export function RegisterResultBody(props: { model: RegistrationViewModel }) {
     <section class="panel"><Notice kind="success" live="status"><p>{model.status}</p></Notice><FeedList><FeedCard feed={model.feed} host={model.host} level={2} omitHandle /></FeedList></section>
     <section class="panel" aria-labelledby="follow-heading">
       <h2 id="follow-heading">{model.nextHeading}</h2>
-      <ol class="steps" role="list"><li><div class="step-body"><p>{model.copyInstruction}</p><HandleToCopy handle={model.feed.handle} host={model.host} copyLabel={model.copyLabel} copiedLabel={model.copiedLabel} /></div></li><li><div class="step-body"><p>{model.followInstruction}</p></div></li></ol>
+      <RemoteFollowForm model={model.remoteFollow} />
+      <details class="follow-alternative"><summary>{model.copyInstruction}</summary><ol class="steps" role="list"><li><div class="step-body"><p>{model.copyInstruction}</p><HandleToCopy handle={model.feed.handle} host={model.host} copyLabel={model.copyLabel} copiedLabel={model.copiedLabel} /></div></li><li><div class="step-body"><p>{model.followInstruction}</p></div></li></ol></details>
       <div class="form-actions"><a class="btn btn-secondary" href={model.feed.href}>{model.openProfile}</a><a class="btn btn-quiet" href="/">{model.anotherLabel}</a></div>
+      <CollectionStatus model={model.collection} />
     </section>
   </>;
 }

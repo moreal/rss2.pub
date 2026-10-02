@@ -34,6 +34,8 @@ export const feeds = pgTable(
     // Atom feed-root xml:lang (ADR-0011).
     language: text("language"),
     registeredAt: timestamp("registered_at", { withTimezone: true }).notNull(),
+    lastPolledAt: timestamp("last_polled_at", { withTimezone: true }),
+    lastSuccessfulPollAt: timestamp("last_successful_poll_at", { withTimezone: true }),
     etag: text("etag"),
     lastModified: text("last_modified"),
     consecutiveFailures: integer("consecutive_failures").notNull().default(0),

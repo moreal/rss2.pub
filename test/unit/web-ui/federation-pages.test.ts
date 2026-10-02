@@ -24,7 +24,7 @@ describe("Solid federation page bodies", () => {
       model: {
         handle: "tech", host: "rss2.pub", name: "技術 <ニュース>", iconUrl: null,
         summaryHtml: ui.SanitizedHtml.fromSanitized("<p>Safe <strong>summary</strong></p>"), followersLabel: "12 followers",
-        locale: "ja", followHeading: "リモートフォロー", followPlaceholder: "@you@example.social",
+        locale: "ja", followHelp: "Confirm the follow on your own server.", followHeading: "リモートフォロー", followPlaceholder: "@you@example.social",
         followButton: "Follow", noPostsTitle: "No posts", noPostsBody: "Check later",
         posts: [{ id: "item/1", title: "Hello <world>", previewHtml: ui.SanitizedHtml.fromSanitized("<p>Short <em>preview</em></p>"), publishedIso: "2026-09-23T00:00:00.000Z", publishedLabel: "2026年9月23日" }],
       },
@@ -47,7 +47,7 @@ describe("Solid federation page bodies", () => {
       model: {
         handle: "rss2pub", host: "rss2.pub", name: "rss2.pub", iconUrl: null,
         summaryHtml: ui.SanitizedHtml.fromSanitized("<p>Main actor</p>"), followersLabel: "0 followers",
-        locale: "en", followHeading: "Follow", followPlaceholder: "@you@example.social",
+        locale: "en", followHelp: "Confirm the follow on your own server.", followHeading: "Follow", followPlaceholder: "@you@example.social",
         followButton: "Follow", noPostsTitle: "No posts yet", noPostsBody: "Try later",
         posts: [],
       },
@@ -62,7 +62,7 @@ describe("Solid federation page bodies", () => {
       model: {
         handle: "tech", host: "rss2.pub", name: "Tech", iconUrl: "https://example.com/icon.png",
         summaryHtml: ui.SanitizedHtml.fromSanitized(""), followersLabel: "1 follower", locale: "en",
-        followHeading: "Follow", followPlaceholder: "@you@example.social", followButton: "Follow",
+        followHelp: "Confirm the follow on your own server.", followHeading: "Follow", followPlaceholder: "@you@example.social", followButton: "Follow",
         noPostsTitle: "No posts", noPostsBody: "Check later", posts: [],
       },
     }));

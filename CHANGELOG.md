@@ -7,6 +7,10 @@ the format described in [the release policy](https://docs.rss2.pub/releasing).
 
 ### Added
 
+- Direct remote follow from registration results, with account-name copying as an alternative.
+- Feed source-check status, last successful check, and next scheduled check on result and actor pages.
+- Explicit website feed choices with titles and recent posts, bounded by eight candidates and a 45-second request budget.
+
 - AGPLv3-or-later licensing and a configurable link to the deployed source.
 - Self-hosting, release, and database migration policies.
 - A standalone database migration command for local, container, and Nix installs.
@@ -16,6 +20,10 @@ the format described in [the release policy](https://docs.rss2.pub/releasing).
 - English and Korean documentation at `docs.rss2.pub`.
 
 ### Changed
+
+- Registration errors now offer recovery steps and links specific to the failure. Temporary limits include retry advice without marking the URL invalid.
+- Migration `0010` records feed-check timestamps without fabricating past history.
+- Cross-document view transitions are disabled when JavaScript is off so repeated form submissions remain usable.
 
 - The RSS 2.0 parser now consumes the core specification's channel and item
   elements (enclosure, author, categories, comments, source, content:encoded,

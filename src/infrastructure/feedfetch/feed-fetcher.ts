@@ -11,6 +11,7 @@ import type { RawFeedItem } from "../../domain/feed/feed-item.js";
 import type { FeedUrl } from "../../domain/feed/feed-url.js";
 import type {
   FeedFetcher,
+  FeedRequestBudget,
   FetchedFeed,
   FetchFeedError,
   FetchFeedSuccess,
@@ -175,6 +176,7 @@ export function createFeedFetcher(options?: {
     async fetch(
       url: FeedUrl,
       validators: CacheValidators,
+      budget?: FeedRequestBudget,
     ): Promise<Result<FetchFeedSuccess, FetchFeedError>> {
       const headers: Record<string, string> = {
         accept: ACCEPT,
@@ -190,7 +192,7 @@ export function createFeedFetcher(options?: {
       try {
         response = await fetchPublicUrl(url, {
           headers,
-          signal: AbortSignal.timeout(timeoutMs),
+          signal: AbortSignal.timeout(Math.min(timeoutMs, budget?.timeoutMs ?? timeoutMs)),
         }, {
           allowPrivateAddress: options?.allowPrivateAddress === true,
           ...(options?.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),

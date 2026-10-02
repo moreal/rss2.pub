@@ -115,6 +115,9 @@ describe("Solid product pages", () => {
   it("keeps registration result handle copy data and two next steps", () => {
     const model: ProductPages.RegistrationViewModel = {
       host: "rss2.pub", kind: "created", title: "Feed registered", status: "Ready to follow.", feed,
+      remoteFollow: { handle: "news", locale: "en", heading: "Follow from your account", help: "Confirm on your server.", placeholder: "you@instance.social", button: "Follow" },
+      collection: { state: "pending", title: "Waiting for a source check", body: "Posts will appear after collection.", lastSuccess: null,
+        nextCheck: { label: "Next check", iso: "2026-10-02T09:00:00Z", text: "Soon" } },
       nextHeading: "Next steps", copyInstruction: "Copy the address.", followInstruction: "Follow it from your app.",
       copyLabel: "Copy address", copiedLabel: "Copied", openProfile: "Open account", anotherLabel: "Register another",
     };
@@ -126,5 +129,8 @@ describe("Solid product pages", () => {
     expect(html).toMatch(/href="\/@news"/);
     expect((html.match(/data-copy="@news@rss2.pub"/g) ?? []).length).toBe(1);
     expect(html).toMatch(/class="handle handle-value"/);
+    expect(html).toContain('action="/@news/remote-follow"');
+    expect(html).toContain('name="lang" value="en"');
+    expect(html).toContain("Waiting for a source check");
   });
 });

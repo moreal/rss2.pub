@@ -116,6 +116,8 @@ export function afterSuccessfulPoll(
   return {
     ...feed,
     validators: params.validators,
+    lastPolledAt: params.now,
+    lastSuccessfulPollAt: params.now,
     consecutiveFailures: 0,
     unchangedPolls,
     nextPollAt: new Date(params.now.getTime() + seconds * 1000),
@@ -138,6 +140,7 @@ export function afterFailedPoll(
   return {
     ...feed,
     consecutiveFailures: failures,
+    lastPolledAt: params.now,
     nextPollAt: new Date(params.now.getTime() + seconds * 1000),
   };
 }

@@ -163,6 +163,13 @@ adapter.
   limits. A PostgreSQL advisory lock allows one new registration fetch across
   app instances; the web form also has a 4 KiB body limit. Keep both web and
   main-actor command paths behind the shared registration use case.
+- Website discovery offers readable, unblocked candidates when several feeds work.
+  Choosing one submits its URL through the same registration use case and limits.
+  Discovery inspects at most 8 unique candidates within a 45-second total network
+  budget. A mention receives candidate URLs and accepts a chosen URL directly.
+- Feed source-check health records last attempt and success separately. It
+  describes source retrieval, not delivery to followers; old feeds have unknown
+  history until the next poll. The static main actor has no feed-check status.
 - Fedify 2.x is newer than most training data — verify APIs against
   `node_modules` type definitions or https://fedify.dev/ before writing
   federation code. Fedify 1.x

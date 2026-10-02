@@ -105,6 +105,8 @@ describe("DrizzleFeedRepository", () => {
       actorProfileFingerprint: "f".repeat(64),
       validators: { etag: 'W/"v2"', lastModified: "Sat, 25 Jul 2026 00:00:00 GMT" },
       consecutiveFailures: 3,
+      lastPolledAt: new Date("2026-07-26T12:10:00.000Z"),
+      lastSuccessfulPollAt: new Date("2026-07-26T12:00:00.000Z"),
       nextPollAt: new Date("2026-07-26T13:00:00.000Z"),
     };
     await feeds.save(updated);

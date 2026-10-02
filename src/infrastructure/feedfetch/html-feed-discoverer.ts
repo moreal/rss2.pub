@@ -31,14 +31,14 @@ export function createHtmlFeedDiscoverer(options?: {
   readonly fetchImpl?: typeof fetch;
 }): FeedDiscoverer {
   return {
-    async discover(url) {
+    async discover(url, budget) {
       try {
         const response = await fetchPublicUrl(url, {
           headers: {
             accept: "text/html",
             "user-agent": "Mozilla/5.0 (compatible; rss2.pub/1.0; +https://rss2.pub)",
           },
-          signal: AbortSignal.timeout(options?.timeoutMs ?? 15_000),
+          signal: AbortSignal.timeout(Math.min(options?.timeoutMs ?? 15_000, budget?.timeoutMs ?? 15_000)),
         }, {
           allowPrivateAddress: options?.allowPrivateAddress === true,
           ...(options?.fetchImpl === undefined ? {} : { fetchImpl: options.fetchImpl }),

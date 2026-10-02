@@ -46,6 +46,11 @@ msgid "register.error-hint"
 msgstr "请确认该地址提供信息源，或网站上有信息源链接，然后重试。"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:341
+msgid "register.select-heading"
+msgstr "选择信息源"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:174
 msgid "register.copied"
 msgstr "已复制"
@@ -69,6 +74,16 @@ msgstr "无法从该地址读取Atom或RSS 2.0信息源：{message}"
 #: src/web/ui/messages.ts:289
 msgid "federation.remote-follow-invalid-account"
 msgstr "请输入有效的联邦宇宙账号，例如you@instance.social。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:393
+msgid "register.timeout-hint"
+msgstr "请输入信息源的直接网址以跳过网站查找，或稍后重试。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:297
+msgid "federation.remote-follow-help"
+msgstr "输入你的账号名称以跳转到自己的服务器，并在那里确认关注。"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:75
@@ -128,6 +143,16 @@ msgid "layout.language-label"
 msgstr "语言"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:325
+msgid "collection.last-success"
+msgstr "上次检查成功时间"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:389
+msgid "register.error-timeout"
+msgstr "查找信息源耗时过长。"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:109
 msgid "register.error-missing-url"
 msgstr "缺少信息源URL。"
@@ -142,6 +167,16 @@ msgstr "关注人数最多的信息源"
 #: src/web/ui/messages.ts:133
 msgid "register.error-unavailable"
 msgstr "目前限制新增注册。请稍后重试。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:365
+msgid "register.capacity-hint"
+msgstr "目前无法注册新信息源。你仍可搜索并关注已注册的信息源。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:329
+msgid "collection.next-check"
+msgstr "下次检查计划"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:215
@@ -159,6 +194,11 @@ msgid "federation.no-posts-title"
 msgstr "还没有帖子"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:401
+msgid "register.error-no-feed"
+msgstr "在此地址未找到可读取的 Atom 或 RSS 2.0 信息源。"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:219
 msgid "search.empty-hint"
 msgstr "只能搜索已注册的信息源。请尝试更短的关键词，或自行注册该信息源。"
@@ -172,6 +212,16 @@ msgstr "仅支持http(s)信息源（收到的协议：{protocol}）。"
 #: src/web/ui/messages.ts:178
 msgid "register.open-profile"
 msgstr "打开账号页面"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:377
+msgid "register.original-account"
+msgstr "打开原始账号"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:405
+msgid "register.open-source"
+msgstr "打开原始网站"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:79
@@ -199,6 +249,11 @@ msgstr "下次检查信息源后，帖子会显示在这里。"
 #: src/web/ui/messages.ts:94
 msgid "register.bot-alt"
 msgstr "想通过联邦宇宙操作？请提及{handle}并发送{command}。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:349
+msgid "register.select-recent"
+msgstr "最近的帖子"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:71
@@ -230,11 +285,21 @@ msgstr "注册信息源"
 msgid "home.popular-empty-hint"
 msgstr "使用上方表单注册第一个信息源。"
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:353
+msgid "register.select-button"
+msgstr "注册此信息源"
+
 #. Replaces the submit button's label while the feed is being fetched.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:88
 msgid "register.pending"
 msgstr "正在注册…"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:369
+msgid "register.blocked-hint"
+msgstr "管理员已禁用此信息源的注册。重复请求也无法注册。"
 
 #. Heading and page title of the remote-follow validation-error page.
 #. js-lingui-explicit-id
@@ -292,6 +357,16 @@ msgid "layout.skip-link"
 msgstr "跳转到主要内容"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:317
+msgid "collection.failed-title"
+msgstr "信息源检查失败"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:309
+msgid "collection.healthy-title"
+msgstr "信息源检查成功"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:54
 msgid "layout.footer-source"
 msgstr "源代码"
@@ -305,6 +380,41 @@ msgstr "这似乎不是有效的URL：{url}"
 #: src/web/ui/messages.ts:100
 msgid "register.error-heading"
 msgstr "无法注册此信息源"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:397
+msgid "register.error-network"
+msgstr "无法连接到原始网站。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:321
+msgid "collection.failed-body"
+msgstr "无法读取原始信息源。系统会继续自动重试，并保留已收集的帖子。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:313
+msgid "collection.healthy-body"
+msgstr "可以连接到原始信息源。系统会自动收集新帖子。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:381
+msgid "register.network-hint"
+msgstr "原始网站可能暂时无法访问。请稍后重试，或打开原始网站检查。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:337
+msgid "collection.empty-body"
+msgstr "已检查信息源，但尚未收集到帖子。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:305
+msgid "collection.pending-body"
+msgstr "系统会自动检查信息源。收集到的帖子会显示在这里。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:373
+msgid "register.mastodon-hint"
+msgstr "此账号已存在于联邦宇宙中。请打开原始个人资料并在那里关注。"
 
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:153
@@ -326,6 +436,16 @@ msgstr "无法注册此信息源。"
 msgid "register.result-created"
 msgstr "此信息源现在会通过自己的联邦宇宙账号发布内容。"
 
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:345
+msgid "register.select-help"
+msgstr "这个网站提供了多个信息源。请选择要关注的信息源，或在下方输入其他地址。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:361
+msgid "register.retry-hint"
+msgstr "{minutes, plural, other {请在#分钟后重试。}}"
+
 #. Help text under the search field.
 #. js-lingui-explicit-id
 #: src/web/ui/messages.ts:200
@@ -333,9 +453,29 @@ msgid "search.help"
 msgstr "输入信息源名称、描述或地址的一部分。"
 
 #. js-lingui-explicit-id
+#: src/web/ui/messages.ts:385
+msgid "register.format-hint"
+msgstr "请输入可读取的 Atom 或 RSS 2.0 信息源网址，或提供信息源链接的网站网址。"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:357
+msgid "register.select-existing"
+msgstr "使用已注册的信息源"
+
+#. js-lingui-explicit-id
 #: src/web/ui/messages.ts:252
 msgid "federation.view-original"
 msgstr "查看原文"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:301
+msgid "collection.pending-title"
+msgstr "等待检查信息源"
+
+#. js-lingui-explicit-id
+#: src/web/ui/messages.ts:333
+msgid "collection.awaiting-check"
+msgstr "等待下次检查"
 
 #. Example account shown as the remote-follow input's placeholder.
 #. js-lingui-explicit-id
