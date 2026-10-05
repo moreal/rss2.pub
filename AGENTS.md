@@ -195,7 +195,7 @@ adapter.
   Author-only changes send Update but never alter body HTML, Mention tags,
   `to`, or `cc`.
 - `@fedify/vocab` and `@fedify/fedify` stay version-locked to the tested
-  ~2.3.5 line so vocab `instanceof` checks operate on one package copy.
+  ~2.4.1 line so vocab `instanceof` checks operate on one package copy.
 - **`@fedify/cli` is a devDependency, not something you install globally.**
   `test/e2e/remote-federation.test.ts` shells out to `yarn exec fedify lookup`;
   without the dependency that silently resolves to whatever `fedify` happens to

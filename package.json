@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@babel/core": "7.28.4",
-    "@fedify/cli": "~2.3.5",
+    "@fedify/cli": "~2.4.1",
     "@lingui/cli": "^6.6.0",
     "@playwright/test": "1.63.0",
     "@solidjs/babel-plugin": "2.0.0-rc.3",
@@ -70,10 +70,10 @@
     "vitest": "^4.1.10"
   },
   "dependencies": {
-    "@fedify/fedify": "~2.3.5",
-    "@fedify/postgres": "^2.3.3",
-    "@fedify/vocab": "~2.3.5",
-    "@fedify/vocab-runtime": "2.3.6",
+    "@fedify/fedify": "~2.4.1",
+    "@fedify/postgres": "~2.4.1",
+    "@fedify/vocab": "~2.4.1",
+    "@fedify/vocab-runtime": "~2.4.1",
     "@hono/node-server": "^2.0.11",
     "@js-temporal/polyfill": "^0.5.1",
     "@lingui/core": "^6.6.0",

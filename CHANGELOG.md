@@ -21,6 +21,11 @@ the format described in [the release policy](https://docs.rss2.pub/releasing).
 
 ### Changed
 
+- Upgrade the Fedify dependency family to 2.4.1, including the 2.4 minor
+  release and security fixes for actor authentication, outbound delivery SSRF,
+  unbounded document reads, and alternate document link traversal. Redeploy
+  to activate the fixes; no application database migration is required.
+
 - Registration errors now offer recovery steps and links specific to the failure. Temporary limits include retry advice without marking the URL invalid.
 - Migration `0010` records feed-check timestamps without fabricating past history.
 - Cross-document view transitions are disabled when JavaScript is off so repeated form submissions remain usable.
